@@ -134,7 +134,7 @@ class Tt02(ARCBaseGame):
         super().__init__(
             "tt02",
             levels,
-            Camera(0, 0, 16, 16, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            Camera(0, 0, 24, 24, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
             [1, 2, 3, 4],

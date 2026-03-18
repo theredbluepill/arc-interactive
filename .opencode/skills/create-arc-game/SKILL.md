@@ -89,23 +89,29 @@ class MyGame(ARCBaseGame):
         self._ui.update(len(self._targets))
     
     def step(self) -> None:
-        moved = False
-        dx = 0
-        dy = 0
+        # Actions are ABSTRACT - define what they mean for YOUR game
+        # Example: if your game is about rotation, ACTION1 = rotate, not "up"
         
-        # Handle actions 1-4 (movement)
         if self.action.id.value == 1:
-            dy = -1  # up
-            moved = True
+            # ACTION1 - could be "up", "rotate", "fire", etc.
+            dx = -1
         elif self.action.id.value == 2:
-            dy = 1   # down
-            moved = True
+            # ACTION2
+            dx = 1
         elif self.action.id.value == 3:
-            dx = -1  # left
-            moved = True
+            # ACTION3
+            dy = -1
         elif self.action.id.value == 4:
-            dx = 1   # right
-            moved = True
+            # ACTION4
+            dy = 1
+        elif self.action.id.value == 5:
+            # ACTION5 - special action (interact, select, etc.)
+            self._interact()
+        elif self.action.id.value == 6:
+            # ACTION6 - coordinate-based (use self.action.data for x,y)
+            x = self.action.data.get("x", 0)
+            y = self.action.data.get("y", 0)
+            self._click_at(x, y)
         
         if not moved:
             self.complete_action()
@@ -200,9 +206,27 @@ result = env.step(1)  # Action 1-4 for movement
 - Level 4+: 32x32+ (expert)
 
 ### Action Space
-- ACTION1-4: Primary actions (movement)
-- ACTION5: Special action
-- ACTION6: Click/interact (if needed)
+
+Actions are **abstract** - each game defines what they mean:
+
+| Action | Description |
+|--------|-------------|
+| `ACTION1` | Abstract action 1 (semantically up) |
+| `ACTION2` | Abstract action 2 (semantically down) |
+| `ACTION3` | Abstract action 3 (semantically left) |
+| `ACTION4` | Abstract action 4 (semantically right) |
+| `ACTION5` | Special action (interact, select, rotate, attach/detach, execute, etc.) |
+| `ACTION6` | Coordinate-based action (requires x,y) |
+| `ACTION7` | Undo action |
+
+**Example** - if your game is about rotation, ACTION1 could mean "rotate clockwise" instead of "up":
+```python
+def step(self) -> None:
+    if self.action.id.value == 1:
+        self._rotate_cw()  # Not movement!
+        self.complete_action()
+        return
+    # ... handle other actions
 
 ## What NOT to Do
 

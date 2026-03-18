@@ -10,9 +10,9 @@ Agent responsible for designing and implementing ARC-AGI-3 games.
 **Output**: Game specification
 
 **Key Questions**:
-- Grid size? (16x16 or 64x64)
+- Grid size? (8x8, 16x16, 24x24, 64x64)
 - What entities? (player, targets, walls, hazards)
-- What actions? (movement 1-4, click 6)
+- What actions? (define what ACTION1-7 mean for your game)
 - Win/lose conditions?
 
 ### 2. Implementation Phase
@@ -141,23 +141,28 @@ def on_set_level(self, level: Level) -> None:
 ### 4. step()
 ```python
 def step(self) -> None:
-    moved = False
-    dx = 0
-    dy = 0
+    # Actions are ABSTRACT - define what each action means for YOUR game
+    # Example: if your game is rotation, ACTION1 = rotate, not "up"
     
-    # Handle actions 1-4 (movement)
     if self.action.id.value == 1:
+        # ACTION1 - could be movement, rotation, firing, etc.
         dy = -1  # up
-        moved = True
     elif self.action.id.value == 2:
         dy = 1   # down
-        moved = True
     elif self.action.id.value == 3:
         dx = -1  # left
-        moved = True
     elif self.action.id.value == 4:
         dx = 1   # right
-        moved = True
+    elif self.action.id.value == 5:
+        # Special action (interact, select, rotate, etc.)
+        self._interact()
+    elif self.action.id.value == 6:
+        # Coordinate-based action
+        x = self.action.data.get("x", 0)
+        y = self.action.data.get("y", 0)
+        self._click_at(x, y)
+    
+    # ... rest of game logic ...
     
     if not moved:
         self.complete_action()
@@ -318,11 +323,30 @@ COLORS = {
 ```
 
 ## Action Space
-- ACTION1: Up
-- ACTION2: Down
-- ACTION3: Left
-- ACTION4: Right
-- ACTION6: Click/interact
+
+Actions are **abstract** - each game defines what they mean:
+
+| Action | Description |
+|--------|-------------|
+| ACTION1 | Abstract action 1 (semantically up) |
+| ACTION2 | Abstract action 2 (semantically down) |
+| ACTION3 | Abstract action 3 (semantically left) |
+| ACTION4 | Abstract action 4 (semantically right) |
+| ACTION5 | Special action (interact, select, rotate, attach/detach, execute) |
+| ACTION6 | Coordinate-based action (requires x,y in `self.action.data`) |
+| ACTION7 | Undo action |
+
+**Example** - a rotation game would define ACTION1 as "rotate clockwise":
+```python
+def step(self) -> None:
+    if self.action.id.value == 1:
+        self._rotate_cw()  # Not movement!
+    elif self.action.id.value == 6:
+        x = self.action.data.get("x", 0)
+        y = self.action.data.get("y", 0)
+        self._click_at(x, y)
+    self.complete_action()
+```
 
 ## References
 
