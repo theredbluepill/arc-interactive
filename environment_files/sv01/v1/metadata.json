@@ -1,0 +1,18 @@
+{
+  "game_id": "sv01-v1",
+  "title": "Survival: Hunger & Warmth",
+  "description": "Survive by managing hunger and warmth. Collect food and navigate between warm zones.",
+  "default_fps": 20,
+  "baseline_actions": [15],
+  "tags": ["static", "action", "survival", "hunger"],
+  "local_dir": "environment_files/sv01/v1",
+  "date_created": "2026-03-18",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 12, 16, 20, 24],
+    "action_space": 4,
+    "physics_rules": ["survival", "resource"],
+    "reward_structure": "survive-frames",
+    "episode_count": 1000000
+  }
+}
