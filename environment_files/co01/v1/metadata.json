@@ -1,0 +1,18 @@
+{
+  "game_id": "co01-v1",
+  "title": "Meta-Learning Collection Game",
+  "description": "PCG-based collection game with scrambled actions for DreamerV3 meta-learning",
+  "default_fps": 20,
+  "baseline_actions": [15, 25, 40],
+  "tags": ["pcg", "meta-learning", "collection", "scrambled-actions"],
+  "local_dir": "environment_files/co01/v1",
+  "date_created": "2026-03-18",
+  "training_metadata": {
+    "pcg_type": ["state", "action", "dynamics"],
+    "grid_range": [8, 24],
+    "action_space": 4,
+    "physics_rules": ["collision", "collection"],
+    "reward_structure": "sparse-checkpoints",
+    "episode_count": 1000000
+  }
+}
