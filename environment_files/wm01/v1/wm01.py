@@ -47,15 +47,13 @@ class Wm01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
 
-        # Show click cursor (bright circle that fades)
+        # Show click cursor (green circle outline - generalizable)
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
-            # Scale to 64x64 display
-            cx = cx * 2 + 1
-            cy = cy * 2 + 1
+            # Coordinates are already in display space (0-63)
             if 0 <= cx < w and 0 <= cy < h:
-                # Draw bright cyan circle
-                for r in range(2, 6):
+                # Draw green circle outline (just the ring)
+                for r in [3, 5]:  # Two circles
                     for ox, oy in [
                         (0, -r),
                         (0, r),
@@ -68,11 +66,9 @@ class Wm01UI(RenderableUserDisplay):
                     ]:
                         px, py = cx + ox, cy + oy
                         if 0 <= px < w and 0 <= py < h:
-                            frame[py, px] = 6  # Cyan
+                            frame[py, px] = 3  # Green
                 # Center dot
-                frame[cy, cx] = 6
-                if cy + 1 < h:
-                    frame[cy + 1, cx] = 6
+                frame[cy, cx] = 3
             self._click_frames -= 1
         else:
             self._click_pos = None
@@ -194,19 +190,25 @@ sprites = {
 
 
 def create_level(difficulty: int):
-    # Spread holes across full 32x32 grid with good spacing
-    # Using 3x3 holes, spaced 8 cells apart for visibility
-    hole_positions = []
-    for row in range(4, 28, 8):  # Rows at y=4, 12, 20
-        for col in range(4, 28, 8):  # Cols at x=4, 12, 20
-            hole_positions.append((col, row))
+    # Generate holes based on level: 3x3, 4x4, 5x5, 6x6, 7x7
+    grid_size = 2 + difficulty  # Level 1=3, Level 2=4, etc.
+    num_holes = grid_size * grid_size
 
-    # Add more holes as difficulty increases (3x3 = 9 holes base, +4 per level)
-    num_holes = min(9 + difficulty * 4, len(hole_positions))
-    level_holes = hole_positions[:num_holes]
+    # Calculate spacing to evenly distribute holes across 32x32 grid
+    spacing = 28 / (grid_size - 1) if grid_size > 1 else 32
+    start_offset = 2
+
+    hole_positions = []
+    for row in range(grid_size):
+        for col in range(grid_size):
+            x = int(start_offset + col * spacing)
+            y = int(start_offset + row * spacing)
+            x = max(0, min(31, x))
+            y = max(0, min(31, y))
+            hole_positions.append((x, y))
 
     level_sprites = []
-    for x, y in level_holes:
+    for x, y in hole_positions:
         level_sprites.append(sprites["hole"].clone().set_position(x, y))
 
     return Level(
@@ -214,10 +216,9 @@ def create_level(difficulty: int):
         grid_size=(32, 32),
         data={
             "difficulty": difficulty,
-            "mole_display_time": max(3, 8 - difficulty * 1),
-            "mole_interval": max(2, 6 - difficulty),
+            "mole_display_time": max(3, 8 - difficulty),
+            "mole_interval": max(4, 12 - difficulty),
             "moles_per_checkpoint": 3,
-            "required_score": 2,
         },
     )
 
@@ -273,6 +274,21 @@ class Wm01(ARCBaseGame):
                 self._mole_appeared += 1
                 self._mole_timer = 0
 
+    def get_mole_position(self):
+        """Returns (grid_x, grid_y) of current mole, or None"""
+        if self._current_mole:
+            return (self._current_mole.x, self._current_mole.y)
+        return None
+
+    def get_mole_timer(self):
+        """Returns how many frames the mole has been visible"""
+        return self._mole_timer
+
+    @property
+    def game(self):
+        """Public access to game instance for demo/testing"""
+        return self
+
     def _hide_mole(self):
         if self._current_mole:
             self.current_level.remove_sprite(self._current_mole)
@@ -283,23 +299,27 @@ class Wm01(ARCBaseGame):
             self._current_mole = None
 
     def _check_checkpoint(self):
+        # After every 3 mole appearances, check if player passed
         if (
             self._mole_appeared > 0
             and self._mole_appeared % self._moles_per_checkpoint == 0
         ):
-            if self._checkpoint_score < self._required_score:
-                self.lose()
-                return True
-            # Passed checkpoint - advance to next level
-            self._checkpoint_count += 1
+            # Following ls20 pattern: check pass condition first, then fail condition
+            # Need ≥2 whacks out of 3 to pass checkpoint
+            if self._checkpoint_score >= 2:
+                # Passed checkpoint
+                self._checkpoint_count += 1
+                if self._checkpoint_count >= 2:
+                    # 2 checkpoints = advance to next level
+                    self.next_level()
+                    self._checkpoint_count = 0
+            else:
+                # Failed checkpoint - lose a life (ls20 pattern)
+                self._lives -= 1
+                if self._lives <= 0:
+                    self.lose()
+            # Reset for next checkpoint
             self._checkpoint_score = 0
-            # Check if we've completed all checkpoints for this level
-            total_checkpoints = 3  # 3 checkpoints per level
-            if self._checkpoint_count >= total_checkpoints:
-                self.next_level()
-                # Reset for next level
-                self._checkpoint_count = 0
-                self._lives = 5  # Reset lives
         return False
 
     def _update_ui(self):
@@ -341,20 +361,27 @@ class Wm01(ARCBaseGame):
             grid_x = x // 2
             grid_y = y // 2
 
-            clicked_sprite = self.current_level.get_sprite_at(
-                grid_x, grid_y, ignore_collidable=True
-            )
+            # Find mole AT or NEAR the clicked position (radius 2 tolerance)
+            clicked_mole = None
+            for s in self.current_level._sprites:
+                if s and "mole" in s.tags:
+                    # Check if within click radius (2 cells tolerance for playability)
+                    if abs(s.x - grid_x) <= 2 and abs(s.y - grid_y) <= 2:
+                        clicked_mole = s
+                        break
 
-            if clicked_sprite and "mole" in clicked_sprite.tags:
+            if clicked_mole is None:
+                pass
+            else:
                 # Whacked the mole!
-                self.current_level.remove_sprite(clicked_sprite)
-                if clicked_sprite in self._moles:
-                    self._moles.remove(clicked_sprite)
+                self.current_level.remove_sprite(clicked_mole)
+                if clicked_mole in self._moles:
+                    self._moles.remove(clicked_mole)
 
                 whacked = (
                     sprites["whacked"]
                     .clone()
-                    .set_position(clicked_sprite.x, clicked_sprite.y)
+                    .set_position(clicked_mole.x, clicked_mole.y)
                 )
                 self.current_level.add_sprite(whacked)
 
