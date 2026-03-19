@@ -9,7 +9,7 @@
   "date_created": "2026-03-19",
   "training_metadata": {
     "pcg_type": [],
-    "grid_range": [10],
+    "grid_range": [11],
     "action_space": 6,
     "physics_rules": ["placement", "mirroring"],
     "reward_structure": "checkpoint-on-level-pass",

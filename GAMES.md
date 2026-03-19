@@ -11,7 +11,7 @@
 | wm01 | Survival / Timing | 32×32 | 5 | Whack-a-Mole! Click moles before they escape. Meet checkpoint requirements or lose. | ![wm01](assets/wm01.gif) | • 6: Click |
 | sv01 | Survival / Timing | 8-24 | 5 | Survival game. Manage hunger and warmth. Collect food and navigate between warm zones. Survive 60 frames to advance. | ![sv01](assets/sv01.gif) | • 1-4: Movement |
 | pt01 | Pattern Puzzles | 16×16 | 5 | Pattern rotation puzzle. Click tiles to rotate them 90° clockwise and match the target pattern. | ![pt01](assets/pt01.gif) | • 6: Click/Rotate |
-| sy01 | Pattern Puzzles | 10×10 | 5 | Mirror Maker. Mirror the pattern from the left side onto the right side. Create a perfect reflection! | ![sy01](assets/sy01.gif) | • 1-4: Move cursor • 5: Place block • 6: Remove block |
+| sy01 | Pattern Puzzles | 11×11 | 5 | Mirror Maker. Mirror the pattern from the left side onto the right side. Create a perfect reflection! | ![sy01](assets/sy01.gif) | • 6: Click (place/remove block) |
 | sk01 | Environmental Manipulation | 8-16 | 7 | Sokoban. Push blocks onto target pads. Green = placed. Stuck or step limit = lose. | ![sk01](assets/sk01.gif) | • 1-4: Movement |
 | tb01 | Environmental Manipulation | 8-16 | 5 | Bridge Builder. Collect wood and drop it in water to build bridges. Cross the river to reach the goal. Tests sub-goal planning and environmental manipulation. | ![tb01](assets/tb01.gif) | • 1-4: Movement • 6: Drop wood |
 | gr01 | Physics / Stacking | 10×16 | 5 | Gravity Drop. Stack falling blocks to reach the target height line. Move left/right and drop blocks. | ![gr01](assets/gr01.gif) | • 1-2: Move left/right • 5: Drop block |

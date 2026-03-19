@@ -23,14 +23,6 @@ PLAYER_SPRITE = Sprite(
     tags=["player_block"],
 )
 
-CURSOR_SPRITE = Sprite(
-    pixels=[[8]],
-    name="cursor",
-    visible=True,
-    collidable=False,
-    tags=["cursor"],
-)
-
 DIVIDER_SPRITE = Sprite(
     pixels=[[3]],
     name="divider",
@@ -121,7 +113,7 @@ PATTERN_COLOR = 9
 PLAYER_COLOR = 14
 CURSOR_COLOR = 8
 CENTER_X = 5
-GRID_WIDTH = 10
+GRID_WIDTH = 11
 MAX_MOVES = 50
 
 
@@ -138,6 +130,7 @@ def make_level(pattern_positions: list, difficulty: int):
     sprites.append(DIVIDER_SPRITE.clone().set_position(CENTER_X, 7))
     sprites.append(DIVIDER_SPRITE.clone().set_position(CENTER_X, 8))
     sprites.append(DIVIDER_SPRITE.clone().set_position(CENTER_X, 9))
+    sprites.append(DIVIDER_SPRITE.clone().set_position(CENTER_X, 10))
 
     for pos in pattern_positions:
         sprites.append(PATTERN_SPRITE.clone().set_position(pos[0], pos[1]))
@@ -185,7 +178,6 @@ levels = [
 class Sy01(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Sy01UI(MAX_MOVES, 0, 0)
-        self._cursor = None
         self._placed_blocks = []
         self._pattern_positions = []
         self._target_mirror_positions = []
@@ -205,11 +197,11 @@ class Sy01(ARCBaseGame):
             ),
             False,
             1,
-            [1, 2, 3, 4, 5, 6],
+            [6],
         )
 
     def _get_mirror_position(self, x: int, y: int) -> tuple:
-        mirrored_x = 9 - x
+        mirrored_x = GRID_WIDTH - 1 - x
         return (mirrored_x, y)
 
     def on_set_level(self, level: Level) -> None:
@@ -224,9 +216,6 @@ class Sy01(ARCBaseGame):
             mx, my = self._get_mirror_position(px, py)
             self._target_mirror_positions.add((mx, my))
 
-        self._cursor = CURSOR_SPRITE.clone().set_position(6, 1)
-        self.current_level.add_sprite(self._cursor)
-
         self._ui.update(self._max_moves - self._moves_used, 0, self._target_count)
 
     def _get_placed_count(self) -> int:
@@ -240,54 +229,25 @@ class Sy01(ARCBaseGame):
         placed_set = set((b.x, b.y) for b in self._placed_blocks)
         return placed_set == self._target_mirror_positions
 
-    def _move_cursor(self, dx: int, dy: int) -> None:
-        if self._cursor:
-            new_x = self._cursor.x + dx
-            new_y = self._cursor.y + dy
-            if new_x >= 6 and new_x < GRID_WIDTH and 0 <= new_y < GRID_WIDTH:
-                self._cursor.set_position(new_x, new_y)
-
-    def _place_block(self) -> None:
-        if not self._cursor:
-            return
-
-        cx, cy = self._cursor.x, self._cursor.y
-
-        existing = self.current_level.get_sprite_at(cx, cy, ignore_collidable=True)
+    def _click_at(self, x: int, y: int) -> None:
+        existing = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
         if existing and "player_block" in existing.tags:
-            return
-
-        new_block = PLAYER_SPRITE.clone().set_position(cx, cy)
-        self.current_level.add_sprite(new_block)
-        self._placed_blocks.append(new_block)
-        self._ui.set_placed(cx, cy)
-
-    def _remove_block(self) -> None:
-        if not self._cursor:
-            return
-
-        cx, cy = self._cursor.x, self._cursor.y
-
-        sprite = self.current_level.get_sprite_at(cx, cy, ignore_collidable=True)
-        if sprite and "player_block" in sprite.tags:
-            self.current_level.remove_sprite(sprite)
-            self._placed_blocks.remove(sprite)
+            self.current_level.remove_sprite(existing)
+            self._placed_blocks.remove(existing)
+        elif x >= 6 and x < GRID_WIDTH:
+            new_block = PLAYER_SPRITE.clone().set_position(x, y)
+            self.current_level.add_sprite(new_block)
+            self._placed_blocks.append(new_block)
+            self._ui.set_placed(x, y)
 
     def step(self) -> None:
         self._moves_used += 1
 
-        if self._action.id.value == 1:
-            self._move_cursor(0, -1)
-        elif self._action.id.value == 2:
-            self._move_cursor(0, 1)
-        elif self._action.id.value == 3:
-            self._move_cursor(-1, 0)
-        elif self._action.id.value == 4:
-            self._move_cursor(1, 0)
-        elif self._action.id.value == 5:
-            self._place_block()
-        elif self._action.id.value == 6:
-            self._remove_block()
+        cx = self._action.data.get("x", 0)
+        cy = self._action.data.get("y", 0)
+        grid_x = cx // (64 // GRID_WIDTH)
+        grid_y = cy // (64 // GRID_WIDTH)
+        self._click_at(grid_x, grid_y)
 
         placed_count = self._get_placed_count()
         moves_remaining = self._max_moves - self._moves_used
