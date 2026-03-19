@@ -93,7 +93,7 @@ def create_sy01_gif():
                     frame = frame[0]
                 rgb = colorize(frame)
                 img = Image.fromarray(rgb, "RGB")
-                img = img.resize((88, 88), PILImage.Resampling.NEAREST)
+                img = img.resize((64, 64), PILImage.Resampling.NEAREST)
                 frames.append(img)
 
             if result is not None and result.state == GameState.WIN:
