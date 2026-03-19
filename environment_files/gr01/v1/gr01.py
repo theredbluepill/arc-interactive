@@ -214,17 +214,17 @@ class Gr01(ARCBaseGame):
         action = self.action.id.value
 
         if action == 1:
+            pass
+        elif action == 2:
+            pass
+        elif action == 3:
             new_x = self._player.x - 1
             if new_x >= 0:
                 self._player.set_position(new_x, self._player.y)
-        elif action == 2:
+        elif action == 4:
             new_x = self._player.x + 1
             if new_x <= GRID_WIDTH - 2:
                 self._player.set_position(new_x, self._player.y)
-        elif action == 3:
-            pass
-        elif action == 4:
-            pass
         elif action == 5:
             if self._blocks_remaining > 0:
                 self._drop_block()
@@ -247,22 +247,34 @@ class Gr01(ARCBaseGame):
     def _drop_block(self) -> None:
         drop_x = self._player.x
         drop_y = 2
+        block_height = 2
+        block_bottom = drop_y + block_height - 1
 
-        while drop_y < FLOOR_Y:
+        while block_bottom < FLOOR_Y:
             occupied = False
             for block in self._placed_blocks:
-                if block.x == drop_x and block.y == drop_y:
-                    occupied = True
-                    break
+                if block.x == drop_x:
+                    block_top = block.y
+                    block_bot = block.y + 2 - 1
+                    if block_top <= block_bottom and block_bot >= drop_y:
+                        occupied = True
+                        break
             if occupied:
                 break
             drop_y += 1
+            block_bottom = drop_y + block_height - 1
 
         final_y = drop_y - 1
         if final_y < 2:
             final_y = 2
 
-        new_block = sprites["block"].clone().set_position(drop_x, final_y)
+        new_block = Sprite(
+            pixels=sprites["block"].pixels,
+            name="block",
+            visible=True,
+            collidable=True,
+            tags=["block"],
+        ).set_position(drop_x, final_y)
         self.current_level.add_sprite(new_block)
         self._placed_blocks.append(new_block)
 

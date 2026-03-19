@@ -46,7 +46,7 @@ environment_files/{game_id}/{version}/
 
 ### 2. Implement Game
 
-Follow the patterns from established games in `/Users/poonszesen/redpill/environment_files/`.
+Follow the patterns from established games in `environment_files/`.
 
 **Basic structure:**
 ```python

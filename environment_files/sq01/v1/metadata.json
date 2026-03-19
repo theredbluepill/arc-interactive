@@ -1,7 +1,7 @@
 {
   "game_id": "sq01-v1",
   "title": "Sequencing",
-  "description": "Click colored blocks in the correct order. Follow the sequence shown at the top!",
+  "description": "Click colored blocks in the correct order. The sequence bar stays visible at the top. Mistakes cost 1 life; you have 3 lives per level.",
   "default_fps": 20,
   "baseline_actions": [6],
   "tags": ["sequencing", "ordering", "memory"],
@@ -9,7 +9,7 @@
   "date_created": "2026-03-19",
   "training_metadata": {
     "pcg_type": [],
-    "grid_range": [8],
+    "grid_range": [12],
     "action_space": 1,
     "physics_rules": [],
     "reward_structure": "checkpoint-on-level-pass",

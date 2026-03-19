@@ -75,9 +75,9 @@ class Ms01UI(RenderableUserDisplay):
         self._revealed = revealed_count
         self._mine_count = mine_count
 
-    def update(self, revealed: int, total_safe: int) -> None:
+    def update(self, revealed: int, mine_count: int) -> None:
         self._revealed = revealed
-        self._mine_count = total_safe
+        self._mine_count = mine_count
 
     def render_interface(self, frame):
         return frame
@@ -162,6 +162,11 @@ class Ms01(ARCBaseGame):
             return
 
         if (new_x, new_y) in self._minefield:
+            # Reveal the mine at the death location for clarity.
+            for m in self.current_level.get_sprites_by_tag("mine"):
+                if m.x == new_x and m.y == new_y:
+                    m.set_visible(True)
+                    break
             self._player.set_position(new_x, new_y)
             self.lose()
             self.complete_action()
@@ -201,7 +206,9 @@ def make_ms_level(
             is_player = (x, y) == player_pos
             is_goal = (x, y) == goal_pos
             is_wall = (x, y) in wall_coords
-            if not is_mine and not is_player and not is_goal and not is_wall:
+            # Always add a ground tile everywhere except walls.
+            # This ensures mine cells don't show as black background/void.
+            if not is_wall and not is_player and not is_goal:
                 sprite_list.append(sprites["tile"].clone().set_position(x, y))
     return Level(
         sprites=sprite_list,

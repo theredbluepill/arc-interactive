@@ -12,7 +12,7 @@
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# THE SOFTWARE IS PROVIDED " AS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -30,14 +30,10 @@ from arcengine import (
 
 
 class Tb01UI(RenderableUserDisplay):
-    def __init__(self, wood: int, capacity: int, bridges: int) -> None:
-        self._wood = wood
-        self._capacity = capacity
-        self._bridges = bridges
+    def __init__(self) -> None:
+        self._bridges = set()
 
-    def update(self, wood: int, capacity: int, bridges: int) -> None:
-        self._wood = wood
-        self._capacity = capacity
+    def update(self, bridges: set) -> None:
         self._bridges = bridges
 
     def render_interface(self, frame):
@@ -46,11 +42,24 @@ class Tb01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(self._wood):
-            frame[1, 1 + i] = 12
-        for i in range(self._capacity - self._wood):
-            frame[1, 1 + self._wood + i] = 4
+        scale = h / 24  # 24x24 grid in hxh frame
+        cell_size = int(np.ceil(scale))  # Use ceil to ensure continuous coverage
+        for bx, by in self._bridges:
+            px, py = int(bx * scale), int(by * scale)
+            for sy in range(cell_size):
+                for sx in range(cell_size):
+                    fy, fx = py + sy, px + sx
+                    if 0 <= fy < h and 0 <= fx < w:
+                        frame[fy, fx] = 12
         return frame
+
+
+COLOR_BG = 10
+COLOR_ISLAND = 13
+COLOR_GOAL_ISLAND = 14
+COLOR_BRIDGE = 12
+COLOR_PLAYER = 9
+COLOR_PADDING = 4
 
 
 sprites = {
@@ -59,211 +68,114 @@ sprites = {
         name="player",
         visible=True,
         collidable=True,
+        layer=10,
         tags=["player"],
-    ),
-    "goal": Sprite(
-        pixels=[[14]],
-        name="goal",
-        visible=True,
-        collidable=False,
-        tags=["goal"],
-    ),
-    "wood": Sprite(
-        pixels=[[12]],
-        name="wood",
-        visible=True,
-        collidable=False,
-        tags=["wood"],
-    ),
-    "water": Sprite(
-        pixels=[[10]],
-        name="water",
-        visible=True,
-        collidable=False,
-        tags=["water"],
-    ),
-    "bridge": Sprite(
-        pixels=[[14]],
-        name="bridge",
-        visible=True,
-        collidable=False,
-        tags=["bridge"],
-    ),
-    "bank": Sprite(
-        pixels=[[4]],
-        name="bank",
-        visible=True,
-        collidable=False,
-        tags=["bank"],
     ),
 }
 
 
-def make_tb_level(
-    grid_size,
-    player_pos,
-    goal_pos,
-    water_coords,
-    wood_coords,
-    bank_coords,
-    difficulty,
-    step_limit,
-    wood_capacity,
-):
-    sprite_list = [
-        sprites["player"].clone().set_position(*player_pos),
-        sprites["goal"].clone().set_position(*goal_pos),
-    ]
-    for wc in water_coords:
-        sprite_list.append(sprites["water"].clone().set_position(*wc))
-    for wc in wood_coords:
-        sprite_list.append(sprites["wood"].clone().set_position(*wc))
-    for bc in bank_coords:
-        sprite_list.append(sprites["bank"].clone().set_position(*bc))
+def make_island_3x3(center_x, center_y):
+    return [(center_x + dx, center_y + dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1]]
+
+
+def make_level(island_coords, goal_island_coords, player_start, grid_size=24):
+    sprite_list = []
+    for cx, cy in island_coords:
+        sprite_list.append(
+            Sprite(
+                pixels=[[COLOR_ISLAND]],
+                name="island",
+                visible=True,
+                collidable=False,
+                layer=1,
+                tags=["island"],
+            ).set_position(cx, cy)
+        )
+
+    for cx, cy in goal_island_coords:
+        sprite_list.append(
+            Sprite(
+                pixels=[[COLOR_GOAL_ISLAND]],
+                name="goal_island",
+                visible=True,
+                collidable=False,
+                layer=1,
+                tags=["goal_island"],
+            ).set_position(cx, cy)
+        )
+
+    sprite_list.append(sprites["player"].clone().set_position(*player_start))
+
     return Level(
         sprites=sprite_list,
-        grid_size=grid_size,
+        grid_size=(grid_size, grid_size),
         data={
-            "difficulty": difficulty,
-            "step_limit": step_limit,
-            "wood_capacity": wood_capacity,
+            "island_coords": set(island_coords),
+            "goal_island_coords": set(goal_island_coords),
         },
     )
 
 
-def make_bank_grid(width, height, exclude_rows=None, exclude_cols=None):
-    """Generate bank coordinates for the entire grid, excluding water rows/cols."""
-    coords = []
-    for y in range(height):
-        for x in range(width):
-            if exclude_rows and y in exclude_rows:
-                continue
-            if exclude_cols and x in exclude_cols:
-                continue
-            coords.append((x, y))
-    return coords
+def make_level_1():
+    start_island = make_island_3x3(4, 12)
+    goal_island = make_island_3x3(18, 12)
+    return make_level(start_island, goal_island, (4, 12), 24)
+
+
+def make_level_2():
+    start_island = make_island_3x3(4, 4)
+    middle_island = make_island_3x3(12, 12)
+    goal_island = make_island_3x3(20, 20)
+    return make_level(start_island + middle_island, goal_island, (4, 4), 24)
+
+
+def make_level_3():
+    start_island = make_island_3x3(4, 4)
+    island2 = make_island_3x3(12, 4)
+    island3 = make_island_3x3(12, 20)
+    goal_island = make_island_3x3(20, 20)
+    return make_level(start_island + island2 + island3, goal_island, (4, 4), 24)
+
+
+def make_level_4():
+    start_island = make_island_3x3(4, 12)
+    island2 = make_island_3x3(10, 4)
+    island3 = make_island_3x3(10, 20)
+    island4 = make_island_3x3(18, 12)
+    goal_island = make_island_3x3(22, 4)
+    return make_level(
+        start_island + island2 + island3 + island4, goal_island, (4, 12), 24
+    )
+
+
+def make_level_5():
+    start_island = make_island_3x3(4, 12)
+    island2 = make_island_3x3(10, 4)
+    island3 = make_island_3x3(10, 20)
+    island4 = make_island_3x3(16, 4)
+    island5 = make_island_3x3(16, 20)
+    goal_island = make_island_3x3(22, 12)
+    return make_level(
+        start_island + island2 + island3 + island4 + island5, goal_island, (4, 12), 24
+    )
 
 
 levels = [
-    make_tb_level(
-        (8, 8),
-        (1, 1),
-        (7, 4),
-        [(2, 3), (3, 3), (4, 3), (5, 3)],  # River at row 3, 4 tiles wide
-        [(1, 2), (6, 2), (1, 4), (6, 4)],  # 4 wood pieces (different positions)
-        [(0, y) for y in range(8)]
-        + [(x, y) for x in range(1, 8) for y in range(8) if (x < 2 or x > 5) or y != 3],
-        1,
-        20,
-        3,
-    ),
-    make_tb_level(
-        (10, 10),
-        (1, 2),
-        (9, 5),
-        [(2, 4), (3, 4), (4, 4), (5, 4), (6, 4)],  # River at row 4, 5 tiles wide
-        [(1, 3), (7, 3), (1, 5), (7, 5), (4, 3)],
-        [(0, y) for y in range(10)]
-        + [
-            (x, y)
-            for x in range(1, 10)
-            for y in range(10)
-            if (x < 2 or x > 6) or y != 4
-        ],
-        2,
-        25,
-        3,
-    ),
-    make_tb_level(
-        (12, 12),
-        (1, 2),
-        (11, 6),
-        [
-            (2, 5),
-            (3, 5),
-            (4, 5),
-            (5, 5),
-            (6, 5),
-            (7, 5),
-        ],  # River at row 5, 6 tiles wide
-        [(1, 4), (8, 4), (1, 6), (8, 6), (4, 4), (8, 4)],
-        [(0, y) for y in range(12)]
-        + [
-            (x, y)
-            for x in range(1, 12)
-            for y in range(12)
-            if (x < 2 or x > 7) or y != 5
-        ],
-        3,
-        30,
-        3,
-    ),
-    make_tb_level(
-        (14, 14),
-        (1, 3),
-        (13, 8),
-        [
-            (2, 6),
-            (3, 6),
-            (4, 6),
-            (5, 6),
-            (6, 6),
-            (7, 6),
-            (8, 6),
-        ],  # River at row 6, 7 tiles wide
-        [(1, 5), (9, 5), (1, 7), (9, 7), (4, 5), (7, 7), (6, 5)],
-        [(0, y) for y in range(14)]
-        + [
-            (x, y)
-            for x in range(1, 14)
-            for y in range(14)
-            if (x < 2 or x > 8) or y != 6
-        ],
-        4,
-        40,
-        3,
-    ),
-    make_tb_level(
-        (16, 16),
-        (1, 3),
-        (15, 10),
-        [
-            (2, 7),
-            (3, 7),
-            (4, 7),
-            (5, 7),
-            (6, 7),
-            (7, 7),
-            (8, 7),
-            (9, 7),
-        ],  # River at row 7, 8 tiles wide
-        [(1, 6), (10, 6), (1, 8), (10, 8), (4, 6), (7, 8), (6, 6), (9, 8)],
-        [(0, y) for y in range(16)]
-        + [
-            (x, y)
-            for x in range(1, 16)
-            for y in range(16)
-            if (x < 2 or x > 9) or y != 7
-        ],
-        5,
-        50,
-        3,
-    ),
+    make_level_1(),
+    make_level_2(),
+    make_level_3(),
+    make_level_4(),
+    make_level_5(),
 ]
-
-BACKGROUND_COLOR = 5
-PADDING_COLOR = 4
 
 
 class Tb01(ARCBaseGame):
-    """Bridge Builder - Collect wood to build bridges across water."""
-
     def __init__(self) -> None:
-        self._ui = Tb01UI(0, 3, 0)
+        self._ui = Tb01UI()
         super().__init__(
             "tb01",
             levels,
-            Camera(0, 0, 16, 16, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            Camera(0, 0, 24, 24, COLOR_BG, COLOR_PADDING, [self._ui]),
             False,
             1,
             [1, 2, 3, 4, 6],
@@ -271,33 +183,23 @@ class Tb01(ARCBaseGame):
 
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
-        self._goal = self.current_level.get_sprites_by_tag("goal")
-        self._wood_inventory = 0
-        self._wood_capacity = level.get_data("wood_capacity")
-        self._step_limit = level.get_data("step_limit")
-        self._steps = 0
-        self._bridges_built = 0
-        self._ui.update(self._wood_inventory, self._wood_capacity, self._bridges_built)
+        self._island_coords = level.get_data("island_coords")
+        self._goal_island_coords = level.get_data("goal_island_coords")
+        self._start_position = (self._player.x, self._player.y)
+        self._bridges = set()
+        self._last_dx = 1
+        self._last_dy = 0
+        self._lives = 3
+        self._update_ui()
 
-    def _check_goal(self) -> None:
-        for g in self._goal:
-            if self._player.x == g.x and self._player.y == g.y:
-                self.next_level()
-                return
-
-    def _drop_wood(self) -> None:
-        sprite = self.current_level.get_sprite_at(
-            self._player.x, self._player.y, ignore_collidable=True
-        )
-        if sprite and "water" in sprite.tags and self._wood_inventory > 0:
-            sprite.color_remap(10, 14)
-            sprite.tags.remove("water")
-            sprite.tags.append("bridge")
-            self._wood_inventory -= 1
-            self._bridges_built += 1
-            self._ui.update(
-                self._wood_inventory, self._wood_capacity, self._bridges_built
-            )
+    def _is_land(self, x, y):
+        if (x, y) in self._island_coords:
+            return True
+        if (x, y) in self._goal_island_coords:
+            return True
+        if (x, y) in self._bridges:
+            return True
+        return False
 
     def step(self) -> None:
         dx = dy = 0
@@ -311,64 +213,40 @@ class Tb01(ARCBaseGame):
         elif self.action.id.value == 4:
             dx = 1
         elif self.action.id.value == 6:
-            self._drop_wood()
+            x = self.action.data.get("x", self._player.x + self._last_dx)
+            y = self.action.data.get("y", self._player.y + self._last_dy)
+            if not self._is_land(x, y) and 0 <= x < 24 and 0 <= y < 24:
+                self._bridges.add((x, y))
+                self._update_ui()
             self.complete_action()
             return
 
         new_x = self._player.x + dx
         new_y = self._player.y + dy
 
+        if dx != 0 or dy != 0:
+            self._last_dx = dx
+            self._last_dy = dy
+
         grid_w, grid_h = self.current_level.grid_size
         if not (0 <= new_x < grid_w and 0 <= new_y < grid_h):
             self.complete_action()
             return
 
-        sprite = self.current_level.get_sprite_at(new_x, new_y, ignore_collidable=True)
-
-        if sprite and "bridge" in sprite.tags:
+        if self._is_land(new_x, new_y):
             self._player.set_position(new_x, new_y)
-            self._check_goal()
-            self.complete_action()
-            return
-
-        if sprite and "water" in sprite.tags:
-            if self._wood_inventory > 0:
-                sprite.color_remap(10, 14)
-                sprite.tags.remove("water")
-                sprite.tags.append("bridge")
-                self._wood_inventory -= 1
-                self._bridges_built += 1
-                self._ui.update(
-                    self._wood_inventory, self._wood_capacity, self._bridges_built
-                )
-                self._player.set_position(new_x, new_y)
-                self._check_goal()
-            else:
-                self._player.set_position(new_x, new_y)
+            self._check_win()
+        else:
+            self._lives -= 1
+            self._player.set_position(self._start_position[0], self._start_position[1])
+            if self._lives <= 0:
                 self.lose()
-                self.complete_action()
-                return
-            self.complete_action()
-            return
-
-        if sprite and "wood" in sprite.tags:
-            if self._wood_inventory < self._wood_capacity:
-                self.current_level.remove_sprite(sprite)
-                self._wood_inventory += 1
-                self._ui.update(
-                    self._wood_inventory, self._wood_capacity, self._bridges_built
-                )
-            self._player.set_position(new_x, new_y)
-            self._check_goal()
-            self.complete_action()
-            return
-
-        if not sprite or not sprite.is_collidable:
-            self._player.set_position(new_x, new_y)
-            self._check_goal()
-
-        self._steps += 1
-        if self._steps >= self._step_limit:
-            self.lose()
 
         self.complete_action()
+
+    def _check_win(self):
+        if (self._player.x, self._player.y) in self._goal_island_coords:
+            self.next_level()
+
+    def _update_ui(self):
+        self._ui.update(self._bridges)

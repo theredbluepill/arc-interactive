@@ -38,7 +38,7 @@ Agent responsible for designing and implementing ARC-AGI-3 games.
 
 ## Established Game Patterns
 
-Based on `/Users/poonszesen/redpill/environment_files/` games (vc33, ls20, ft09):
+Based on `environment_files/` games (vc33, ls20, ft09):
 
 ### 1. Camera Initialization
 ```python
@@ -374,11 +374,55 @@ def step(self) -> None:
 
 - **ARC-AGI-3 Docs**: https://docs.arcprize.org/add_game
 - **Established Games**:
-  - `redpill/environment_files/vc33/9851e02b/vc33.py`
-  - `redpill/environment_files/ls20/cb3b57cc/ls20.py`
-  - `redpill/environment_files/ft09/9ab2447a/ft09.py`
+  - `environment_files/vc33/9851e02b/vc33.py`
+  - `environment_files/ls20/cb3b57cc/ls20.py`
+  - `environment_files/ft09/9ab2447a/ft09.py`
 
 ---
 
-**Last Updated**: 2026-03-18
-**Agent Version**: 2.0
+**Last Updated**: 2026-03-20
+**Agent Version**: 2.1
+
+## Lessons Learned (tb01 Bridge Builder)
+
+### Key Insights from tb01 Redesign
+
+1. **Keep entities simple**: 1x1 sprites are MUCH easier to work with than multi-cell sprites
+   - Player: 1x1 (single cell collision)
+   - Bridges: 1x1 (place anywhere on water)
+   - Islands: 3x3 (enough for player to walk around)
+
+2. **Grid size matters**: 24x24 is a good middle ground
+   - Large enough for interesting puzzles
+   - Small enough to reason about
+   - Scales well with 1x1 entities
+
+3. **Bridge collision math**: When player is N cells wide:
+   - Bridge must be at least N+1 cells wide to allow stepping off
+   - Or: bridge fills single cells, player walks cell-by-cell
+
+4. **Level progression**: When `next_level()` is called:
+   - Player position resets to new level's start
+   - Bridges persist (stored in game instance, not level)
+   - Check `result.levels_completed` for accurate tracking
+
+5. **Lives system**: When player walks into water:
+   - Reset to `_start_position` (not (0,0))
+   - Bridges persist across deaths
+   - Only call `lose()` when lives reach 0
+
+### tb01 Final Design
+
+- **Grid**: 24x24
+- **Player**: 1x1 blue square
+- **Islands**: 3x3 maroon squares
+- **Goal island**: 3x3 green square
+- **Bridges**: 1x1 orange squares (placed ahead of player)
+- **Actions**: 1-4 movement, 6=place bridge ahead
+- **Lives**: 3 per level
+
+### Bugs Fixed
+
+1. **3x3 player collision**: Originally checked 9 cells, but player only occupies 4 cells
+2. **Bridge placement distance**: dist=1 placed bridges too close for player to step off
+3. **Level transition**: `next_level()` properly resets player to new level start

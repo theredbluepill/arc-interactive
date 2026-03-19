@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 from arcengine import (
     ARCBaseGame,
     Camera,
@@ -29,29 +31,57 @@ from arcengine import (
 )
 
 BACKGROUND_COLOR = 5
-PADDING_COLOR = 4
-HIDDEN_COLOR = 4
+PADDING_COLOR = 5
+HIDDEN_COLOR = 3
 
-COLORS = [8, 9, 11, 12, 14, 15, 10, 6]
+CAMERA_SIZE = 64
+MAX_STEPS = 60
 
-TILE_SIZE = 2
-GRID_OFFSET_X = 2
-GRID_OFFSET_Y = 2
+# Hardcoded (no procedural randomness) color layouts.
+# Each level uses num_tiles = num_pairs*2 tiles in row-major order.
+LEVEL_LAYOUTS: list[list[int]] = [
+    # Level 1: 2 pairs (4 tiles) -> 2x2
+    [8, 9, 9, 8],
+    # Level 2: 3 pairs (6 tiles) -> 2x3
+    [8, 11, 9, 9, 11, 8],
+    # Level 3: 4 pairs (8 tiles) -> 2x4
+    [8, 12, 9, 11, 11, 9, 12, 8],
+    # Level 4: 5 pairs (10 tiles) -> 2x5
+    [8, 14, 9, 12, 11, 11, 12, 9, 14, 8],
+    # Level 5: 6 pairs (12 tiles) -> 3x4
+    [8, 15, 9, 14, 11, 12, 12, 11, 14, 9, 15, 8],
+    # Level 6: 7 pairs (14 tiles) -> 2x7
+    [8, 10, 9, 15, 11, 14, 12, 12, 14, 11, 15, 9, 10, 8],
+    # Level 7: 8 pairs (16 tiles) -> 4x4
+    [8, 6, 9, 10, 11, 15, 12, 14, 14, 12, 15, 11, 10, 9, 6, 8],
+]
+
+# For each level, choose exact rows/cols (no ghost tiles).
+LEVEL_DIMS: list[tuple[int, int]] = [
+    (2, 2),  # 4
+    (2, 3),  # 6
+    (2, 4),  # 8
+    (2, 5),  # 10
+    (3, 4),  # 12
+    (2, 7),  # 14
+    (4, 4),  # 16
+]
 
 
-def make_tile_sprite(color: int, name: str, tags: list) -> Sprite:
-    pixels = [[color] * TILE_SIZE for _ in range(TILE_SIZE)]
-    return Sprite(
-        pixels=pixels,
-        name=name,
-        visible=True,
-        collidable=False,
-        tags=tags,
-    )
+def _compute_tile_size_and_offsets(rows: int, cols: int) -> tuple[int, int, int]:
+    # Use most of the 64x64 canvas.
+    # Leave a small margin so the top time bar doesn't feel cramped.
+    target = 56
+    tile_size = max(2, target // max(rows, cols))
+    grid_w = cols * tile_size
+    grid_h = rows * tile_size
+    offset_x = (CAMERA_SIZE - grid_w) // 2
+    offset_y = (CAMERA_SIZE - grid_h) // 2
+    return tile_size, offset_x, offset_y
 
 
-def make_hidden_sprite(slot_index: int) -> Sprite:
-    pixels = [[HIDDEN_COLOR] * TILE_SIZE for _ in range(TILE_SIZE)]
+def make_hidden_sprite(slot_index: int, tile_size: int) -> Sprite:
+    pixels = [[HIDDEN_COLOR] * tile_size for _ in range(tile_size)]
     return Sprite(
         pixels=pixels,
         name=f"hidden_{slot_index}",
@@ -62,86 +92,90 @@ def make_hidden_sprite(slot_index: int) -> Sprite:
 
 
 class Mm01UI(RenderableUserDisplay):
-    def __init__(self, pairs_remaining: int, mismatches: int) -> None:
+    def __init__(self, pairs_remaining: int) -> None:
         self._pairs_remaining = pairs_remaining
-        self._mismatches = mismatches
-        self._max_mismatches = 5
-        self._click_pos = None
-        self._click_frames = 0
+        self._steps_remaining = MAX_STEPS
 
-    def update(self, pairs_remaining: int, mismatches: int) -> None:
+    def update(self, pairs_remaining: int, steps_remaining: int) -> None:
         self._pairs_remaining = pairs_remaining
-        self._mismatches = mismatches
-
-    def set_click(self, x: int, y: int) -> None:
-        self._click_pos = (x, y)
-        self._click_frames = 5
+        self._steps_remaining = steps_remaining
 
     def render_interface(self, frame):
-        if self._click_frames > 0:
-            self._click_frames -= 1
+        bar_width = max(0, min(20, self._steps_remaining * 20 // MAX_STEPS))
+        for i in range(bar_width):
+            frame[3, 2 + i] = 3
         return frame
 
 
-def create_level(seed: int) -> Level:
-    import random
+def create_level(level_index: int) -> Level:
+    slot_colors = LEVEL_LAYOUTS[level_index]
+    rows, cols = LEVEL_DIMS[level_index]
 
-    rng = random.Random(seed)
-
-    slot_colors = []
-    for color in COLORS:
-        slot_colors.append(color)
-        slot_colors.append(color)
-
-    rng.shuffle(slot_colors)
+    tile_size, offset_x, offset_y = _compute_tile_size_and_offsets(rows, cols)
 
     sprites = []
-    for i in range(16):
-        row = i // 4
-        col = i % 4
-        x = GRID_OFFSET_X + col * TILE_SIZE
-        y = GRID_OFFSET_Y + row * TILE_SIZE
+    for slot_idx in range(len(slot_colors)):
+        row = slot_idx // cols
+        col = slot_idx % cols
+        x = offset_x + col * tile_size
+        y = offset_y + row * tile_size
 
-        hidden = make_hidden_sprite(i)
+        hidden = make_hidden_sprite(slot_idx, tile_size)
         hidden.set_position(x, y)
         sprites.append(hidden)
 
     return Level(
         sprites=sprites,
-        grid_size=(8, 8),
+        grid_size=(CAMERA_SIZE, CAMERA_SIZE),
         data={
             "slot_colors": slot_colors,
-            "seed": seed,
+            "num_pairs": len(slot_colors) // 2,
+            "rows": rows,
+            "cols": cols,
+            "tile_size": tile_size,
+            "offset_x": offset_x,
+            "offset_y": offset_y,
+            "level_index": level_index,
         },
-        name=f"Level {seed}",
+        name=f"Level {level_index + 1}",
     )
 
 
 class Mm01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Mm01UI(8, 0)
+        self._ui = Mm01UI(2)
         super().__init__(
             "mm01",
-            levels,
-            Camera(0, 0, 8, 8, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            [create_level(i) for i in range(7)],
+            Camera(
+                0,
+                0,
+                CAMERA_SIZE,
+                CAMERA_SIZE,
+                BACKGROUND_COLOR,
+                PADDING_COLOR,
+                [self._ui],
+            ),
             False,
             1,
             [6],
         )
 
-    def _generate_levels(self, seed: int) -> list:
-        levels = []
-        for i in range(5):
-            levels.append(create_level(seed + i))
-        return levels
-
     def on_set_level(self, level: Level) -> None:
         self._slot_colors = level.get_data("slot_colors")
-        self._slots = [[None for _ in range(4)] for _ in range(4)]
-        self._matched = [False] * 16
+        self._num_pairs = level.get_data("num_pairs")
+        self._rows = level.get_data("rows")
+        self._cols = level.get_data("cols")
+        self._tile_size = level.get_data("tile_size")
+        self._offset_x = level.get_data("offset_x")
+        self._offset_y = level.get_data("offset_y")
+
+        num_tiles = len(self._slot_colors)
+        self._slots: list[Sprite | None] = [None] * num_tiles
+        self._matched = [False] * num_tiles
         self._flipped = []
-        self._pairs_remaining = 8
-        self._mismatches = 0
+        self._pairs_remaining = self._num_pairs
+        self._steps_remaining = MAX_STEPS
         self._waiting_for_flip_back = False
         self._flip_back_timer = 0
 
@@ -149,22 +183,22 @@ class Mm01(ARCBaseGame):
             for tag in sprite.tags:
                 if tag.startswith("slot_"):
                     slot_idx = int(tag.split("_")[1])
-                    row = slot_idx // 4
-                    col = slot_idx % 4
-                    self._slots[row][col] = sprite
+                    self._slots[slot_idx] = sprite
 
-        self._ui.update(self._pairs_remaining, self._mismatches)
+        self._ui.update(self._pairs_remaining, self._steps_remaining)
 
     def _get_slot_from_click(self, click_x: int, click_y: int):
-        col = (click_x - GRID_OFFSET_X) // TILE_SIZE
-        row = (click_y - GRID_OFFSET_Y) // TILE_SIZE
+        col = (click_x - self._offset_x) // self._tile_size
+        row = (click_y - self._offset_y) // self._tile_size
 
-        if 0 <= row < 4 and 0 <= col < 4:
-            return row, col
-        return None, None
+        if 0 <= row < self._rows and 0 <= col < self._cols:
+            slot_idx = row * self._cols + col
+            if 0 <= slot_idx < len(self._slot_colors):
+                return row, col, slot_idx
+        return None, None, None
 
     def _flip_slot(self, row: int, col: int) -> bool:
-        slot_idx = row * 4 + col
+        slot_idx = row * self._cols + col
         if self._matched[slot_idx]:
             return False
 
@@ -178,7 +212,7 @@ class Mm01(ARCBaseGame):
         return self._slot_colors[slot_idx]
 
     def _create_revealed_sprite(self, color: int, slot_idx: int) -> Sprite:
-        pixels = [[color] * TILE_SIZE for _ in range(TILE_SIZE)]
+        pixels = [[color] * self._tile_size for _ in range(self._tile_size)]
         return Sprite(
             pixels=pixels,
             name=f"revealed_{slot_idx}",
@@ -188,6 +222,14 @@ class Mm01(ARCBaseGame):
         )
 
     def step(self) -> None:
+        self._steps_remaining -= 1
+        self._ui.update(self._pairs_remaining, self._steps_remaining)
+
+        if self._steps_remaining <= 0:
+            self.lose()
+            self.complete_action()
+            return
+
         if self._waiting_for_flip_back:
             self._flip_back_timer -= 1
             if self._flip_back_timer <= 0:
@@ -199,14 +241,11 @@ class Mm01(ARCBaseGame):
         if self.action.id.value == 6:
             x = self.action.data.get("x", 0)
             y = self.action.data.get("y", 0)
-            self._ui.set_click(x, y)
 
-            row, col = self._get_slot_from_click(x, y)
+            row, col, slot_idx = self._get_slot_from_click(x, y)
             if row is None:
                 self.complete_action()
                 return
-
-            slot_idx = row * 4 + col
 
             if self._matched[slot_idx]:
                 self.complete_action()
@@ -217,12 +256,15 @@ class Mm01(ARCBaseGame):
                 return
 
             color = self._get_tile_color(slot_idx)
-            sprite = self._slots[row][col]
+            sprite = self._slots[slot_idx]
+            if sprite is None:
+                self.complete_action()
+                return
 
             revealed = self._create_revealed_sprite(color, slot_idx)
             revealed.set_position(sprite.x, sprite.y)
             self.current_level.add_sprite(revealed)
-            sprite.visible = False
+            sprite.set_visible(False)
 
             self._flipped.append((row, col, slot_idx, color))
 
@@ -235,37 +277,24 @@ class Mm01(ARCBaseGame):
                     self._matched[second[2]] = True
                     self._pairs_remaining -= 1
                     self._flipped = []
-                    self._ui.update(self._pairs_remaining, self._mismatches)
+                    self._ui.update(self._pairs_remaining, self._steps_remaining)
 
                     if self._pairs_remaining == 0:
                         self.next_level()
                 else:
-                    self._mismatches += 1
-                    self._ui.update(self._pairs_remaining, self._mismatches)
                     self._waiting_for_flip_back = True
                     self._flip_back_timer = 2
-
-                    if self._mismatches >= 5:
-                        self.lose()
 
         self.complete_action()
 
     def _do_flip_back(self) -> None:
         for row, col, slot_idx, color in self._flipped:
-            sprite = self._slots[row][col]
-            sprite.visible = True
+            sprite = self._slots[slot_idx]
+            if sprite:
+                sprite.set_visible(True)
 
             for s in list(self.current_level._sprites):
                 if f"slot_{slot_idx}" in s.tags and "revealed" in s.tags:
                     self.current_level.remove_sprite(s)
 
         self._flipped = []
-
-
-levels = [
-    create_level(0),
-    create_level(1),
-    create_level(2),
-    create_level(3),
-    create_level(4),
-]

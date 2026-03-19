@@ -31,29 +31,27 @@ from arcengine import (
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 FILL_COLOR = 11
-WRONG_COLOR = 8
+WALL_COLOR = 3
+LIVES_COLOR = 8
+TIMER_COLOR = 11
 
 
 class Ff01UI(RenderableUserDisplay):
-    def __init__(self, attempts: int, filled: bool) -> None:
-        self._attempts = attempts
-        self._filled = filled
+    def __init__(self, lives: int, shapes_remaining: int, steps_remaining: int) -> None:
+        self._lives = lives
+        self._shapes_remaining = shapes_remaining
+        self._steps_remaining = steps_remaining
         self._click_pos = None
         self._click_frames = 0
-        self._game_over = False
-        self._win = False
 
-    def update(
-        self, attempts: int, filled: bool, game_over: bool = False, win: bool = False
-    ) -> None:
-        self._attempts = attempts
-        self._filled = filled
-        self._game_over = game_over
-        self._win = win
+    def update(self, lives: int, shapes_remaining: int, steps_remaining: int) -> None:
+        self._lives = lives
+        self._shapes_remaining = shapes_remaining
+        self._steps_remaining = steps_remaining
 
     def set_click(self, x: int, y: int) -> None:
         self._click_pos = (x, y)
-        self._click_frames = 8
+        self._click_frames = 15
 
     def render_interface(self, frame):
         import numpy as np
@@ -65,287 +63,212 @@ class Ff01UI(RenderableUserDisplay):
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
             if 0 <= cx < w and 0 <= cy < h:
-                for ox, oy in [
-                    (0, -2),
-                    (0, 2),
-                    (-2, 0),
-                    (2, 0),
-                    (0, -1),
-                    (0, 1),
-                    (-1, 0),
-                    (1, 0),
-                ]:
-                    px, py = cx + ox, cy + oy
-                    if 0 <= px < w and 0 <= py < h:
-                        frame[py, px] = 14
                 frame[cy, cx] = 8
+                for r in range(1, 4):
+                    for dx, dy in [(0, -r), (0, r), (-r, 0), (r, 0)]:
+                        px, py = cx + dx, cy + dy
+                        if 0 <= px < w and 0 <= py < h:
+                            frame[py, px] = 14
+                for dx in [-1, 0, 1]:
+                    for dy in [-1, 0, 1]:
+                        if abs(dx) + abs(dy) <= 1:
+                            px, py = cx + dx, cy + dy
+                            if 0 <= px < w and 0 <= py < h:
+                                frame[py, px] = 8
             self._click_frames -= 1
         else:
             self._click_pos = None
 
-        if self._game_over:
-            if self._win:
-                frame[2, 2] = 14
-                frame[2, 3] = 14
-                frame[2, 4] = 14
-            else:
-                frame[2, 2] = 8
-                frame[2, 3] = 8
-                frame[2, 4] = 8
-        else:
-            for i in range(3):
-                if i < self._attempts:
-                    frame[2, 2 + i] = 11
-                else:
-                    frame[2, 2 + i] = 3
-
         return frame
+
+
+class Shape:
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int | None = None,
+        filled: bool = False,
+    ):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height if height is not None else width
+        self.filled = filled
+        self.interior = [
+            (x + i, y + j)
+            for i in range(1, self.width - 1)
+            for j in range(1, self.height - 1)
+            if i < self.width - 1 and j < self.height - 1
+        ]
+        self.wall_positions = set()
+        for i in range(self.width):
+            self.wall_positions.add((x + i, y))
+            self.wall_positions.add((x + i, y + self.height - 1))
+        if self.height > 2:
+            for j in range(1, self.height - 1):
+                self.wall_positions.add((x, y + j))
+                self.wall_positions.add((x + self.width - 1, y + j))
+
+    @property
+    def center(self) -> tuple:
+        return (self.x + self.width // 2, self.y + self.height // 2)
+
+    def contains(self, gx: int, gy: int) -> bool:
+        return (gx, gy) in self.interior
+
+    def get_sprites(self):
+        wall = Sprite(
+            pixels=[[WALL_COLOR]],
+            name="wall",
+            visible=True,
+            collidable=True,
+            tags=["wall"],
+        )
+        return [wall.clone().set_position(wx, wy) for wx, wy in self.wall_positions]
+
+
+LEVEL_CONFIGS = [
+    [Shape(26, 26, 12)],  # L1: 1 large square, dead center
+    [Shape(8, 26, 10), Shape(46, 26, 10)],  # L2: 2 squares, horizontal spread
+    [Shape(8, 8, 8), Shape(48, 48, 8)],  # L3: 2 squares, diagonal corners
+    [Shape(3, 26, 8), Shape(28, 28, 8)],  # L4: one near left edge, one center
+    [Shape(6, 6, 8), Shape(40, 15, 8), Shape(20, 45, 8)],  # L5: 3 squares, asymmetric
+    [
+        Shape(5, 25, 10),
+        Shape(49, 25, 10),
+        Shape(8, 8, 6),
+        Shape(50, 50, 6),
+    ],  # L6: 2 large + 2 small
+    [
+        Shape(5, 5, 8),
+        Shape(51, 5, 8),
+        Shape(5, 51, 8),
+        Shape(51, 51, 8),
+    ],  # L7: 4 corners
+]
+
+
+def get_level_shapes(level_num: int):
+    idx = min(level_num - 1, len(LEVEL_CONFIGS) - 1)
+    return [Shape(s.x, s.y, s.width, s.height) for s in LEVEL_CONFIGS[idx]]
 
 
 class Ff01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ff01UI(3, False)
+        self._ui = Ff01UI(3, 0, 30)
         super().__init__(
             "ff01",
             levels,
-            Camera(0, 0, 12, 12, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            Camera(0, 0, 64, 64, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
             [6],
         )
 
     def on_set_level(self, level: Level) -> None:
-        self._interior_cells = self.current_level.get_data("interior_cells")
-        self._attempts = self.current_level.get_data("attempts")
-        self._filled = False
-        self._game_over = False
-        self._outline_sprites = self.current_level.get_sprites_by_tag("outline")
-        self._outline_positions = set()
-        for s in self._outline_sprites:
-            self._outline_positions.add((s.x, s.y))
+        level_num = self._current_level_index + 1
+        self._shapes = get_level_shapes(level_num)
+        self._filled_shapes = set()
+        self._steps_remaining = 25 + (level_num * 5)
+        self._lives = 3
+
+        for shape in self.current_level.get_sprites_by_tag("fill"):
+            self.current_level.remove_sprite(shape)
+        for shape in self.current_level.get_sprites_by_tag("wall"):
+            self.current_level.remove_sprite(shape)
+
+        for shape in self._shapes:
+            for sprite in shape.get_sprites():
+                self.current_level.add_sprite(sprite)
+
         self._update_ui()
 
     def _update_ui(self) -> None:
-        self._ui.update(
-            self._attempts,
-            self._filled,
-            self._game_over,
-            hasattr(self, "_win") and self._win,
-        )
+        remaining = len(self._shapes) - len(self._filled_shapes)
+        self._ui.update(self._lives, remaining, self._steps_remaining)
 
-    def _is_inside_shape(self, x: int, y: int) -> bool:
-        return (x, y) in self._interior_cells
+    def _is_inside_any_shape(self, x: int, y: int):
+        for i, shape in enumerate(self._shapes):
+            if i not in self._filled_shapes and shape.contains(x, y):
+                return i
+        return -1
 
-    def _fill_area(self, cells: list, color: int) -> None:
+    def _fill_shape(self, shape_idx: int) -> None:
+        shape = self._shapes[shape_idx]
+        shape.filled = True
+        self._filled_shapes.add(shape_idx)
+
         fill_sprite = Sprite(
-            pixels=[[color]],
-            name=f"fill_{len(self.current_level._sprites)}",
+            pixels=[[FILL_COLOR]],
+            name=f"fill_{shape_idx}",
             visible=True,
             collidable=False,
             tags=["fill"],
         )
-        for cx, cy in cells:
-            cell_sprite = fill_sprite.clone().set_position(cx, cy)
-            self.current_level.add_sprite(cell_sprite)
+        for cx, cy in shape.interior:
+            cell = fill_sprite.clone().set_position(cx, cy)
+            self.current_level.add_sprite(cell)
 
     def step(self) -> None:
-        if self._game_over:
-            self.complete_action()
-            return
-
         if self.action.id.value == 6:
             x = self.action.data.get("x", 0)
             y = self.action.data.get("y", 0)
 
-            grid_x = x // 5
-            grid_y = y // 5
-
             self._ui.set_click(x, y)
 
-            if self._is_inside_shape(grid_x, grid_y):
-                self._fill_area(self._interior_cells, FILL_COLOR)
-                self._filled = True
-                self._game_over = True
-                self._win = True
-                self.next_level()
-            else:
-                self._attempts -= 1
-                if self._attempts <= 0:
-                    self._game_over = True
-                    self._win = False
-                    all_cells = [(x, y) for x in range(12) for y in range(12)]
-                    outside = [c for c in all_cells if c not in self._interior_cells]
-                    self._fill_area(outside, WRONG_COLOR)
+            shape_idx = self._is_inside_any_shape(x, y)
+            if shape_idx >= 0:
+                self._fill_shape(shape_idx)
 
+                if len(self._filled_shapes) == len(self._shapes):
+                    self.next_level()
+                    self.complete_action()
+                    return
+
+            self._steps_remaining -= 1
             self._update_ui()
+
+            if self._steps_remaining <= 0:
+                self._lives -= 1
+                if self._lives <= 0:
+                    self.lose()
+                else:
+                    self._reset_current_level()
+                self._update_ui()
 
         self.complete_action()
 
+    def _reset_current_level(self) -> None:
+        self._shapes = get_level_shapes(self._current_level_index + 1)
+        self._filled_shapes = set()
+        self._steps_remaining = 25 + ((self._current_level_index + 1) * 5)
 
-WALL = Sprite(
-    pixels=[[3]],
-    name="wall",
-    visible=True,
-    collidable=True,
-    tags=["outline"],
-)
+        for shape in self.current_level.get_sprites_by_tag("fill"):
+            self.current_level.remove_sprite(shape)
+        for shape in self.current_level.get_sprites_by_tag("wall"):
+            self.current_level.remove_sprite(shape)
 
-
-def make_square_outline(x: int, y: int, size: int):
-    sprites_list = []
-    for i in range(size):
-        sprites_list.append(WALL.clone().set_position(x + i, y))
-        sprites_list.append(WALL.clone().set_position(x + i, y + size - 1))
-        if i > 0 and i < size - 1:
-            sprites_list.append(WALL.clone().set_position(x, y + i))
-            sprites_list.append(WALL.clone().set_position(x + size - 1, y + i))
-    return sprites_list
+        for shape in self._shapes:
+            for sprite in shape.get_sprites():
+                self.current_level.add_sprite(sprite)
 
 
-def make_interior(x: int, y: int, size: int):
-    return [(x + i, y + j) for i in range(1, size - 1) for j in range(1, size - 1)]
+def make_level_sprites(level_num):
+    shapes = get_level_shapes(level_num)
+    sprites = []
+    for shape in shapes:
+        sprites.extend(shape.get_sprites())
+    return sprites
 
-
-def make_l_shape():
-    sprites_list = []
-    positions = []
-    for x in range(3, 9):
-        sprites_list.append(WALL.clone().set_position(x, 3))
-        positions.append((x, 3))
-        sprites_list.append(WALL.clone().set_position(x, 8))
-        positions.append((x, 8))
-    for y in range(3, 9):
-        sprites_list.append(WALL.clone().set_position(3, y))
-        positions.append((3, y))
-        if y < 6:
-            sprites_list.append(WALL.clone().set_position(8, y))
-            positions.append((8, y))
-    for x in range(3, 6):
-        sprites_list.append(WALL.clone().set_position(x, 5))
-        positions.append((x, 5))
-    return sprites_list, positions
-
-
-def make_t_shape():
-    sprites_list = []
-    positions = []
-    for x in range(2, 10):
-        sprites_list.append(WALL.clone().set_position(x, 2))
-        positions.append((x, 2))
-        sprites_list.append(WALL.clone().set_position(x, 7))
-        positions.append((x, 7))
-    for y in range(2, 8):
-        sprites_list.append(WALL.clone().set_position(5, y))
-        positions.append((5, y))
-        sprites_list.append(WALL.clone().set_position(6, y))
-        positions.append((6, y))
-    return sprites_list, positions
-
-
-def make_cross_shape():
-    sprites_list = []
-    positions = []
-    for x in range(3, 9):
-        sprites_list.append(WALL.clone().set_position(x, 5))
-        positions.append((x, 5))
-        sprites_list.append(WALL.clone().set_position(x, 6))
-        positions.append((x, 6))
-    for y in range(3, 9):
-        sprites_list.append(WALL.clone().set_position(5, y))
-        positions.append((5, y))
-        sprites_list.append(WALL.clone().set_position(6, y))
-        positions.append((6, y))
-    return sprites_list, positions
-
-
-def make_z_shape():
-    sprites_list = []
-    positions = []
-    for x in range(2, 10):
-        sprites_list.append(WALL.clone().set_position(x, 2))
-        positions.append((x, 2))
-        sprites_list.append(WALL.clone().set_position(x, 9))
-        positions.append((x, 9))
-    for y in range(2, 10):
-        sprites_list.append(WALL.clone().set_position(2, y))
-        positions.append((2, y))
-        sprites_list.append(WALL.clone().set_position(9, y))
-        positions.append((9, y))
-    return sprites_list, positions
-
-
-level1_sprites = make_square_outline(4, 4, 4)
-level1_interior = make_interior(4, 4, 4)
-
-level2_sprites = make_square_outline(3, 3, 6)
-level2_interior = make_interior(3, 3, 6)
-
-level3_sprites, level3_positions = make_l_shape()
-level3_interior = [(x, y) for x in range(4, 8) for y in range(4, 5)]
-
-level4_sprites, level4_positions = make_t_shape()
-level4_interior = [(x, y) for x in range(5, 7) for y in range(3, 7)]
-
-level5_sprites, level5_positions = make_cross_shape()
-level5_interior = [(x, y) for x in range(5, 7) for y in range(5, 7)]
 
 levels = [
-    Level(
-        sprites=level1_sprites,
-        grid_size=(12, 12),
-        data={
-            "interior_cells": level1_interior,
-            "attempts": 3,
-        },
-        name="Level 1",
-    ),
-    Level(
-        sprites=level2_sprites,
-        grid_size=(12, 12),
-        data={
-            "interior_cells": level2_interior,
-            "attempts": 3,
-        },
-        name="Level 2",
-    ),
-    Level(
-        sprites=level3_sprites,
-        grid_size=(12, 12),
-        data={
-            "interior_cells": [
-                (4, 4),
-                (5, 4),
-                (6, 4),
-                (7, 4),
-                (4, 5),
-                (5, 5),
-                (6, 5),
-                (7, 5),
-                (4, 6),
-                (5, 6),
-                (6, 6),
-                (7, 6),
-            ],
-            "attempts": 3,
-        },
-        name="Level 3",
-    ),
-    Level(
-        sprites=level4_sprites,
-        grid_size=(12, 12),
-        data={
-            "interior_cells": level4_interior,
-            "attempts": 3,
-        },
-        name="Level 4",
-    ),
-    Level(
-        sprites=level5_sprites,
-        grid_size=(12, 12),
-        data={
-            "interior_cells": level5_interior,
-            "attempts": 3,
-        },
-        name="Level 5",
-    ),
+    Level(sprites=make_level_sprites(1), grid_size=(64, 64), data={}, name="Level 1"),
+    Level(sprites=make_level_sprites(2), grid_size=(64, 64), data={}, name="Level 2"),
+    Level(sprites=make_level_sprites(3), grid_size=(64, 64), data={}, name="Level 3"),
+    Level(sprites=make_level_sprites(4), grid_size=(64, 64), data={}, name="Level 4"),
+    Level(sprites=make_level_sprites(5), grid_size=(64, 64), data={}, name="Level 5"),
+    Level(sprites=make_level_sprites(6), grid_size=(64, 64), data={}, name="Level 6"),
+    Level(sprites=make_level_sprites(7), grid_size=(64, 64), data={}, name="Level 7"),
 ]
