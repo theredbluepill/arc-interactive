@@ -332,7 +332,7 @@ elif not sprite or not sprite.is_collidable:
 
 ## GIF Demo for GAMES.md
 
-All game GIFs in `assets/` must be **64×64 pixels**:
+All game GIFs in `assets/` must be **64×64 pixels** (the engine’s final frame is already 64×64; only resize if you captured a different size).
 
 ```python
 from PIL import Image, Image as PILImage
@@ -345,6 +345,44 @@ frames[0].save("assets/{game_id}.gif", save_all=True,
                append_images=frames[1:], duration=150, loop=0)
 ```
 
+### Click / ACTION6 games
+
+Demos should make **where the agent clicked** obvious for several frames.
+
+1. **Click indicator in `RenderableUserDisplay`**  
+   On `ACTION6`, after `camera.display_to_grid(x, y)` returns level grid coordinates `(gx, gy)`, convert them to **pixels on the final 64×64 frame** before drawing. The camera scales and letterboxes smaller viewports (e.g. 12×12 → 60×60 centered with padding). Drawing grid coords as if they were pixel coords pins the cursor to the top-left (wrong).  
+   **Inverse of `display_to_grid`** (match `Camera` math in arcengine):
+
+   ```python
+   def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+       cam = self.camera
+       cw, ch = cam.width, cam.height
+       scale_x = int(64 / cw)
+       scale_y = int(64 / ch)
+       scale = min(scale_x, scale_y)
+       x_pad = int((64 - (cw * scale)) / 2)
+       y_pad = int((64 - (ch * scale)) / 2)
+       px = gx * scale + scale // 2 + x_pad
+       py = gy * scale + scale // 2 + y_pad
+       return px, py
+
+   # In step(), after a valid hit:
+   self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
+   ```
+
+2. **Animation, not a single frame**  
+   Use a multi-step overlay (e.g. **expanding ring + cross** over ~15–20 render passes) so GIFs and markdown previews show a clear tap. Store `_click_frames` and decrement inside `render_interface` each time the frame is composed. See `environment_files/sq01/v1/sq01.py` (`Sq01UI`).
+
+3. **Recording the GIF**  
+   - `arc.make(..., include_frame_data=True)` and `env.reset()` / `env.step(GameAction.ACTION6, data={"x": ..., "y": ...})`.  
+   - Coordinates in `data` are **display space 0–63** (same as `display_to_grid` input). For a 12×12 camera with scale 5 and padding 2, center of grid cell `(gx, gy)` is  
+     `display_x = gx * scale + scale // 2 + x_pad` (and similarly for `y`).  
+   - Use `arc_agi.rendering.COLOR_MAP` + `hex_to_rgb` to turn index frames into RGB for Pillow, **or** attach a fixed 16-color palette to `P` mode images.  
+   - Prefer **one captured frame per `step()`** and a **list of per-frame `duration` values** (ms) for pacing; hold the first frame of each level briefly so level changes read clearly.  
+   - If the game uses an end-of-level delay (`next_level()` after N frames), include those steps in the capture so the GIF shows progression.  
+   - **Pillow** often **merges consecutive identical bitmaps** when saving GIFs; that is normal. If you need more apparent length, vary the on-screen effect (your click animation) or timing rather than duplicating identical numpy frames.  
+   - Example script: `scripts/render_sq01_gif.py`.
+
 ## Examples
 
 See established games:
@@ -352,3 +390,4 @@ See established games:
 - `environment_files/ls20/cb3b57cc/ls20.py`
 - `environment_files/ft09/9ab2447a/ft09.py`
 - `environment_files/ez01/v1/ez01.py`
+- `environment_files/sq01/v1/sq01.py` (ACTION6, grid→frame click FX, GIF script)

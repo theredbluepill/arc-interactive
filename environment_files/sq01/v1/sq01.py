@@ -45,6 +45,9 @@ SEQUENCE_COLORS = {
 
 
 class Sq01UI(RenderableUserDisplay):
+    # Long enough for a clear “tap” read in GIFs and terminal previews
+    CLICK_ANIM_FRAMES = 20
+
     def __init__(self, sequence: list[str], progress: int, lives: int) -> None:
         self._sequence = sequence
         self._progress = progress
@@ -66,9 +69,35 @@ class Sq01UI(RenderableUserDisplay):
         self._flash_color = color
         self._flash_frames = frames
 
-    def set_click(self, x: int, y: int) -> None:
-        self._click_pos = (x, y)
-        self._click_frames = 10
+    def set_click(self, frame_x: int, frame_y: int) -> None:
+        """Ripple + crosshair in final 64×64 frame coords (after camera scale/letterbox)."""
+        self._click_pos = (frame_x, frame_y)
+        self._click_frames = Sq01UI.CLICK_ANIM_FRAMES
+
+    @staticmethod
+    def _plot_px(frame, h: int, w: int, px: int, py: int, color: int) -> None:
+        if 0 <= px < w and 0 <= py < h:
+            frame[py, px] = color
+
+    @classmethod
+    def _chebyshev_ring(
+        cls, frame, h: int, w: int, cx: int, cy: int, r: int, color: int
+    ) -> None:
+        if r <= 0:
+            return
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if max(abs(dx), abs(dy)) == r:
+                    cls._plot_px(frame, h, w, cx + dx, cy + dy, color)
+
+    @classmethod
+    def _draw_plus(cls, frame, h: int, w: int, cx: int, cy: int, arm: int, color: int) -> None:
+        cls._plot_px(frame, h, w, cx, cy, color)
+        for a in range(1, arm + 1):
+            cls._plot_px(frame, h, w, cx - a, cy, color)
+            cls._plot_px(frame, h, w, cx + a, cy, color)
+            cls._plot_px(frame, h, w, cx, cy - a, color)
+            cls._plot_px(frame, h, w, cx, cy + a, color)
 
     def render_interface(self, frame):
         import numpy as np
@@ -157,20 +186,22 @@ class Sq01UI(RenderableUserDisplay):
                 if 0 <= cx < w and 0 <= cy < h:
                     frame[cy, cx] = color
 
-        # --- Click indicator (crosshair) ---
+        # --- Click feedback: expanding/contracting ring + cross (64×64 frame space) ---
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
-            cross_color = 12
-            points = [
-                (cx, cy),
-                (cx - 1, cy),
-                (cx + 1, cy),
-                (cx, cy - 1),
-                (cx, cy + 1),
-            ]
-            for px, py in points:
-                if 0 <= px < w and 0 <= py < h:
-                    frame[py, px] = cross_color
+            phase = Sq01UI.CLICK_ANIM_FRAMES - self._click_frames
+
+            # Chebyshev ring: grows 1→4 then shrinks (one orbit)
+            if phase < 8:
+                ring_r = phase + 1 if phase < 4 else 8 - phase
+                if ring_r > 0:
+                    ring_col = 0 if ring_r >= 4 else (11 if ring_r == 3 else 12)
+                    self._chebyshev_ring(frame, h, w, cx, cy, ring_r, ring_col)
+
+            arm = 2 if phase < 14 else 1
+            plus_col = 0 if phase < 2 else 12
+            self._draw_plus(frame, h, w, cx, cy, arm, plus_col)
+
             self._click_frames -= 1
         else:
             self._click_pos = None
@@ -316,6 +347,19 @@ class Sq01(ARCBaseGame):
                     self._color_to_sprite[color_name] = sprite
                     break
 
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        """Map level grid coords to pixels on the final 64×64 frame (inverse of display_to_grid)."""
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale_x = int(64 / cw)
+        scale_y = int(64 / ch)
+        scale = min(scale_x, scale_y)
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
+
     def _handle_wrong_click(self) -> None:
         # Option A: lose a life AND reset progress
         self._lives -= 1
@@ -350,7 +394,7 @@ class Sq01(ARCBaseGame):
                 return
 
             gx, gy = coords
-            self._ui.set_click(gx, gy)
+            self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
 
             clicked_sprite = None
             clicked_color: str | None = None
