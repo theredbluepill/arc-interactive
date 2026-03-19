@@ -1,5 +1,5 @@
 [project]
-name = "arc-games"
+name = "arc-interactive"
 version = "0.1.0"
 description = "ARC-AGI-3 games collection"
 readme = "README.md"
@@ -8,6 +8,7 @@ dependencies = [
     "arc-agi",
     "arcengine",
     "numpy>=2.4.3",
+    "kaggle-benchmarks>=0.2.0",
 ]
 
 [tool.uv.sources]
