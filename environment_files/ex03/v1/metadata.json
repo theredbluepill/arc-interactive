@@ -1,0 +1,18 @@
+{
+  "game_id": "ex03-v1",
+  "title": "Moving Exit Hold",
+  "description": "Exit hold with sliding decay; the green pad shifts every pad_period steps (pad_delta).",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5],
+  "tags": ["static", "puzzle", "hold"],
+  "local_dir": "environment_files/ex03/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8],
+    "action_space": 5,
+    "physics_rules": ["hold-decay", "moving-pad"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

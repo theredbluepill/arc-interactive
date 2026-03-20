@@ -1,4 +1,4 @@
-"""Nonogram lite: 8×8 grid. ACTION1–4 move cursor; ACTION6 cycles cell empty / filled / mark. Match the hidden solution in level data."""
+"""Nonogram lite: 8×8 grid. ACTION1–4 move cursor; ACTION6 (click) cycles cell under cursor in display space via display_to_grid. Match the hidden solution in level data."""
 
 from __future__ import annotations
 
@@ -192,11 +192,18 @@ class Ng01(ARCBaseGame):
         elif aid == GameAction.ACTION4 and self._cx < GW - 1:
             self._cx += 1
         elif aid == GameAction.ACTION6:
-            t = self._st[self._cy][self._cx]
-            self._st[self._cy][self._cx] = (t + 1) % 3
-            self._refresh_cells()
-            if self._win():
-                self.next_level()
+            px = int(self.action.data.get("x", 0))
+            py = int(self.action.data.get("y", 0))
+            hit = self.camera.display_to_grid(px, py)
+            if hit is not None:
+                gx, gy = int(hit[0]), int(hit[1])
+                if 0 <= gx < GW and 0 <= gy < GH:
+                    self._cx, self._cy = gx, gy
+                    t = self._st[gy][gx]
+                    self._st[gy][gx] = (t + 1) % 3
+                    self._refresh_cells()
+                    if self._win():
+                        self.next_level()
 
         self._ui.update(self._cx, self._cy)
         self.complete_action()

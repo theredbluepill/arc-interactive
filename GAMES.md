@@ -49,21 +49,21 @@
 | lw01 | Path / Topology | 24–32 | 5 | **Line weave**: connect colored starts to matching ends with orthogonal paths; colors cannot share cells. |  | • 1–2: Prev/next color • 3–4: No-op • 5: Undo segment • 6: Extend path (click) |
 | rp01 | Graph / Logic | 32×32 | 5 | **Relay pulse**: **ACTION6** toggles relays; **ACTION5** fires from the source; orthogonal relay chain must light every lamp (adjacent to a visited relay). |  | • 1–4: No-op • 5: Fire pulse • 6: Toggle relay |
 | ml01 | Geometry | 24×24 | 5 | **Mirror laser**: steer a beam from the emitter to the receptor using placeable mirrors (**ACTION6** adjacent); **ACTION5** fires. |  | • 1–4: Move • 5: Fire laser • 6: Place/cycle mirror |
-| sf01 | Pattern Puzzles | 64×64 | 5 | **Stencil paint**: move a 3×3 stencil with **ACTION1–4**; **ACTION6** paints all non-wall cells under it; match gray hints. |  | • 1–4: Move stencil • 6: Paint |
+| sf01 | Pattern Puzzles | 64×64 | 5 | **Stencil paint**: move a 3×3 stencil with **ACTION1–4**; **ACTION5** paints all non-wall cells under it; match gray hints. |  | • 1–4: Move stencil • 5: Paint |
 | ll01 | Simulation | 32×32 | 5 | **Generations lock**: Conway Life; **ACTION6** toggles cells (budget); **ACTION5** advances one generation; after exactly **N** steps the live set must equal the target. |  | • 1–4: No-op • 5: Step CA • 6: Toggle cell |
 | wl01 | Environmental Manipulation | 32×32 | 5 | **Wall craft**: reach the goal; **ACTION5** toggles build mode; **ACTION6** places/removes your walls (shared budget). |  | • 1–4: Move • 5: Build mode • 6: Toggle my wall |
-| dd01 | Logistics | 48×48 | 5 | **Drone relay**: pick up crates and deliver to yellow pads; **ACTION6** pings the nearest pad on the HUD. |  | • 1–4: Move • 5: Pickup/drop • 6: Ping pad |
+| dd01 | Logistics | 48×48 | 5 | **Drone relay**: pick up crates and deliver to yellow pads; when not on crate/pad, **ACTION5** pings the nearest pad on the HUD. |  | • 1–4: Move • 5: Pickup/drop or ping pad |
 | ck01 | Graph / Logic | 24×24 | 5 | **Circuit stitch**: **ACTION6** toggles wire; **ACTION5** tests whether the cyan input reaches the yellow output (limited checks). |  | • 1–4: No-op • 5: Test wire • 6: Toggle wire |
 | ph01 | Field / Math | 24×24 | 5 | **Phase interference**: phases 0–3; **ACTION6** increments a cell; **ACTION5** applies (self + Σ orth neighbors) mod 4 on non-walls; match marked targets. |  | • 1–4: No-op • 5: Blur step • 6: Increment phase |
 | bn01 | Exploration | 64×64 | 5 | **Beacon sweep**: hidden targets; **ACTION5** drops a beacon (Chebyshev radius); ghosts show only under light; **ACTION6** flags a cell (wrong cell = lose). |  | • 1–4: Move • 5: Beacon • 6: Flag |
-| dl01 | Puzzle / Planning | 12×12 | 5 | **Delay line**: moves queue (max 3); each step runs the oldest pending move then enqueues the current direction; **ACTION6** clears the queue. |  | • 1-4: Enqueue move • 6: Clear queue |
+| dl01 | Puzzle / Planning | 12×12 | 5 | **Delay line**: moves queue (max 3); each step runs the oldest pending move then enqueues the current direction; **ACTION5** clears the queue. |  | • 1-4: Enqueue move • 5: Clear queue |
 | fw01 | Survival / Simulation | 24×24 | 5 | **Wildfire**: fire spreads on a timer; **ACTION6** splashes water (3×3); reach the green exit. |  | • 1-4: Move • 6: Splash |
 | gp02 | Pattern Puzzles | 8×8 | 5 | **Grid paint erase**: floor starts fully painted; **ACTION6** erases yellow; leave paint only on gray hint cells. |  | • 1-4: No-op • 6: Click erase |
 | hd01 | Survival / Timing | 16×16 | 5 | **Heat front**: a heat band advances south every N steps; **ACTION5** on a magenta station charges temporary immunity; reach the goal. |  | • 1-4: Move • 5: Charge on station |
 | kn01 | Puzzle / Movement | 16×16 | 5 | **Knight’s courier**: **ACTION1–4** use L-shaped knight hops from the active bank; **ACTION5** toggles between two banks (eight directions total). |  | • 1-4: Knight move • 5: Toggle bank |
 | lo02 | Pattern Puzzles | 4×4–6×6 | 5 | **Torus Lights Out**: **ACTION6** toggles a cell and orthogonal neighbors with edge wrap; walls block toggles on their cells. |  | • 1-4: No-op • 6: Click |
 | mc01 | Coordination | 16×16 | 5 | **Tandem**: two players take the same Δ each step; **ACTION5** swaps which avatar is “lead” for collision resolution; both must reach their goals. |  | • 1-4: Joint move • 5: Swap lead |
-| ng01 | Logic / Deduction | 8×8 | 5 | **Nonogram lite**: **ACTION1–4** move the cursor; **ACTION6** cycles empty / filled / mark; filled cells must match the hidden solution. |  | • 1-4: Cursor • 6: Cycle cell |
+| ng01 | Logic / Deduction | 8×8 | 5 | **Nonogram lite**: **ACTION1–4** move the cursor; **ACTION6** (click) cycles empty / filled / mark on the clicked cell (cursor jumps to click); filled cells must match the hidden solution. |  | • 1-4: Cursor • 6: Click cycle cell |
 | ob01 | Multi-Agent | 16×16 | 5 | **Odd one out**: three bodies; **ACTION5** cycles which avatar **ACTION1–4** moves; each reaches its pad. |  | • 1-4: Move active • 5: Cycle active |
 | pu01 | Graph / Plumbing | 16×16 | 5 | **Pipe twist**: **ACTION6** toggles horizontal vs vertical pipe on a cell; connect cyan source to yellow sink with orthogonal flow. |  | • 1-4: No-op • 6: Toggle pipe |
 | qr01 | Pattern Puzzles | 8×8 | 5 | **Quad twist**: **ACTION6** rotates the 2×2 block of tiles anchored at the click clockwise; match the target pattern. |  | • 1-4: No-op • 6: Rotate 2×2 |
@@ -83,7 +83,7 @@
 | cr01 | Environmental Manipulation | 16×16 | 5 | **Creek crossing**: limited **ACTION6** planks on river; planks break when you leave; reach the goal. |  | • 1-4: Move • 6: Place plank |
 | dm01 | Tiling | 8×8 | 5 | **Domino cover**: **ACTION6** toggles dominoes on valid pairs; cover all marked cells once. |  | • 6: Toggle domino |
 | ex02 | Puzzle Mechanics | 8-10 | 5 | **Sliding exit hold**: **ACTION5** on pad increments hold; moving only **decays** hold by 1 (not full reset). |  | • 1-4: Move • 5: Hold |
-| fl01 | Path / Numberlink | 12×12 | 5 | **Numberlink**: connect numbered endpoints with paths of exact per-pair length; no overlap (`pairs`, `length` in data). |  | • 1-4: Cursor • 6: Extend/cut |
+| fl01 | Path / Numberlink | 12×12 | 5 | **Numberlink**: connect numbered endpoints with paths of exact per-pair length; no overlap (`pairs`, `length` in data). **ACTION6** extends/cuts at the clicked grid cell. |  | • 1-4: Cursor • 6: Click extend/cut |
 | ff02 | Precision / Topology | 64×64 | 5 | **Flood unpaint**: interiors start filled; **ACTION6** erases a clicked enclosure; gray hints must end empty. **ACTION1–4** no-op. |  | • 1-4: No-op • 6: Click erase region |
 | gp03 | Pattern Puzzles | 8×8 | 5 | **Three-state grid paint**: cycle cell colors with **ACTION6**; match per-cell `goal` palette in data. |  | • 1-4: No-op • 6: Cycle paint |
 | lw02 | Path / Topology | 24–32 | 5 | **Shared corridor weave**: like lw01 but paths may **share** cells; **perpendicular** entry to another color’s visited cell is forbidden. |  | • 1–2: Color • 3–4: No-op • 5: Undo • 6: Extend |
@@ -96,7 +96,7 @@
 | pt02 | Pattern Puzzles | 64×64 | 5 | **Row/column rotate**: **ACTION6** rotates a full row **or** column of 3×3 tiles (nearest axis wins). |  | • 6: Click band |
 | rp02 | Graph / Logic | 32×32 | 5 | **Pulse depth**: relays + **amplifiers** reset hop budget (`max_pulse_depth`); light all lamps. |  | • 1–4: No-op • 5: Fire • 6: Toggle relay |
 | rz01 | Environmental Manipulation | 12×12 | 5 | **Rush grid**: push **1×2** cars along their axis like sokoban; clear the exit car. |  | • 1-4: Move |
-| sg01 | Survival / Timing | 8×8 | 5 | **Signal lock**: sweeping cursor; **ACTION6** in the green window scores; miss shrinks the window. |  | • 1-4: No-op • 6: Commit |
+| sg01 | Survival / Timing | 8×8 | 5 | **Signal lock**: sweeping cursor; **ACTION5** in the green window scores; miss shrinks the window. |  | • 1-4: No-op • 5: Commit |
 | sk03 | Environmental Manipulation | 8-12 | 5 | **Sticky mud sokoban**: sliding crate chain **stops** on mud floor (`mud` tag); mud is walkable. |  | • 1-4: Move |
 | st01 | Stealth | 16×16 | 5 | **Sentry sweep**: cone-vision guards; spotted = lose; **ACTION5** whistles to nudge a guard forward one cell. |  | • 1-4: Move • 5: Whistle |
 | sy02 | Pattern Puzzles | 11×11 | 5 | **Staggered mirror**: mirror targets use half-row offset (`mirror_stagger` in data). |  | • 6: Place/remove block |
@@ -106,3 +106,33 @@
 | ul02 | Puzzle Mechanics | 8-12 | 5 | **Two-key unlock**: key A before door A and key B before door B; wrong door order loses. |  | • 1-4: Move |
 | wm02 | Survival / Timing | 32×32 | 5 | **Lane moles**: moles spawn in rotating lane columns; wrong-lane click while a mole is up costs a life. |  | • 6: Click |
 | zq02 | Puzzle Mechanics | 8-10 | 5 | **Dual-phase hazards**: two independent blinking hazard sets with different `period` / phase offset in data. |  | • 1-4: Move |
+| ju01 | Movement / Planning | 10×10 | 5 | **Jump tile**: landing on a jump floor moves two cells in the same direction when the skip cell is clear. |  | • 1-4: Move |
+| co01 | Puzzle Mechanics | 10×10 | 5 | **Color gate**: recolor pads set active hue; only matching doors open. |  | • 1-4: Move |
+| em01 | Puzzle / Planning | 10×10 | 5 | **Echo move**: every second step repeats your previous cardinal delta. |  | • 1-4: Move |
+| nu01 | Collection / Order | 10×10 | 5 | **Number fuse**: collect numbered tokens in descending order; wrong pickup loses. |  | • 1-4: Move |
+| gl01 | Hazard / Path | 10×10 | 5 | **Glass floor**: third visit to the same glass cell loses. |  | • 1-4: Move |
+| or01 | Puzzle / Timing | 10×10 | 5 | **Orbit keys**: keys rotate clockwise around a pillar each step; pick up when orth-adjacent, then reach the goal. |  | • 1-4: Move |
+| ex03 | Puzzle Mechanics | 8×8 | 5 | **Moving exit hold**: like ex02, but the green pad slides on a timer (`pad_period`, `pad_delta`). |  | • 1-4: Move • 5: Hold |
+| zq03 | Puzzle Mechanics | 8-10 | 5 | **Synced hazard masks**: one safe beat per cycle where both fields are off (`mask_a` / `mask_b`). |  | • 1-4: Move |
+| nw03 | Puzzle Mechanics | 8-12 | 5 | **Sticky vector arrows**: pending impulse is only consumed after a successful move (blocked moves keep the queue). |  | • 1-4: Move |
+| rs03 | Cognitive Flexibility | 8-16 | 5 | **Forbidden stripe**: HUD shows a color that is **never** collectible; clear all other targets. |  | • 1-4: Move |
+| sv03 | Survival / Timing | 8-24 | 5 | **Dual shelters**: yellow pauses hunger decay, magenta pauses warmth; **alternate** shelter types on entry. |  | • 1-4: Move • 5: Idle |
+| sq03 | Sequencing | 12×12 | 5 | **Dual queue**: two color queues; **ACTION6** on either head; wrong tap resets **both**. |  | • 6: Click block |
+| dr01 | Puzzle / Rush | 10×10 | 5 | **Drill rush**: **ACTION5** breaks one adjacent wall; tight **step** budget. |  | • 1-4: Move • 5: Drill |
+| vi01 | Survival / Hazard | 12×12 | 5 | **Infection**: plague spreads every **K** steps; cyan **vaccine** then green exit. |  | • 1-4: Move |
+| wa01 | Movement | 12×12 | 5 | **Warp line**: crossing a warp band shifts **+2** on its axis when clear. |  | • 1-4: Move |
+| fi01 | Simulation / Hazard | 14×14 | 5 | **Firebreak**: fire spreads each step; **ACTION5** places a blue **break** tile blocking spread. |  | • 1-4: Move • 5: Place break |
+| ul03 | Puzzle Mechanics | 10×10 | 5 | **Master key**: both **silver** keys reveal **gold**; gold opens **both** doors. |  | • 1-4: Move |
+| wm03 | Survival / Timing | 32×32 | 5 | **Decoy moles**: gray **decoys** in wrong lanes; whack decoy = lose life. |  | • 6: Click |
+| ms03 | Memory / Hidden State | 8-12 | 5 | **Chord sapper**: clues count mines in **Chebyshev radius 2**; **ACTION6** flags (`display_to_grid`). |  | • 1-4: Move • 6: Flag |
+| lo03 | Pattern Puzzles | 4×4–6×6 | 5 | **Diagonal torus Lights Out**: **ACTION6** toggles cell + **8** neighbors with wrap (`lo02` + diagonals). |  | • 1-4: No-op • 6: Click |
+| pt03 | Pattern Puzzles | 64×64 | 5 | **Band lock**: odd levels rotate **rows** only, even levels **columns** only (`difficulty`). |  | • 6: Click band |
+| sy03 | Pattern Puzzles | 11×11 | 5 | **Vertical mirror**: template above divider **y=5**, build mirrored copy below (`sy02` geometry rotated). |  | • 6: Place/remove |
+| mm03 | Memory / Hidden State | 64×64 | 5 | **Memory quads** (mm02 variant): flip **four** tiles; clear when all four match. |  | • 6: Click |
+| ff03 | Precision / Topology | 64×64 | 5 | **Limited erases** (ff02 variant): capped enclosure erasers per level in data. |  | • 1-4: No-op • 6: Click |
+| lw03 | Path / Topology | 24–32 | 5 | **Shared edges OK** (lw02 variant): relaxed perpendicular corridor rule; segment edge ownership. |  | • 1–2 • 5 undo • 6: Extend |
+| rp03 | Graph / Logic | 32×32 | 5 | **Splitter relay** (rp02 variant): T-relays fork pulses to both arms. |  | • 1–4: No-op • 5: Fire • 6: Toggle |
+| ml03 | Geometry | 24×24 | 5 | **One-shot mirrors** (ml02 variant): mirrors absorb beam after one reflection. |  | • 1-4: Move • 5: Fire • 6: Mirror |
+| ck03 | Graph / Logic | 24×24 | 5 | **Checkpoint wire** (ck02 variant): cyan checkpoint must lie on successful test path. |  | • 1-4: No-op • 5: Test • 6: Toggle |
+| ph03 | Field / Math | 24×24 | 5 | **XOR neighbor step** (ph02 variant): **ACTION5** XORs cell with orth neighbors mod N. |  | • 1-4: No-op • 5: Step • 6: Inc |
+| bn03 | Exploration | 64×64 | 5 | **Shrinking beacon** (bn02 variant): each **ACTION5** beacon reduces max light radius by 1. |  | • 1-4: Move • 5: Beacon • 6: Flag |

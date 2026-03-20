@@ -1,7 +1,7 @@
 {
   "game_id": "ng01-v1",
   "title": "Nonogram Lite",
-  "description": "8×8 nonogram. ACTION1–4 move cursor; ACTION6 cycles empty / filled / mark. Win when filled cells match the solution.",
+  "description": "8×8 nonogram. ACTION1–4 move cursor; ACTION6 (display click via display_to_grid) cycles empty / filled / mark on the clicked cell. Win when filled cells match the solution.",
   "default_fps": 20,
   "baseline_actions": [1, 2, 3, 4, 6],
   "tags": ["static", "puzzle", "logic"],

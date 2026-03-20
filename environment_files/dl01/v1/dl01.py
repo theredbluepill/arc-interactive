@@ -1,4 +1,4 @@
-"""Delay line: ACTION1–4 enqueue a cardinal move (FIFO, max 3 pending). Each step runs the oldest queued move first, then enqueues the current action. ACTION6 clears the queue."""
+"""Delay line: ACTION1–4 enqueue a cardinal move (FIFO, max 3 pending). Each step runs the oldest queued move first, then enqueues the current action. ACTION5 clears the queue."""
 
 from __future__ import annotations
 
@@ -109,7 +109,7 @@ class Dl01(ARCBaseGame):
             Camera(0, 0, CAM, CAM, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [1, 2, 3, 4, 5],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -133,7 +133,7 @@ class Dl01(ARCBaseGame):
     def step(self) -> None:
         aid = self.action.id
 
-        if aid == GameAction.ACTION6:
+        if aid == GameAction.ACTION5:
             self._q.clear()
             self._ui.update(0)
             self.complete_action()

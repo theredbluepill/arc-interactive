@@ -1,0 +1,18 @@
+{
+  "game_id": "fi01-v1",
+  "title": "Firebreak",
+  "description": "Fire spreads each step; ACTION5 places a blue break tile that blocks further spread into that cell.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5],
+  "tags": ["static", "simulation", "14-grid"],
+  "local_dir": "environment_files/fi01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [14],
+    "action_space": 5,
+    "physics_rules": ["fire-spread", "break-tile"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

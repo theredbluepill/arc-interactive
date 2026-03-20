@@ -1,4 +1,4 @@
-"""Drone relay: pick up orange crates with ACTION5, deliver to yellow pads. Move on a 48×48 grid; ACTION6 pings the nearest undelivered pad (HUD flash)."""
+"""Drone relay: pick up orange crates with ACTION5, deliver to yellow pads. Move on a 48×48 grid; when not picking up/dropping, ACTION5 pings the nearest pad (HUD flash)."""
 
 from __future__ import annotations
 
@@ -174,7 +174,7 @@ class Dd01(ARCBaseGame):
             Camera(0, 0, CAM_W, CAM_H, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 5, 6],
+            [1, 2, 3, 4, 5],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -261,6 +261,11 @@ class Dd01(ARCBaseGame):
                 self._holding = True
             elif self._holding and here and "pad" in here.tags:
                 self._holding = False
+            else:
+                p = self._nearest_pad()
+                if p:
+                    self._ping_pos = self._grid_to_frame_pixel(p.x, p.y)
+                    self._ping_frames = self.PING_FRAMES
             if len(self._crates()) == 0 and not self._holding:
                 self.next_level()
             self._sync_ui()
@@ -269,15 +274,4 @@ class Dd01(ARCBaseGame):
             self.complete_action()
             return
 
-        if aid != GameAction.ACTION6:
-            self.complete_action()
-            return
-
-        p = self._nearest_pad()
-        if p:
-            self._ping_pos = self._grid_to_frame_pixel(p.x, p.y)
-            self._ping_frames = self.PING_FRAMES
-        if self._burn():
-            return
-        self._sync_ui()
         self.complete_action()

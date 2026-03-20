@@ -1,0 +1,18 @@
+{
+  "game_id": "or01-v1",
+  "title": "Orbit Keys",
+  "description": "Keys orbit clockwise around a pillar each step; pick up when orthogonally adjacent.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "timing", "10-grid"],
+  "local_dir": "environment_files/or01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["moving-key"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

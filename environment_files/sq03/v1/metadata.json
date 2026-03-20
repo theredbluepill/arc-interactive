@@ -1,0 +1,18 @@
+{
+  "game_id": "sq03-v1",
+  "title": "Dual Queue Sequencing",
+  "description": "Two color queues; click the block matching either head; wrong click resets both queues.",
+  "default_fps": 20,
+  "baseline_actions": [6],
+  "tags": ["static", "sequencing", "click"],
+  "local_dir": "environment_files/sq03/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [12],
+    "action_space": 6,
+    "physics_rules": ["dual-queue"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

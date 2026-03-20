@@ -1,4 +1,4 @@
-"""Stencil paint: a 3×3 stencil moves with ACTION1–4; ACTION6 paints every non-wall cell under the stencil yellow. Match all gray hint cells."""
+"""Stencil paint: a 3×3 stencil moves with ACTION1–4; ACTION5 paints every non-wall cell under the stencil yellow. Match all gray hint cells."""
 
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ class Sf01(ARCBaseGame):
             Camera(0, 0, CAM_W, CAM_H, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [1, 2, 3, 4, 5],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -194,7 +194,7 @@ class Sf01(ARCBaseGame):
             self.complete_action()
             return
 
-        if aid != GameAction.ACTION6:
+        if aid != GameAction.ACTION5:
             self.complete_action()
             return
 

@@ -1,0 +1,18 @@
+{
+  "game_id": "zq03-v1",
+  "title": "Synced Dual Hazards",
+  "description": "Two hazard masks share one cycle length; exactly one beat per cycle has both fields safe.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "hazard", "timing"],
+  "local_dir": "environment_files/zq03/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 10],
+    "action_space": 4,
+    "physics_rules": ["synced-mask"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

@@ -556,10 +556,10 @@ def step(self) -> None:
 1. **lw01**: Store path endpoints in **`level.data["pairs"]`**; keep per-color trails and enforce **no shared cells** across colors; **ACTION6** requires **Manhattan distance 1** from the active path tip.
 2. **rp01**: Pulse **BFS** only through **`relay`** tiles from **orthogonal neighbors of `source`**; lamps count lit when **Chebyshev-adjacent** to a **visited relay** (not on the relay cell itself).
 3. **ml01**: Laser **raycast** with slash vs backslash mirrors via **`(-dy,-dx)`** vs **`(dy,dx)`**; **ACTION5** = fire only; **ACTION6** places/cycles mirrors on **player-adjacent** cells.
-4. **sf01**: **64×64** camera; **3×3 stencil** clamped to grid; win when **`goal <= painted`** (subset); refresh **`paint`** sprites each stamp.
+4. **sf01**: **64×64** camera; **3×3 stencil** clamped to grid; **`ACTION5`** paints; win when **`goal <= painted`** (subset); refresh **`paint`** sprites each stamp.
 5. **ll01**: **Conway** on full grid; evaluate **`_alive()`** into a **snapshot** before mutating sprites; **lose** on generation **`== need`** if pattern mismatch, or **`>` need**.
 6. **wl01**: Tag player-placed tiles **`mywall`** separately from static **`wall`**; **goal** is **non-collidable** — win by **position match** after movement.
-7. **dd01**: **`ACTION6` ping** should use the same **`_grid_to_frame_pixel`** letterbox math as **gp01**; tick **`_ping_frames`** once per **`step()`** (avoid mutating HUD state inside **`render_interface`**).
+7. **dd01**: **`ACTION5`** handles pickup/drop **or** HUD pad ping when idle (no **`ACTION6`**).
 8. **ck01**: **Wire connectivity** = BFS from **`in_port`** into **orth-adjacent `wire`** cells until **`out_port`** is reached.
 9. **ph01**: Keep numeric phases in **`self._g`**; **`phase_cell`** sprites for display — **skip `mark`** cells so targets stay visible; blur uses **orthogonal** neighbors only.
 10. **bn01**: **`hidden`** targets in **`level.data`**; **`ghost`** sprites only when **`(x,y) ∈ revealed`** (union of beacon disks); **wrong `ACTION6` flag** → **`lose()`** immediately.
@@ -568,3 +568,10 @@ def step(self) -> None:
 
 1. **tt02**: When normalizing patrol waypoints from **`level.data`**, use **`[(int(p[0]), int(p[1])) for p in loop]`** — not **`tuple(int(...), int(...))`** (the built-in **`tuple()`** constructor accepts only one iterable argument).
 2. **hd01**: **`ACTION5`** charges immunity only on **`station`** cells but must still run the same per-step heat tick and immune decay as movement actions (do not early-return before **`_steps` / `_heat_row`** update).
+
+## Lessons Learned (ACTION6 remediation + 30-game batch)
+
+1. **Non-click ACTION6**: **`dl01`** queue clear → **`ACTION5`**; **`sf01`** stencil paint → **`ACTION5`**; **`sg01`** timing commit → **`ACTION5`**; **`dd01`** pad ping → **`ACTION5`** only.
+2. **Click fixes**: **`fl01`** / **`ng01`** path/cell edits use **`camera.display_to_grid`** on **`ACTION6`** with **`action.data` x/y**.
+3. **rs03**: Orange **forbidden** targets may remain on the board — win when every **non-forbidden** target is cleared (set equality vs. “empty list”).
+4. **Wave-3 ports**: Copied **`xx02`→`xx03`** games need per-plan hooks in code (not only **`GAMES.md`**); **`lo03`** diagonals, **`pt03`** row/col band lock, **`sy03`** horizontal divider + vertical mirror math are the minimal shipped differentiators unless extended later.

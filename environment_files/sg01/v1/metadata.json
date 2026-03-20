@@ -1,16 +1,16 @@
 {
   "game_id": "sg01-v1",
   "title": "Signal Lock",
-  "description": "Timing bar: cursor sweeps each step; ACTION6 in the green window scores; miss shrinks the window.",
+  "description": "Timing bar: cursor sweeps each step; ACTION5 in the green window scores; miss shrinks the window.",
   "default_fps": 20,
-  "baseline_actions": [1, 2, 3, 4, 6],
+  "baseline_actions": [1, 2, 3, 4, 5],
   "tags": ["static", "timing", "skill"],
   "local_dir": "environment_files/sg01/v1",
   "date_created": "2026-03-20",
   "training_metadata": {
     "pcg_type": [],
     "grid_range": [8],
-    "action_space": 6,
+    "action_space": 5,
     "physics_rules": [],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000

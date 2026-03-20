@@ -1,4 +1,4 @@
-"""Numberlink-lite: draw a path between numbered endpoints using exactly L cells (including endpoints); no overlap."""
+"""Numberlink-lite: draw a path between numbered endpoints using exactly L cells (including endpoints); no overlap. ACTION6 uses display click on the grid (not player position)."""
 
 from arcengine import (
     ARCBaseGame,
@@ -169,7 +169,17 @@ class Fl01(ARCBaseGame):
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:
-            gx, gy = self._player.x, self._player.y
+            px = int(self.action.data.get("x", 0))
+            py = int(self.action.data.get("y", 0))
+            coords = self.camera.display_to_grid(px, py)
+            if coords is None:
+                self.complete_action()
+                return
+            gx, gy = int(coords[0]), int(coords[1])
+            gw, gh = self.current_level.grid_size
+            if not (0 <= gx < gw and 0 <= gy < gh):
+                self.complete_action()
+                return
             epa, epb = self._endpoints()
             if not self._path:
                 if (gx, gy) == epa or (gx, gy) == epb:

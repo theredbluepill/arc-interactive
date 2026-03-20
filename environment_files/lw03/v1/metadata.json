@@ -1,0 +1,35 @@
+{
+  "game_id": "lw03-v1",
+  "title": "Line Weave Shared (variant)",
+  "description": "Like line weave but paths may share cells; entering a shared cell from a perpendicular direction to another color is forbidden.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tags": [
+    "static",
+    "path",
+    "routing"
+  ],
+  "local_dir": "environment_files/lw03/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      24,
+      32
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "path",
+      "multi-color"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

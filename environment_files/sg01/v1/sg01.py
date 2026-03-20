@@ -1,4 +1,4 @@
-"""Signal lock: sweep cursor advances every step; ACTION6 in the green window scores (miss shrinks window)."""
+"""Signal lock: sweep cursor advances every step; ACTION5 in the green window scores (miss shrinks window)."""
 
 from arcengine import (
     ARCBaseGame,
@@ -93,7 +93,7 @@ class Sg01(ARCBaseGame):
             Camera(0, 0, 8, 8, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [1, 2, 3, 4, 5],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -113,7 +113,7 @@ class Sg01(ARCBaseGame):
         return self._lo <= self._cur <= self._hi
 
     def step(self) -> None:
-        if self.action.id == GameAction.ACTION6:
+        if self.action.id == GameAction.ACTION5:
             if self._in_window():
                 self._prog += 1
                 if self._prog >= self._need:
