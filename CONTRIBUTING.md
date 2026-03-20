@@ -210,6 +210,11 @@ Use the repo’s [issue templates](.github/ISSUE_TEMPLATE/) (bug report, game id
 
 Pull requests that change files under `environment_files/` are **smoke-tested in CI** (`devtools/smoke_games.py` via [`.github/workflows/pr-game-smoke.yml`](.github/workflows/pr-game-smoke.yml)): each affected game is loaded and stepped with random ACTION1–5. That catches load/`step()` crashes and missing `GAMES.md` rows; it does not replace manual or agent review for design and solvability.
 
+Optional local checks (not in CI by default):
+
+- **Full-table smoke with ACTION6** — [`devtools/smoke_registry_games.py`](devtools/smoke_registry_games.py): e.g. `uv run python devtools/smoke_registry_games.py --from pb01 --through bn03 --steps 80`
+- **Batch preview GIFs (multi-level + wall-bump “fails”)** — [`scripts/render_registry_gifs.py`](scripts/render_registry_gifs.py) + [`scripts/registry_gif_lib.py`](scripts/registry_gif_lib.py); per-game tuning in [`scripts/registry_gif_overrides.json`](scripts/registry_gif_overrides.json). Example: `uv run python scripts/render_registry_gifs.py --from pb01 --through bn03`
+
 Other automation:
 
 - **Registry check** — [`devtools/check_registry.py`](devtools/check_registry.py) on [`pr-registry.yml`](.github/workflows/pr-registry.yml): `metadata.json` shape, `game_id` / `local_dir`, `GAMES.md` rows vs disk (reference stems `vc33` / `ls20` / `ft09` are intentionally omitted from the table; see script).

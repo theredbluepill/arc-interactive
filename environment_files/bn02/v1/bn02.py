@@ -216,6 +216,7 @@ class Bn02(ARCBaseGame):
                 elif "ghost" in sp.tags or "flag" in sp.tags:
                     self._player.set_position(nx, ny)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -223,6 +224,7 @@ class Bn02(ARCBaseGame):
         if aid == GameAction.ACTION5:
             if self._budget <= 0:
                 if self._burn():
+                    self.complete_action()
                     return
                 self.complete_action()
                 return
@@ -231,6 +233,7 @@ class Bn02(ARCBaseGame):
             self._sync_ghosts()
             self._sync_ui()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -244,6 +247,7 @@ class Bn02(ARCBaseGame):
         coords = self.camera.display_to_grid(px, py)
         if coords is None:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -251,6 +255,7 @@ class Bn02(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         if not (0 <= gx < gw and 0 <= gy < gh):
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -269,6 +274,7 @@ class Bn02(ARCBaseGame):
             self._flagged.discard((gx, gy))
             self._sync_ui()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -280,6 +286,7 @@ class Bn02(ARCBaseGame):
             if self._flagged == self._hidden:
                 self.next_level()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return

@@ -323,6 +323,7 @@ class Ml03(ARCBaseGame):
                 elif "emitter" in sp.tags or "receptor" in sp.tags:
                     self._player.set_position(nx, ny)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -330,6 +331,7 @@ class Ml03(ARCBaseGame):
         if aid == GameAction.ACTION5:
             self._fire_laser()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -343,18 +345,21 @@ class Ml03(ARCBaseGame):
         coords = self.camera.display_to_grid(px, py)
         if coords is None:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
         gx, gy = coords
         if abs(gx - self._player.x) + abs(gy - self._player.y) != 1:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
         gw, gh = self.current_level.grid_size
         if not (0 <= gx < gw and 0 <= gy < gh):
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -370,6 +375,7 @@ class Ml03(ARCBaseGame):
             )
             self.current_level.add_sprite(new_sp)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -381,12 +387,14 @@ class Ml03(ARCBaseGame):
             or "receptor" in existing.tags
         ):
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
 
         if self._inv <= 0:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -395,5 +403,6 @@ class Ml03(ARCBaseGame):
         self._inv -= 1
         self._sync_ui()
         if self._burn():
+            self.complete_action()
             return
         self.complete_action()

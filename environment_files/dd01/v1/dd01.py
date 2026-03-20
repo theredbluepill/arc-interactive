@@ -249,6 +249,7 @@ class Dd01(ARCBaseGame):
                     self._player.set_position(nx, ny)
             self._sync_ui()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -270,6 +271,7 @@ class Dd01(ARCBaseGame):
                 self.next_level()
             self._sync_ui()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return

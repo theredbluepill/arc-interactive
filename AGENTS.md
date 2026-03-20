@@ -306,6 +306,19 @@ elif not sprite or not sprite.is_collidable:
     self._player.set_position(new_x, new_y)
 ```
 
+### 8. Step-budget helpers (`_burn`, `_burn_step`) and `lose()`
+**Cause**: Returning from `step()` when `_burn()` is true after `lose()` without calling `complete_action()`.
+**Solution**: Always finish the action:
+```python
+if self._burn():
+    self.complete_action()
+    return
+```
+
+### 9. Shadowing `ARCBaseGame._state`
+**Cause**: `ARCBaseGame` reserves `self._state` for `GameState`; assigning a dict (e.g. grid paint map) breaks the engine (`perform_action` / GIF capture).
+**Solution**: Use another name (`_paint`, `_grid_cells`, etc.) for per-game dictionaries.
+
 ## Terminal Color Palette (from arc-agi rendering.py)
 
 The terminal rendering uses ANSI RGB colors. Use this mapping for sprite colors:

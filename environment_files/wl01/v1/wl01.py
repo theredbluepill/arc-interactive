@@ -220,6 +220,7 @@ class Wl01(ARCBaseGame):
                 elif "goal" in sp.tags:
                     self._player.set_position(nx, ny)
             if self._burn():
+                self.complete_action()
                 return
             g = self.current_level.get_sprites_by_tag("goal")[0]
             if self._player.x == g.x and self._player.y == g.y:
@@ -231,6 +232,7 @@ class Wl01(ARCBaseGame):
             self._build = not self._build
             self._sync_ui()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -241,6 +243,7 @@ class Wl01(ARCBaseGame):
 
         if not self._build:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -250,6 +253,7 @@ class Wl01(ARCBaseGame):
         coords = self.camera.display_to_grid(px, py)
         if coords is None:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -257,6 +261,7 @@ class Wl01(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         if not (0 <= gx < gw and 0 <= gy < gh):
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -267,6 +272,7 @@ class Wl01(ARCBaseGame):
             self._placed -= 1
             self._sync_ui()
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -278,12 +284,14 @@ class Wl01(ARCBaseGame):
             or "player" in sp.tags
         ):
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
 
         if self._placed >= self._budget:
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return

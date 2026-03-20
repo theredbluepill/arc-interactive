@@ -170,6 +170,7 @@ class Sf01(ARCBaseGame):
         if aid == GameAction.ACTION1:
             self._sy = max(0, self._sy - 1)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -177,12 +178,14 @@ class Sf01(ARCBaseGame):
             gh = self.current_level.grid_size[1]
             self._sy = min(gh - self.ST, self._sy + 1)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
         if aid == GameAction.ACTION3:
             self._sx = max(0, self._sx - 1)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -190,6 +193,7 @@ class Sf01(ARCBaseGame):
             gw = self.current_level.grid_size[0]
             self._sx = min(gw - self.ST, self._sx + 1)
             if self._burn():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -219,6 +223,7 @@ class Sf01(ARCBaseGame):
                 )
 
         if self._burn():
+            self.complete_action()
             return
         self._sync_ui()
         if self._goal <= self._painted():

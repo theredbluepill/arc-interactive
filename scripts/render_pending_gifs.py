@@ -5,6 +5,8 @@ Generate assets/{id}.gif for every GAMES.md row with an empty Preview cell.
 Phase 1: greedy BFS toward goal-like cells (recomputed each step for dynamic doors).
 Phase 2: if too few frames, reset and run a short mixed ACTION1–6 showcase (clicks use
 letterboxed cell-centers). Not a full solve for every game, but produces readable motion.
+
+See also: ``render_registry_gifs.py`` + ``registry_gif_lib.py`` for multi-level captures.
 """
 
 from __future__ import annotations
@@ -12,14 +14,11 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from collections import deque
 from pathlib import Path
 
-from arcengine import GameAction, GameState, Level
-
+from arcengine import GameState
 from gif_common import (
     append_frame_repeats,
-    grid_cell_center_display,
     offline_arcade,
     repo_root,
     save_gif,
@@ -27,91 +26,11 @@ from gif_common import (
 
 # Import table parser (same repo, scripts/ on sys.path when run as file)
 from gif_inventory import parse_games_table
-
-DELTA_TO_ACTION = {
-    (0, -1): GameAction.ACTION1,
-    (0, 1): GameAction.ACTION2,
-    (-1, 0): GameAction.ACTION3,
-    (1, 0): GameAction.ACTION4,
-}
-
-GOAL_TAGS = (
-    "goal",
-    "target",
-    "exit",
-    "receptor",
-    "sink",
-    "goal_island",
-    "safe_zone",
-    "vaccine",
+from registry_gif_lib import (
+    bfs_next_action,
+    goal_positions_set,
+    run_showcase_fallback,
 )
-
-GOAL_DATA_KEYS = (
-    "goal_island_coords",
-    "exit_coords",
-)
-
-
-def goal_positions_set(level: Level) -> set[tuple[int, int]]:
-    cells: set[tuple[int, int]] = set()
-    for tag in GOAL_TAGS:
-        for sp in level.get_sprites_by_tag(tag):
-            cells.add((sp.x, sp.y))
-    for key in GOAL_DATA_KEYS:
-        raw = level.get_data(key)
-        if raw:
-            cells.update(raw)
-    return cells
-
-
-def walk_blocked(level: Level, x: int, y: int, goals: set[tuple[int, int]]) -> bool:
-    if (x, y) in goals:
-        return False
-    sp = level.get_sprite_at(x, y, ignore_collidable=True)
-    if sp is None:
-        return False
-    tags = set(sp.tags)
-    if "mine" in tags:
-        return True
-    if "hazard" in tags:
-        return True
-    if sp.is_collidable:
-        return True
-    return False
-
-
-def bfs_next_action(
-    level: Level,
-    start: tuple[int, int],
-    goals: set[tuple[int, int]],
-) -> GameAction | None:
-    w, h = level.grid_size
-    if start in goals:
-        return None
-    q: deque[tuple[int, int]] = deque([start])
-    prev: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
-    found: tuple[int, int] | None = None
-    while q:
-        x, y = q.popleft()
-        if (x, y) in goals:
-            found = (x, y)
-            break
-        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            nx, ny = x + dx, y + dy
-            if not (0 <= nx < w and 0 <= ny < h):
-                continue
-            if walk_blocked(level, nx, ny, goals):
-                continue
-            if (nx, ny) not in prev:
-                prev[(nx, ny)] = (x, y)
-                q.append((nx, ny))
-    if found is None:
-        return None
-    cur = found
-    while prev[cur] != start:
-        cur = prev[cur]
-    dx, dy = cur[0] - start[0], cur[1] - start[1]
-    return DELTA_TO_ACTION[(dx, dy)]
 
 
 def _empty_preview_game_ids(root: Path) -> list[str]:
@@ -209,44 +128,9 @@ def record_one(game_id: str, root: Path, *, verbose: bool = False) -> Path:
     if len(images) < min_frames:
         if verbose:
             print(f"  {game_id}: showcase fallback ({len(images)} frames)")
-        images.clear()
-        res = env.reset()
-        raster = last_raster()
-        snap_repeats(8)
-        level = env._game.current_level
-        gw, gh = level.grid_size
-        has_player = bool(level.get_sprites_by_tag("player"))
-        for i in range(44):
-            data: dict[str, int] = {}
-            if has_player:
-                phase = i % 7
-                if phase < 4:
-                    act = (
-                        GameAction.ACTION1,
-                        GameAction.ACTION2,
-                        GameAction.ACTION3,
-                        GameAction.ACTION4,
-                    )[phase]
-                elif phase == 4:
-                    act = GameAction.ACTION5
-                else:
-                    act = GameAction.ACTION6
-                    gx = (i // 2) % gw
-                    gy = ((i // 2) // gw) % gh
-                    cx, cy = grid_cell_center_display(
-                        gx, gy, grid_w=gw, grid_h=gh
-                    )
-                    data = {"x": cx, "y": cy}
-            else:
-                act = GameAction.ACTION6
-                gx = (i % gw + gw // 2) % gw
-                gy = (i * 3 + gh // 2) % gh
-                cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
-                data = {"x": cx, "y": cy}
-            res = env.step(act, reasoning={}, data=data)
-            snap_repeats(2)
+        res = run_showcase_fallback(env, res, images, snap_repeats)
+        snap_repeats(12)
 
-    snap_repeats(12)
     save_gif(out, images, duration_ms=150)
     if verbose:
         print(f"  wrote {out} ({len(images)} frames)")

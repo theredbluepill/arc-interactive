@@ -245,6 +245,7 @@ class Lw01(ARCBaseGame):
                 tr.pop()
                 self._refresh_trail_sprites()
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -258,6 +259,7 @@ class Lw01(ARCBaseGame):
         coords = self.camera.display_to_grid(x, y)
         if coords is None:
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -266,6 +268,7 @@ class Lw01(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         if not (0 <= gx < gw and 0 <= gy < gh):
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -273,18 +276,21 @@ class Lw01(ARCBaseGame):
         cur = self._paths[self._active][-1]
         if abs(gx - cur[0]) + abs(gy - cur[1]) != 1:
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
 
         if self._wall_at(gx, gy):
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
 
         if self._occupied_by_other(gx, gy, self._active):
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -292,6 +298,7 @@ class Lw01(ARCBaseGame):
         st, en = self._pairs[self._active]
         if (gx, gy) in self._paths[self._active] and (gx, gy) != st:
             if self._burn_step():
+                self.complete_action()
                 return
             self.complete_action()
             return
@@ -299,6 +306,7 @@ class Lw01(ARCBaseGame):
         self._paths[self._active].append((gx, gy))
         self._refresh_trail_sprites()
         if self._burn_step():
+            self.complete_action()
             return
 
         if self._win():

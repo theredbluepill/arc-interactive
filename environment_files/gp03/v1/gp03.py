@@ -101,7 +101,8 @@ class Gp03(ARCBaseGame):
             if isinstance(k, str):
                 a, b = k.split(",")
                 self._goal[(int(a), int(b))] = int(v)
-        self._state: dict[tuple[int, int], int] = {p: 0 for p in self._goal}
+        # Avoid ``self._state`` — reserved on ARCBaseGame for GameState.
+        self._paint: dict[tuple[int, int], int] = {p: 0 for p in self._goal}
         for s in list(self.current_level.get_sprites_by_tag("paint")):
             self.current_level.remove_sprite(s)
         self._sync_ui()
@@ -113,7 +114,7 @@ class Gp03(ARCBaseGame):
         return None
 
     def _sync_ui(self) -> None:
-        ok = sum(1 for p, g in self._goal.items() if self._state.get(p, 0) == g)
+        ok = sum(1 for p, g in self._goal.items() if self._paint.get(p, 0) == g)
         self._ui.update(ok, max(1, len(self._goal)))
 
     def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
@@ -150,9 +151,9 @@ class Gp03(ARCBaseGame):
             self.complete_action()
             return
 
-        cur = self._state.get((gx, gy), 0)
+        cur = self._paint.get((gx, gy), 0)
         nxt = (cur + 1) % 3
-        self._state[(gx, gy)] = nxt
+        self._paint[(gx, gy)] = nxt
         old = self._sprite_at_cell(gx, gy)
         if old:
             self.current_level.remove_sprite(old)
@@ -161,7 +162,7 @@ class Gp03(ARCBaseGame):
             self.current_level.add_sprite(ns.set_position(gx, gy))
 
         self._sync_ui()
-        if all(self._state.get(p, 0) == g for p, g in self._goal.items()):
+        if all(self._paint.get(p, 0) == g for p, g in self._goal.items()):
             self.next_level()
 
         self.complete_action()
