@@ -94,14 +94,14 @@ levels = [
         3,
         4,
     ),
+    # Replaced unsolvable 10×8 layout; capped slide cannot reach prior goal from (1,1).
     make_level(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["target"].clone().set_position(8, 6),
-            sprites["hazard"].clone().set_position(5, 4),
-        ]
-        + [sprites["wall"].clone().set_position(x, y) for x, y in [(3, 2), (4, 2)]],
-        (10, 8),
+            sprites["player"].clone().set_position(1, 6),
+            sprites["target"].clone().set_position(6, 1),
+            sprites["wall"].clone().set_position(3, 3),
+        ],
+        (8, 8),
         4,
         3,
     ),

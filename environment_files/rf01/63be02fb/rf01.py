@@ -71,7 +71,7 @@ levels = [
             sprites["player"].clone().set_position(4, 2),
             sprites["target"].clone().set_position(1, 6),
         ]
-        + [sprites["wall"].clone().set_position(3, y) for y in range(8)],
+        + [sprites["wall"].clone().set_position(3, y) for y in range(8) if y != 2],
         (8, 8),
         3,
     ),

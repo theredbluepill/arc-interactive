@@ -3,6 +3,15 @@
     "target_levels": 2,
     "pb03_fail_hold_frames": 24
   },
+  "bd01": {
+    "bd01_fail_hold_frames": 28
+  },
+  "wk01": {
+    "wk01_fail_hold_frames": 28
+  },
+  "gr01": {
+    "gr01_fail_hold_frames": 28
+  },
   "fs02": {
     "switch_or_door_open_hold_frames": 18,
     "switch_level_hold_frames": 22

@@ -10,13 +10,29 @@ from arcengine import (
 
 
 class Wk01UI(RenderableUserDisplay):
-    def __init__(self, _: int) -> None:
-        pass
+    """Bottom-right: **red** = stepped in a **hole**; **maroon** in play. Bottom-left **13** = weak-floor cue."""
 
-    def update(self, _: int) -> None:
-        pass
+    def __init__(self) -> None:
+        self._fail = False
+
+    def update(self, *, fail: bool | None = None) -> None:
+        if fail is not None:
+            self._fail = fail
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        br = 8 if self._fail else 13
+        bl = 8 if self._fail else 13
+        for dy in range(4):
+            for dx in range(4):
+                frame[h - 4 + dy, w - 4 + dx] = br
+        for dy in range(3):
+            for dx in range(3):
+                frame[h - 4 + dy, dx] = bl
         return frame
 
 
@@ -119,7 +135,7 @@ PADDING_COLOR = 4
 
 class Wk01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Wk01UI(0)
+        self._ui = Wk01UI()
         super().__init__(
             "wk01",
             levels,
@@ -133,6 +149,7 @@ class Wk01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._targets = self.current_level.get_sprites_by_tag("target")
         self._prev_pos = (self._player.x, self._player.y)
+        self._ui.update(fail=False)
 
     def _collapse_weak(self, left_pos: tuple[int, int]) -> None:
         wx, wy = left_pos
@@ -173,6 +190,7 @@ class Wk01(ARCBaseGame):
             return
 
         if sprite and "hole" in sprite.tags:
+            self._ui.update(fail=True)
             self.lose()
             self.complete_action()
             return

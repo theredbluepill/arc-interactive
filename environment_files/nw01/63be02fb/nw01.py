@@ -1,4 +1,15 @@
-"""Arrow floor: after you land on an arrow cell, your next move uses that facing (overrides input)."""
+"""Arrow floor (forced next step).
+
+Magenta **arrow** tiles are defined in ``level.data["arrows"]`` as ``[[(x, y), [dx, dy]], ...]``.
+``[dx, dy]`` is a **unit** step: ``[0,-1]`` up, ``[0,1]`` down, ``[-1,0]`` left, ``[1,0]`` right.
+
+**Rule:** When your move **ends** with you standing on an arrow cell, the engine stores that arrow’s
+direction. On your **very next** ACTION1–4 step, that stored direction is used **instead of** the
+action you chose; then the override clears. Normal control resumes until you land on another arrow.
+
+**Tip:** The HUD shows a small **orange** cue while a forced direction is queued (after you step on
+an arrow, before that forced step runs).
+"""
 
 from arcengine import (
     ARCBaseGame,
@@ -10,13 +21,25 @@ from arcengine import (
 
 
 class Nw01UI(RenderableUserDisplay):
-    def __init__(self, _: int) -> None:
-        pass
+    """Bottom-left **orange** patch = a forced move is **queued** (you stepped on an arrow)."""
 
-    def update(self, _: int) -> None:
-        pass
+    def __init__(self) -> None:
+        self._pending: tuple[int, int] | None = None
+
+    def update(self, *, pending: tuple[int, int] | None) -> None:
+        self._pending = pending
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        if self._pending is None:
+            return frame
+        h, w = frame.shape
+        for dy in range(3):
+            for dx in range(3):
+                frame[h - 4 + dy, dx] = 12
         return frame
 
 
@@ -120,7 +143,7 @@ PADDING_COLOR = 4
 
 class Nw01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Nw01UI(0)
+        self._ui = Nw01UI()
         super().__init__(
             "nw01",
             levels,
@@ -138,6 +161,7 @@ class Nw01(ARCBaseGame):
             pos, vec = entry
             self._arrow_map[tuple(pos)] = tuple(vec)
         self._forced: tuple[int, int] | None = None
+        self._ui.update(pending=None)
 
     def step(self) -> None:
         dx = 0
@@ -156,6 +180,7 @@ class Nw01(ARCBaseGame):
                 dx = 1
 
         if dx == 0 and dy == 0:
+            self._ui.update(pending=self._forced)
             self.complete_action()
             return
 
@@ -163,12 +188,14 @@ class Nw01(ARCBaseGame):
         new_y = self._player.y + dy
         grid_w, grid_h = self.current_level.grid_size
         if not (0 <= new_x < grid_w and 0 <= new_y < grid_h):
+            self._ui.update(pending=self._forced)
             self.complete_action()
             return
 
         sprite = self.current_level.get_sprite_at(new_x, new_y, ignore_collidable=True)
 
         if sprite and "wall" in sprite.tags:
+            self._ui.update(pending=self._forced)
             self.complete_action()
             return
 
@@ -178,6 +205,7 @@ class Nw01(ARCBaseGame):
         pos = (self._player.x, self._player.y)
         if pos in self._arrow_map:
             self._forced = self._arrow_map[pos]
+        self._ui.update(pending=self._forced)
 
         for t in self._targets:
             if self._player.x == t.x and self._player.y == t.y:

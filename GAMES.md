@@ -34,13 +34,13 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | tp03 | Puzzle Mechanics | 8-10 | 5 | **Single-use** links: each pair vanishes after one warp (HUD: remaining pair ticks + burn flash on landing). | ![tp03](assets/tp03.gif) | • 1-4: Movement |
 | ic02 | Puzzle Mechanics | 8-10 | 5 | **Torus** ice slide: wraps at grid edges until a wall/hazard stops you. | ![ic02](assets/ic02.gif) | • 1-4: Movement |
 | ic03 | Puzzle Mechanics | 8-10 | 5 | **Capped** slide: each move travels at most `slide_cap` cells (`level.data`). | ![ic03](assets/ic03.gif) | • 1-4: Movement |
-| va02 | Coverage / Path | 4-8 | 5 | Visit every **non-hazard** floor cell; red hazard cells never need coverage. | ![va02](assets/va02.gif) | • 1-4: Movement |
-| va03 | Coverage / Path | 4-8 | 5 | **Ordered** visit cells (`visit_order` in level data) before finishing. | ![va03](assets/va03.gif) | • 1-4: Movement |
-| nw01 | Puzzle Mechanics | 8-10 | 5 | Arrow tiles (`arrows` in level data) **force** the next cardinal step. | ![nw01](assets/nw01.gif) | • 1-4: Movement |
-| bd01 | Coverage / Path | 5-8 | 5 | **No revisits** — entering any cell twice loses; reach the goal. | ![bd01](assets/bd01.gif) | • 1-4: Movement |
-| gr01 | Puzzle Mechanics | 8-10 | 5 | **Gravity**: after each move, one auto-step in the level’s gravity direction. | ![gr01](assets/gr01.gif) | • 1-4: Movement |
-| dt01 | Puzzle Mechanics | 8-10 | 5 | **Waypoint** (cyan) must be stepped before the yellow goal counts. | ![dt01](assets/dt01.gif) | • 1-4: Movement |
-| wk01 | Puzzle Mechanics | 8-10 | 5 | **Weak floor**: brown tiles collapse to holes after you leave; holes are lethal. | ![wk01](assets/wk01.gif) | • 1-4: Movement |
+| va02 | Coverage / Path | 4-8 | 5 | Visit every **non-hazard** floor cell; red hazard cells never need coverage. **Visited** cells stay **green** (trail). **Three** blocked moves (OOB / wall / hazard) on a level = lose; corner HUD shows strikes left. | ![va02](assets/va02.gif) | • 1-4: Movement |
+| va03 | Coverage / Path | 4-8 | 5 | Visit yellow waypoints **in order** with a **fixed move budget** (shortest solve length). OOB/wall don’t use moves. Waste the budget or mistime the final step = lose. | ![va03](assets/va03.gif) | • 1-4: Movement |
+| nw01 | Puzzle Mechanics | 8-10 | 5 | **Arrow tiles:** stepping onto one **queues** its direction; your **next** move uses that vector instead of your key (then it clears). **Orange** HUD = forced move queued. | ![nw01](assets/nw01.gif) | • 1-4: Movement |
+| bd01 | Coverage / Path | 5-8 | 5 | **No revisits** — entering any cell twice **loses**; reach the goal. **Red** tiles mark cells you already left; HUD corners **red** on revisit fail. | ![bd01](assets/bd01.gif) | • 1-4: Movement |
+| gr01 | Puzzle Mechanics | 8-10 | 6 | **Gravity**: after each move, one auto-step **down** (if clear). **Lose** if the goal is **unreachable** (BFS with same rules), confirmed on **two** consecutive steps. **Dense gray walls** per level (still fully solvable); L0 keeps the **walled pit** for the registry fail beat. | ![gr01](assets/gr01.gif) | • 1-4: Movement |
+| dt01 | Puzzle Mechanics | 8-10 | 5 | **Detour:** cyan waypoint arms only when you **enter it from the required side** (`waypoint_enter_from`: **n**/ **e**/ **s**/ **w**); then the yellow goal counts. | ![dt01](assets/dt01.gif) | • 1-4: Movement |
+| wk01 | Puzzle Mechanics | 8-10 | 5 | **Weak floor**: brown tiles collapse to holes after you leave; holes are lethal. HUD turns **red** on hole death. | ![wk01](assets/wk01.gif) | • 1-4: Movement |
 | rf01 | Puzzle Mechanics | 8-10 | 5 | **Mirror half-plane**: on `x >= mid`, left/right inputs are swapped. | ![rf01](assets/rf01.gif) | • 1-4: Movement |
 | mo01 | Puzzle Mechanics | 8-10 | 5 | **Momentum**: need **≥2** steps in a row before changing direction; early turn = lose. | ![mo01](assets/mo01.gif) | • 1-4: Movement |
 | zq01 | Puzzle Mechanics | 8-10 | 5 | **Zone timer**: blinking red hazard cells toggle on a fixed period (`period`, `hazard_cells`). | ![zq01](assets/zq01.gif) | • 1-4: Movement |

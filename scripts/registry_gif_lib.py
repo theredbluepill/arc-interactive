@@ -6,7 +6,7 @@ import json
 import random
 from collections import deque
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from arcengine import GameAction, GameState, Level
 from env_resolve import full_game_id_for_stem, load_stem_game_py
@@ -561,8 +561,8 @@ def _record_portal_pair_gif(
     return res, images
 
 
-# Ice slide (ic01): one action = slide to stop; registry cell-BFS is wrong physics.
-ICE_SLIDE_STEMS: frozenset[str] = frozenset({"ic01"})
+# Ice slide variants: one action = slide with stem-specific physics; generic BFS is wrong.
+ICE_SLIDE_STEMS: frozenset[str] = frozenset({"ic01", "ic02", "ic03"})
 
 
 def _parse_ice_slide_level(
@@ -605,16 +605,74 @@ def _ice_slide_end(
     return (px, py)
 
 
+def _ice_slide_end_torus(
+    gw: int,
+    gh: int,
+    blocked: set[tuple[int, int]],
+    px: int,
+    py: int,
+    dx: int,
+    dy: int,
+) -> tuple[int, int]:
+    """Stop cell after one slide; matches ic02.step (wrap at edges, cap gw*gh steps)."""
+    for _ in range(gw * gh):
+        nx = px + dx
+        ny = py + dy
+        if nx < 0:
+            nx = gw - 1
+        elif nx >= gw:
+            nx = 0
+        if ny < 0:
+            ny = gh - 1
+        elif ny >= gh:
+            ny = 0
+        if (nx, ny) in blocked:
+            break
+        px, py = nx, ny
+    return (px, py)
+
+
+def _ice_slide_end_capped(
+    gw: int,
+    gh: int,
+    blocked: set[tuple[int, int]],
+    px: int,
+    py: int,
+    dx: int,
+    dy: int,
+    cap: int,
+) -> tuple[int, int]:
+    """Stop cell after one move; matches ic03.step (at most ``cap`` cells)."""
+    steps = 0
+    k = max(1, cap)
+    while steps < k:
+        nx, ny = px + dx, py + dy
+        if not (0 <= nx < gw and 0 <= ny < gh):
+            break
+        if (nx, ny) in blocked:
+            break
+        px, py = nx, ny
+        steps += 1
+    return (px, py)
+
+
 def ice_slide_plan(
     level: Level,
     *,
     max_nodes: int = 10_000,
     slide_start: tuple[int, int] | None = None,
+    physics: Literal["bounded", "torus", "capped"] = "bounded",
+    slide_cap: int | None = None,
 ) -> list[int] | None:
-    """BFS over stop positions; edges are one cardinal slide (matches ic01.step)."""
+    """BFS over stop positions; edges are one cardinal slide (physics per stem)."""
     gw, gh, blocked, targets, authored_start = _parse_ice_slide_level(level)
     if not targets:
         return None
+    cap = (
+        slide_cap
+        if slide_cap is not None
+        else int(level.get_data("slide_cap") or 3)
+    )
     start = slide_start if slide_start is not None else authored_start
     if start in targets:
         return []
@@ -636,7 +694,14 @@ def ice_slide_plan(
             out.reverse()
             return out
         for dy, dx, act in _PUSH_DELTAS:
-            ex, ey = _ice_slide_end(gw, gh, blocked, x, y, dx, dy)
+            if physics == "bounded":
+                ex, ey = _ice_slide_end(gw, gh, blocked, x, y, dx, dy)
+            elif physics == "torus":
+                ex, ey = _ice_slide_end_torus(gw, gh, blocked, x, y, dx, dy)
+            else:
+                ex, ey = _ice_slide_end_capped(
+                    gw, gh, blocked, x, y, dx, dy, cap
+                )
             if (ex, ey) not in prev:
                 prev[(ex, ey)] = ((x, y), act)
                 q.append((ex, ey))
@@ -715,6 +780,10 @@ def _record_ice_slide_gif(
     for i in range(L):
         if game_id == "ic01":
             p = ic01_showcase_plan(level_defs[i])
+        elif game_id == "ic02":
+            p = ice_slide_plan(level_defs[i], physics="torus")
+        elif game_id == "ic03":
+            p = ice_slide_plan(level_defs[i], physics="capped")
         else:
             p = ice_slide_plan(level_defs[i])
         if p is None:
@@ -769,10 +838,11 @@ def _record_ice_slide_gif(
     return res, images
 
 
-# Visit-all coverage (va01 / va02): no single goal cell — registry goal-BFS wanders forever.
+# Visit-all coverage (va01 / va02) and ordered waypoints (va03).
 VISIT_ALL_BLOCK_TAGS: dict[str, tuple[str, ...]] = {
     "va01": ("wall",),
     "va02": ("wall", "hazard"),
+    "va03": ("wall",),
 }
 
 
@@ -861,6 +931,103 @@ def visit_all_greedy_plan(
     return plan
 
 
+def va03_ordered_plan(
+    level: Level,
+    *,
+    max_actions: int = 12_000,
+) -> list[int] | None:
+    """Shortest paths in sequence through ``visit_order``; walls only (marks are walk-through)."""
+    raw = level.get_data("visit_order") or []
+    order = [(int(p[0]), int(p[1])) for p in raw]
+    if not order:
+        return []
+    gw, gh = level.grid_size
+    walls: set[tuple[int, int]] = set()
+    player: tuple[int, int] | None = None
+    for s in level.get_sprites():
+        if "player" in s.tags:
+            player = (s.x, s.y)
+        elif "wall" in s.tags:
+            walls.add((s.x, s.y))
+    if player is None:
+        return None
+    open_cells: set[tuple[int, int]] = set()
+    for x in range(gw):
+        for y in range(gh):
+            if (x, y) not in walls:
+                open_cells.add((x, y))
+    if player not in open_cells:
+        return None
+    idx = 0
+    if player == order[0]:
+        idx = 1
+    plan: list[int] = []
+    pos = player
+    while idx < len(order):
+        goal = order[idx]
+        seg = _bfs_actions_to_any_open(open_cells, pos, {goal})
+        if seg is None:
+            return None
+        plan.extend(seg)
+        for act in seg:
+            dy, dx, _ = next(t for t in _PUSH_DELTAS if t[2] == act)
+            pos = (pos[0] + dx, pos[1] + dy)
+        if pos != goal:
+            return None
+        idx += 1
+        if len(plan) > max_actions:
+            return None
+    return plan
+
+
+def _visit_all_blocked_move_ids(level: Level, game_id: str, *, max_ids: int = 2) -> list[int]:
+    """Movement action ids (1–4) that are OOB or hit wall/hazard from the player's start cell."""
+    px = py = None
+    for s in level.get_sprites():
+        if "player" in s.tags:
+            px, py = s.x, s.y
+            break
+    if px is None:
+        return []
+    gw, gh = level.grid_size
+    out: list[int] = []
+    for dy, dx, aid in _PUSH_DELTAS:
+        nx, ny = px + dx, py + dy
+        blocked = False
+        if not (0 <= nx < gw and 0 <= ny < gh):
+            blocked = True
+        else:
+            sp = level.get_sprite_at(nx, ny, ignore_collidable=True)
+            if sp and "wall" in sp.tags:
+                blocked = True
+            elif game_id == "va02" and sp and "hazard" in sp.tags:
+                blocked = True
+        if blocked:
+            out.append(aid)
+            if len(out) >= max_ids:
+                break
+    return out
+
+
+def _va03_step_budget_fail_actions(level: Level) -> list[int] | None:
+    """
+    Successful moves that burn ``step_limit`` without clearing (registry GIF beat).
+    Uses a right/right/left/left ping-pong; only valid on levels with no walls where
+    that path never satisfies remaining waypoints (verified for shipped va03 L0).
+    """
+    for s in level.get_sprites():
+        if "wall" in s.tags:
+            return None
+    raw = level.get_data("step_limit")
+    if raw is None:
+        return None
+    lim = int(raw)
+    if lim <= 0:
+        return None
+    pat = (4, 4, 3, 3)
+    return [pat[i % 4] for i in range(lim)]
+
+
 def _record_visit_all_gif(
     game_id: str,
     root: Path,
@@ -887,7 +1054,10 @@ def _record_visit_all_gif(
 
     plans: list[list[int]] = []
     for i in range(L):
-        p = visit_all_greedy_plan(level_defs[i], blocking)
+        if game_id == "va03":
+            p = va03_ordered_plan(level_defs[i])
+        else:
+            p = visit_all_greedy_plan(level_defs[i], blocking)
         if p is None:
             raise RuntimeError(
                 f"{game_id}: level {i} has no visit-all plan for registry GIF"
@@ -907,6 +1077,26 @@ def _record_visit_all_gif(
     snap_repeats(8)
     step_abort = False
     try:
+        if game_id == "va03":
+            burn = _va03_step_budget_fail_actions(level_defs[0])
+            if burn:
+                for av in burn:
+                    res = safe_env_step(env, _PUSH_ACTION[av], reasoning={})
+                    snap_repeats(3)
+                snap_repeats(16)
+                res = env.reset()
+                snap_repeats(6)
+        fail_ids = (
+            _visit_all_blocked_move_ids(level_defs[0], game_id, max_ids=2)
+            if game_id == "va02"
+            else []
+        )
+        fail_snap_each, fail_snap_tail = 1, 2
+        for av in fail_ids:
+            res = safe_env_step(env, _PUSH_ACTION[av], reasoning={})
+            snap_repeats(fail_snap_each)
+        if fail_ids:
+            snap_repeats(fail_snap_tail)
         for plan in plans:
             for av in plan:
                 res = safe_env_step(env, _PUSH_ACTION[av], reasoning={})
@@ -1504,6 +1694,12 @@ def record_registry_gif(
     exploration if stuck. Falls back to showcase if too few frames.
     """
     o = dict(overrides or {})
+    from registry_mechanic_gif import MECHANIC_SHOWCASE_STEMS, record_mechanic_showcase_gif
+
+    if game_id in MECHANIC_SHOWCASE_STEMS:
+        return record_mechanic_showcase_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
     if game_id == "pb03":
         return _record_pb03_gif(
             game_id, root, overrides=o, verbose=verbose, seed=seed

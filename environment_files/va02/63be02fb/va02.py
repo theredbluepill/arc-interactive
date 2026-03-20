@@ -8,11 +8,13 @@ from arcengine import (
 
 
 class Va02UI(RenderableUserDisplay):
-    def __init__(self, remaining: int) -> None:
+    def __init__(self, remaining: int, strikes_left: int) -> None:
         self._remaining = remaining
+        self._strikes_left = strikes_left
 
-    def update(self, remaining: int) -> None:
+    def update(self, remaining: int, strikes_left: int) -> None:
         self._remaining = remaining
+        self._strikes_left = strikes_left
 
     def render_interface(self, frame):
         import numpy as np
@@ -24,6 +26,11 @@ class Va02UI(RenderableUserDisplay):
         for dy in range(4):
             for dx in range(4):
                 frame[h - 4 + dy, w - 4 + dx] = color
+        for i in range(3):
+            c = 14 if i < self._strikes_left else 8
+            for dy in range(2):
+                for dx in range(2):
+                    frame[h - 4 + dy, 2 + i * 3 + dx] = c
         return frame
 
 
@@ -34,6 +41,15 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["player"],
+        layer=2,
+    ),
+    "trail": Sprite(
+        pixels=[[14]],
+        name="trail",
+        visible=True,
+        collidable=False,
+        tags=["trail"],
+        layer=0,
     ),
     "wall": Sprite(
         pixels=[[3]],
@@ -41,6 +57,7 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["wall"],
+        layer=1,
     ),
     "hazard": Sprite(
         pixels=[[8]],
@@ -48,6 +65,7 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["hazard"],
+        layer=1,
     ),
 }
 
@@ -109,10 +127,22 @@ PADDING_COLOR = 4
 
 
 class Va02(ARCBaseGame):
-    """Visit every safe floor cell; red hazard cells are not part of coverage and block entry."""
+    """Visit every safe floor cell; red hazard cells are not part of coverage and block entry.
+    Three blocked move attempts (OOB, wall, hazard) in one level = lose."""
+
+    MAX_STRIKES = 3
+
+    def _add_trail(self, x: int, y: int) -> None:
+        t = sprites["trail"].clone().set_position(x, y)
+        self.current_level.add_sprite(t)
+
+    def _sync_ui(self) -> None:
+        rem = len(self._open_cells) - len(self._visited)
+        left = self.MAX_STRIKES - self._strikes
+        self._ui.update(rem, left)
 
     def __init__(self) -> None:
-        self._ui = Va02UI(0)
+        self._ui = Va02UI(0, self.MAX_STRIKES)
         super().__init__(
             "va02",
             levels,
@@ -139,7 +169,9 @@ class Va02(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._open_cells = self._compute_open_cells()
         self._visited: set[tuple[int, int]] = {(self._player.x, self._player.y)}
-        self._ui.update(len(self._open_cells) - len(self._visited))
+        self._strikes = 0
+        self._add_trail(self._player.x, self._player.y)
+        self._sync_ui()
 
     def step(self) -> None:
         dx = 0
@@ -161,24 +193,39 @@ class Va02(ARCBaseGame):
         new_y = self._player.y + dy
         grid_w, grid_h = self.current_level.grid_size
         if not (0 <= new_x < grid_w and 0 <= new_y < grid_h):
+            self._strikes += 1
+            self._sync_ui()
+            if self._strikes >= self.MAX_STRIKES:
+                self.lose()
             self.complete_action()
             return
 
         sprite = self.current_level.get_sprite_at(new_x, new_y, ignore_collidable=True)
 
         if sprite and "wall" in sprite.tags:
+            self._strikes += 1
+            self._sync_ui()
+            if self._strikes >= self.MAX_STRIKES:
+                self.lose()
             self.complete_action()
             return
 
         if sprite and "hazard" in sprite.tags:
+            self._strikes += 1
+            self._sync_ui()
+            if self._strikes >= self.MAX_STRIKES:
+                self.lose()
             self.complete_action()
             return
 
         if not sprite or not sprite.is_collidable:
             self._player.set_position(new_x, new_y)
 
-        self._visited.add((self._player.x, self._player.y))
-        self._ui.update(len(self._open_cells) - len(self._visited))
+        pos = (self._player.x, self._player.y)
+        if pos not in self._visited:
+            self._add_trail(*pos)
+        self._visited.add(pos)
+        self._sync_ui()
 
         if self._visited == self._open_cells:
             self.next_level()

@@ -1,4 +1,4 @@
-"""Step on the cyan waypoint before the yellow goal counts."""
+"""Cyan waypoint must be entered from the correct side before the yellow goal counts."""
 
 from arcengine import (
     ARCBaseGame,
@@ -7,6 +7,16 @@ from arcengine import (
     RenderableUserDisplay,
     Sprite,
 )
+
+
+# ``waypoint_enter_from``: which neighbor you step *from* onto the waypoint (compass on grid).
+# Move onto tile uses (dx, dy): n=(0,+1) down, s=(0,-1) up, e=(-1,0) left, w=(+1,0) right.
+_ENTRY_DELTA: dict[str, tuple[int, int]] = {
+    "n": (0, 1),
+    "s": (0, -1),
+    "e": (-1, 0),
+    "w": (1, 0),
+}
 
 
 class Dt01UI(RenderableUserDisplay):
@@ -36,6 +46,7 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["player"],
+        layer=2,
     ),
     "waypoint": Sprite(
         pixels=[[10]],
@@ -61,11 +72,20 @@ sprites = {
 }
 
 
-def mk(sl, grid_size, difficulty):
-    return Level(sprites=sl, grid_size=grid_size, data={"difficulty": difficulty})
+def mk(sl, grid_size, difficulty, waypoint_enter_from: str = "w"):
+    return Level(
+        sprites=sl,
+        grid_size=grid_size,
+        data={
+            "difficulty": difficulty,
+            "waypoint_enter_from": waypoint_enter_from,
+        },
+    )
 
 
 levels = [
+    # Shortest path to goal crosses waypoint from the west; required entry is from the south
+    # (step up). Agents can stand on goal without a valid detour latch.
     mk(
         [
             sprites["player"].clone().set_position(0, 3),
@@ -74,16 +94,18 @@ levels = [
         ],
         (8, 8),
         1,
+        "s",
     ),
     mk(
         [
             sprites["player"].clone().set_position(1, 1),
-            sprites["waypoint"].clone().set_position(5, 7),
+            sprites["waypoint"].clone().set_position(2, 3),
             sprites["target"].clone().set_position(6, 1),
         ]
-        + [sprites["wall"].clone().set_position(3, y) for y in range(8)],
+        + [sprites["wall"].clone().set_position(3, y) for y in range(8) if y != 4],
         (8, 8),
         2,
+        "n",
     ),
     mk(
         [
@@ -93,6 +115,7 @@ levels = [
         ],
         (8, 8),
         3,
+        "w",
     ),
     mk(
         [
@@ -103,6 +126,7 @@ levels = [
         + [sprites["wall"].clone().set_position(5, y) for y in range(8) if y != 4],
         (10, 8),
         4,
+        "w",
     ),
     mk(
         [
@@ -112,6 +136,7 @@ levels = [
         ],
         (8, 8),
         5,
+        "n",
     ),
 ]
 
@@ -136,6 +161,9 @@ class Dt01(ARCBaseGame):
         self._waypoints = self.current_level.get_sprites_by_tag("waypoint")
         self._targets = self.current_level.get_sprites_by_tag("target")
         self._hit_waypoint = False
+        raw = level.get_data("waypoint_enter_from") or "w"
+        key = str(raw).lower().strip()[:1]
+        self._entry_delta = _ENTRY_DELTA.get(key, (1, 0))
         self._ui.update(False)
 
     def step(self) -> None:
@@ -172,8 +200,9 @@ class Dt01(ARCBaseGame):
 
         for w in self._waypoints:
             if self._player.x == w.x and self._player.y == w.y:
-                self._hit_waypoint = True
-                self._ui.update(True)
+                if (dx, dy) == self._entry_delta:
+                    self._hit_waypoint = True
+                    self._ui.update(True)
                 break
 
         for t in self._targets:

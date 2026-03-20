@@ -64,36 +64,39 @@ levels = [
         (8, 8),
         1,
     ),
+    # Wall one cell past the goal on the slide axis stops the torus orbit on that line.
     make_level(
         [
-            sprites["player"].clone().set_position(0, 0),
-            sprites["target"].clone().set_position(7, 7),
+            sprites["player"].clone().set_position(2, 6),
+            sprites["target"].clone().set_position(2, 2),
+            sprites["wall"].clone().set_position(2, 1),
         ],
         (8, 8),
         2,
     ),
     make_level(
         [
-            sprites["player"].clone().set_position(2, 2),
-            sprites["target"].clone().set_position(5, 5),
-            sprites["hazard"].clone().set_position(4, 4),
+            sprites["player"].clone().set_position(6, 2),
+            sprites["target"].clone().set_position(6, 6),
+            sprites["wall"].clone().set_position(6, 7),
         ],
         (8, 8),
         3,
     ),
     make_level(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["target"].clone().set_position(6, 6),
-        ]
-        + [sprites["wall"].clone().set_position(x, 4) for x in range(8) if x != 3],
+            sprites["player"].clone().set_position(1, 3),
+            sprites["target"].clone().set_position(5, 3),
+            sprites["wall"].clone().set_position(6, 3),
+        ],
         (8, 8),
         4,
     ),
     make_level(
         [
-            sprites["player"].clone().set_position(3, 3),
-            sprites["target"].clone().set_position(4, 4),
+            sprites["player"].clone().set_position(6, 4),
+            sprites["target"].clone().set_position(2, 4),
+            sprites["wall"].clone().set_position(1, 4),
         ],
         (8, 8),
         5,

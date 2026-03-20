@@ -10,13 +10,29 @@ from arcengine import (
 
 
 class Bd01UI(RenderableUserDisplay):
-    def __init__(self, _: int) -> None:
-        pass
+    """Corners: **red** on revisit **lose**; **maroon** / **yellow** in play. **Red cells** = already visited (do not re-enter)."""
 
-    def update(self, _: int) -> None:
-        pass
+    def __init__(self) -> None:
+        self._fail = False
+
+    def update(self, *, fail: bool | None = None) -> None:
+        if fail is not None:
+            self._fail = fail
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        br = 8 if self._fail else 13
+        bl = 8 if self._fail else 11
+        for dy in range(4):
+            for dx in range(4):
+                frame[h - 4 + dy, w - 4 + dx] = br
+        for dy in range(3):
+            for dx in range(3):
+                frame[h - 4 + dy, dx] = bl
         return frame
 
 
@@ -41,6 +57,13 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["wall"],
+    ),
+    "visited": Sprite(
+        pixels=[[8]],
+        name="visited",
+        visible=True,
+        collidable=False,
+        tags=["visited_trail"],
     ),
 }
 
@@ -100,7 +123,7 @@ PADDING_COLOR = 4
 
 class Bd01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Bd01UI(0)
+        self._ui = Bd01UI()
         super().__init__(
             "bd01",
             levels,
@@ -113,7 +136,10 @@ class Bd01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._targets = self.current_level.get_sprites_by_tag("target")
+        for s in list(self.current_level.get_sprites_by_tag("visited_trail")):
+            self.current_level.remove_sprite(s)
         self._visited: set[tuple[int, int]] = {(self._player.x, self._player.y)}
+        self._ui.update(fail=False)
 
     def step(self) -> None:
         dx = 0
@@ -146,11 +172,15 @@ class Bd01(ARCBaseGame):
 
         if not sprite or not sprite.is_collidable:
             if (new_x, new_y) in self._visited:
+                self._ui.update(fail=True)
                 self.lose()
                 self.complete_action()
                 return
+            old_x, old_y = self._player.x, self._player.y
             self._player.set_position(new_x, new_y)
             self._visited.add((new_x, new_y))
+            trail = sprites["visited"].clone().set_position(old_x, old_y)
+            self.current_level.add_sprite(trail)
 
         for t in self._targets:
             if self._player.x == t.x and self._player.y == t.y:

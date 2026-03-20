@@ -1,7 +1,7 @@
 {
   "game_id": "dt01-63be02fb",
   "title": "Detour",
-  "description": "Touch the light-blue waypoint before you reach the yellow goal.",
+  "description": "Arm the cyan waypoint by stepping onto it from the required side (n/e/s/w), then reach the yellow goal.",
   "default_fps": 20,
   "baseline_actions": [
     15
