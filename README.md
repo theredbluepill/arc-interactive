@@ -55,10 +55,14 @@ uv run python run_game.py --game sk01 --version auto --mode human
 
 ## Kaggle Benchmarks
 
-If you’ve finished Kaggle-side setup—a **dataset** whose root contains **`environment_files/`**, one or more **published benchmark tasks** built from [`benchmarks/kaggle/arc_kaggle_notebook_template.py`](benchmarks/kaggle/arc_kaggle_notebook_template.py), and those tasks **added to a benchmark**—you’re aligned with this repo’s layout. Operational details (bootstrap deps for papermill vs Python 3.12, optional notebook regeneration, model proxy / region notes) live in **[`benchmarks/README.md`](benchmarks/README.md)** and **[`benchmarks/kaggle/notebooks/README.md`](benchmarks/kaggle/notebooks/README.md)**.
-
-Local checks without calling the hosted model:
+From the repo root, generate task notebooks (then attach a dataset with **`environment_files/`** and publish tasks on Kaggle as in [`benchmarks/README.md`](benchmarks/README.md)):
 
 ```bash
-uv run python -m benchmarks.kaggle.run_task_kbench_mock
+# Four canonical tasks → benchmarks/kaggle/notebooks/*.ipynb
+python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py
+
+# One notebook per game stem → benchmarks/kaggle/notebooks/all/ (gitignored)
+uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py
 ```
+
+Local smoke (no hosted model): `uv run python -m benchmarks.kaggle.run_task_kbench_mock`. Papermill / proxy / region notes: [`benchmarks/kaggle/notebooks/README.md`](benchmarks/kaggle/notebooks/README.md).
