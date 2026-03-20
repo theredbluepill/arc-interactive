@@ -1,4 +1,10 @@
 {
+  "ml01": {
+    "gif_duration_ms": 200
+  },
+  "sf01": {
+    "gif_duration_ms": 180
+  },
   "pb03": {
     "target_levels": 2,
     "pb03_fail_hold_frames": 24

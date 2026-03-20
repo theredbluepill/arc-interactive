@@ -22,15 +22,62 @@ RELAY_C = 10
 SRC_C = 14
 LAMP_C = 11
 
+# Sub-frames after ACTION5 so the pulse reads in play / GIFs (one env.step may run many renders).
+PULSE_FRAMES = 10
+PULSE_RELAY_BRIGHT = 7
+PULSE_RING = 10
+PULSE_LAMP_FLASH = 1
+
 
 class Rp01UI(RenderableUserDisplay):
+    PULSE_FRAMES = PULSE_FRAMES
+
     def __init__(self, relays_left: int, fires_left: int) -> None:
         self._relays = relays_left
         self._fires = fires_left
+        self._pulse_phase: int | None = None
+        self._pulse_seen: set[tuple[int, int]] = set()
+        self._pulse_lit: set[tuple[int, int]] = set()
+        self._pulse_hop: dict[tuple[int, int], int] = {}
+        self._pulse_src: tuple[int, int] = (0, 0)
 
     def update(self, relays_left: int, fires_left: int) -> None:
         self._relays = relays_left
         self._fires = fires_left
+
+    def clear_pulse(self) -> None:
+        self._pulse_phase = None
+        self._pulse_seen = set()
+        self._pulse_lit = set()
+        self._pulse_hop = {}
+
+    def begin_pulse(
+        self,
+        seen: set[tuple[int, int]],
+        lit: set[tuple[int, int]],
+        src: tuple[int, int],
+        hop: dict[tuple[int, int], int],
+    ) -> None:
+        self._pulse_seen = set(seen)
+        self._pulse_lit = set(lit)
+        self._pulse_src = src
+        self._pulse_hop = dict(hop)
+        self._pulse_phase = 0
+
+    def set_pulse_phase(self, phase: int) -> None:
+        self._pulse_phase = phase
+
+    def _cell_rect(
+        self, gx: int, gy: int
+    ) -> tuple[int, int, int, int] | None:
+        scale = min(64 // CAM_W, 64 // CAM_H)
+        x_pad = (64 - CAM_W * scale) // 2
+        y_pad = (64 - CAM_H * scale) // 2
+        if not (0 <= gx < CAM_W and 0 <= gy < CAM_H):
+            return None
+        x0 = gx * scale + x_pad
+        y0 = gy * scale + y_pad
+        return x0, y0, scale, scale
 
     def render_interface(self, frame):
         import numpy as np
@@ -42,6 +89,45 @@ class Rp01UI(RenderableUserDisplay):
             frame[h - 2, 1 + i] = 12
         for i in range(min(self._fires, 8)):
             frame[h - 1, 1 + i] = 9
+
+        if self._pulse_phase is not None:
+            ph = self._pulse_phase
+            sx, sy = self._pulse_src
+            max_hop = max(self._pulse_hop.values(), default=-1)
+
+            for gx, gy in self._pulse_seen:
+                d = self._pulse_hop.get((gx, gy), 0)
+                if d <= ph:
+                    rect = self._cell_rect(gx, gy)
+                    if rect is not None:
+                        x0, y0, cw, ch = rect
+                        c = PULSE_RELAY_BRIGHT if (ph + gx + gy) % 2 == 0 else PULSE_RING
+                        frame[y0 : y0 + ch, x0 : x0 + cw] = c
+
+            ring_r = ph + 1
+            for gx in range(CAM_W):
+                for gy in range(CAM_H):
+                    if max(abs(gx - sx), abs(gy - sy)) != ring_r:
+                        continue
+                    rect = self._cell_rect(gx, gy)
+                    if rect is None:
+                        continue
+                    x0, y0, cw, ch = rect
+                    cur = int(frame[y0 + ch // 2, x0 + cw // 2])
+                    if cur == BACKGROUND_COLOR or cur == PADDING_COLOR:
+                        frame[y0 : y0 + ch, x0 : x0 + cw] = (
+                            PULSE_RING if ph % 2 == 0 else PULSE_RELAY_BRIGHT
+                        )
+
+            if self._pulse_lit and ph >= max_hop:
+                for lx, ly in self._pulse_lit:
+                    rect = self._cell_rect(lx, ly)
+                    if rect is None:
+                        continue
+                    x0, y0, cw, ch = rect
+                    flash = PULSE_LAMP_FLASH if (ph + max_hop) % 2 == 0 else LAMP_C
+                    frame[y0 : y0 + ch, x0 : x0 + cw] = flash
+
         return frame
 
 
@@ -157,6 +243,8 @@ levels = [
 class Rp01(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Rp01UI(0, 0)
+        self._pulse_tail = 0
+        self._pending_win = False
         super().__init__(
             "rp01",
             levels,
@@ -165,6 +253,14 @@ class Rp01(ARCBaseGame):
             1,
             [1, 2, 3, 4, 5, 6],
         )
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(64 // cw, 64 // ch)
+        x_pad = (64 - cw * scale) // 2
+        y_pad = (64 - ch * scale) // 2
+        return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
 
     def on_set_level(self, level: Level) -> None:
         self._src = next(
@@ -175,6 +271,9 @@ class Rp01(ARCBaseGame):
         self._max_fires = int(self.current_level.get_data("max_fires") or 15)
         self._fires_left = self._max_fires
         self._relay_count = len(self.current_level.get_sprites_by_tag("relay"))
+        self._pulse_tail = 0
+        self._pending_win = False
+        self._ui.clear_pulse()
         self._sync_ui()
 
     def _sync_ui(self) -> None:
@@ -184,20 +283,24 @@ class Rp01(ARCBaseGame):
     def _relay_cells(self) -> set[tuple[int, int]]:
         return {(s.x, s.y) for s in self.current_level.get_sprites_by_tag("relay")}
 
-    def _fire_pulse(self) -> None:
+    def _simulate_pulse(
+        self,
+    ) -> tuple[set[tuple[int, int]], set[tuple[int, int]], dict[tuple[int, int], int]]:
         sx, sy = self._src
-        q: deque[tuple[int, int]] = deque()
+        q: deque[tuple[int, int, int]] = deque()
         seen: set[tuple[int, int]] = set()
+        hop: dict[tuple[int, int], int] = {}
         relays = self._relay_cells()
         for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
             nx, ny = sx + dx, sy + dy
             if (nx, ny) in relays:
-                q.append((nx, ny))
+                q.append((nx, ny, 0))
                 seen.add((nx, ny))
+                hop[(nx, ny)] = 0
         lit: set[tuple[int, int]] = set()
         gw, gh = self.current_level.grid_size
         while q:
-            x, y = q.popleft()
+            x, y, d = q.popleft()
             for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
                 nx, ny = x + dx, y + dy
                 if not (0 <= nx < gw and 0 <= ny < gh):
@@ -206,11 +309,23 @@ class Rp01(ARCBaseGame):
                     lit.add((nx, ny))
                 if (nx, ny) in relays and (nx, ny) not in seen:
                     seen.add((nx, ny))
-                    q.append((nx, ny))
-        if lit >= self._lamps:
-            self.next_level()
+                    hop[(nx, ny)] = d + 1
+                    q.append((nx, ny, d + 1))
+        return lit, seen, hop
 
     def step(self) -> None:
+        if self._pulse_tail > 0:
+            phase = PULSE_FRAMES - self._pulse_tail
+            self._pulse_tail -= 1
+            self._ui.set_pulse_phase(phase)
+            if self._pulse_tail == 0:
+                if self._pending_win:
+                    self.next_level()
+                self._pending_win = False
+                self._ui.clear_pulse()
+                self.complete_action()
+            return
+
         aid = self.action.id
         if aid in (
             GameAction.ACTION1,
@@ -228,8 +343,10 @@ class Rp01(ARCBaseGame):
                 return
             self._fires_left -= 1
             self._sync_ui()
-            self._fire_pulse()
-            self.complete_action()
+            lit, seen, hop = self._simulate_pulse()
+            self._pending_win = lit >= self._lamps
+            self._ui.begin_pulse(seen, lit, self._src, hop)
+            self._pulse_tail = PULSE_FRAMES
             return
 
         if aid != GameAction.ACTION6:

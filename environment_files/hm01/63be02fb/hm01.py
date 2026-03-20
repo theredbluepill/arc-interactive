@@ -63,7 +63,10 @@ levels = [
     ),
     mk(
         [sprites["player"].clone().set_position(0, 0)]
-        + [sprites["wall"].clone().set_position(2, y) for y in range(4) if y != 1],
+        + [
+            sprites["wall"].clone().set_position(x, y)
+            for x, y in ((0, 3), (1, 3), (2, 1))
+        ],
         (4, 4),
         3,
     ),
@@ -75,8 +78,16 @@ levels = [
     ),
     mk(
         [sprites["player"].clone().set_position(0, 0)]
-        + [sprites["wall"].clone().set_position(1, y) for y in range(6) if y not in (2, 3)]
-        + [sprites["wall"].clone().set_position(4, y) for y in range(6) if y not in (2, 3)],
+        + [
+            sprites["wall"].clone().set_position(1, y)
+            for y in range(6)
+            if y not in (2, 3, 5)
+        ]
+        + [
+            sprites["wall"].clone().set_position(4, y)
+            for y in range(6)
+            if y not in (2, 3, 5)
+        ],
         (6, 6),
         5,
     ),

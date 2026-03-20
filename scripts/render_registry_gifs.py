@@ -81,6 +81,9 @@ def main() -> int:
         try:
             ovr = overrides_all.get(stem)
             ovr_dict = ovr if isinstance(ovr, dict) else None
+            duration_ms = 150
+            if ovr_dict and "gif_duration_ms" in ovr_dict:
+                duration_ms = int(ovr_dict["gif_duration_ms"])
             _, images = record_registry_gif(
                 stem,
                 root,
@@ -89,7 +92,7 @@ def main() -> int:
                 seed=args.seed,
             )
             out = root / "assets" / f"{stem}.gif"
-            save_gif(out, images, duration_ms=150)
+            save_gif(out, images, duration_ms=duration_ms)
             if args.verbose:
                 print(f"  wrote {out} ({len(images)} frames)")
             else:

@@ -143,7 +143,7 @@ def mk(
 levels = [
     mk(
         (24, 24),
-        [(x, 12) for x in range(5, 20)],
+        [],
         [],
         (2, 11),
         (2, 12),
@@ -226,6 +226,14 @@ class Ml01(ARCBaseGame):
             1,
             [1, 2, 3, 4, 5, 6],
         )
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(64 // cw, 64 // ch)
+        x_pad = (64 - cw * scale) // 2
+        y_pad = (64 - ch * scale) // 2
+        return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
 
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]

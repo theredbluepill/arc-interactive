@@ -37,8 +37,10 @@ class Lw01UI(RenderableUserDisplay):
         for i in range(min(self._n, 8)):
             c = 11 if i == self._active else 2
             frame[h - 2, 2 + i * 2] = c
-        for t in range(min(self._steps_left, 20)):
-            frame[h - 1, 1 + t] = 14 if t < min(self._steps_left, 20) else 8
+        cap = 24
+        rem = max(0, min(self._steps_left, cap))
+        for t in range(cap):
+            frame[h - 1, 1 + t] = 14 if t < rem else 3
         return frame
 
 

@@ -74,6 +74,34 @@ def append_frame_repeats(
         images.append(base.copy())
 
 
+def observation_frame_layers(obs: Any) -> list[Any]:
+    """Rasters from a reset/step observation. One action can yield multiple layers (e.g. level advance)."""
+    fr = getattr(obs, "frame", None) or []
+    return list(fr) if fr else []
+
+
+def append_frame_repeats_latest(
+    images: list[Image.Image],
+    obs: Any,
+    times: int,
+) -> None:
+    """Append ``times`` copies of the **last** layer — use this after ``env.step`` / ``env.reset``."""
+    layers = observation_frame_layers(obs)
+    if not layers:
+        return
+    append_frame_repeats(images, layers[-1], times)
+
+
+def append_frame_repeats_each_layer(
+    images: list[Image.Image],
+    obs: Any,
+    times_per_layer: int,
+) -> None:
+    """Append every sub-frame from ``obs.frame`` (shows mid-action transitions in GIFs)."""
+    for layer in observation_frame_layers(obs):
+        append_frame_repeats(images, layer, times_per_layer)
+
+
 def save_gif(
     path: Path | str,
     images: Sequence[Image.Image],

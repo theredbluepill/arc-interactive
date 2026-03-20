@@ -1724,6 +1724,66 @@ def record_registry_gif(
         return _record_visit_all_gif(
             game_id, root, overrides=o, verbose=verbose, seed=seed
         )
+    if game_id == "mo01":
+        from registry_mo_zq_hm_gif import record_mo01_registry_gif
+
+        return record_mo01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "zq01":
+        from registry_mo_zq_hm_gif import record_zq01_registry_gif
+
+        return record_zq01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "hm01":
+        from registry_mo_zq_hm_gif import record_hm01_registry_gif
+
+        return record_hm01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "ex01":
+        from registry_ex_gp_lo_gif import record_ex01_registry_gif
+
+        return record_ex01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "gp01":
+        from registry_ex_gp_lo_gif import record_gp01_registry_gif
+
+        return record_gp01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "lo01":
+        from registry_ex_gp_lo_gif import record_lo01_registry_gif
+
+        return record_lo01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "lw01":
+        from registry_lw_rp_ml_sf_gif import record_lw01_registry_gif
+
+        return record_lw01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "rp01":
+        from registry_lw_rp_ml_sf_gif import record_rp01_registry_gif
+
+        return record_rp01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "ml01":
+        from registry_lw_rp_ml_sf_gif import record_ml01_registry_gif
+
+        return record_ml01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "sf01":
+        from registry_lw_rp_ml_sf_gif import record_sf01_registry_gif
+
+        return record_sf01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
     target_levels = int(o.get("target_levels", 0))  # 0 = min(3, n_levels)
     max_total_steps = int(o.get("max_total_steps", 1400))
     max_idle = int(o.get("max_idle_between", 28))

@@ -1,4 +1,8 @@
-"""Exit pad: stand on the green pad and use ACTION5 (hold) N times in a row to clear the level."""
+"""Exit pad: stand on the green pad and use ACTION5 (hold) N times in a row to clear the level.
+
+HUD: orange 2×2 (top-left) = use ACTION5 on the pad; bottom row = one segment per ``hold_frames``
+(required charges); segments fill yellow as you hold, green when complete.
+"""
 
 from arcengine import (
     ARCBaseGame,
@@ -10,6 +14,12 @@ from arcengine import (
 
 
 class Ex01UI(RenderableUserDisplay):
+    """Shows ``hold_frames`` as a row of segments; fill progress after each ACTION5 on the pad."""
+
+    MAX_SEGMENTS = 12
+    SLOT_W = 3
+    SLOT_GAP = 1
+
     def __init__(self, progress: int, need: int) -> None:
         self._progress = progress
         self._need = need
@@ -18,16 +28,60 @@ class Ex01UI(RenderableUserDisplay):
         self._progress = progress
         self._need = need
 
+    @staticmethod
+    def _rect(
+        frame,
+        y0: int,
+        x0: int,
+        hh: int,
+        ww: int,
+        color: int,
+        h: int,
+        w: int,
+    ) -> None:
+        for dy in range(hh):
+            for dx in range(ww):
+                py, px = y0 + dy, x0 + dx
+                if 0 <= py < h and 0 <= px < w:
+                    frame[py, px] = color
+
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        color = 14 if self._progress >= self._need else 11
-        for dy in range(4):
-            for dx in range(4):
-                frame[h - 4 + dy, w - 4 + dx] = color
+
+        # Legend: ACTION5 = hold / charge on green pad (orange, top-left).
+        self._rect(frame, 1, 1, 2, 2, 12, h, w)
+
+        raw_need = max(1, self._need)
+        done = self._progress >= raw_need
+        n_slot = min(raw_need, self.MAX_SEGMENTS)
+        if raw_need > self.MAX_SEGMENTS:
+            prog_fill = min(
+                n_slot,
+                (self._progress * n_slot + raw_need - 1) // raw_need,
+            )
+        else:
+            prog_fill = max(0, min(self._progress, n_slot))
+
+        y_bar = h - 5
+        x_start = 2
+        seg_w = 2
+        seg_h = 3
+        pitch = self.SLOT_W + self.SLOT_GAP
+
+        for i in range(n_slot):
+            x0 = x_start + i * pitch
+            if x0 + seg_w > w - 1:
+                break
+            if done or i < prog_fill:
+                seg_color = 14 if done else 11
+            else:
+                seg_color = 3
+            self._rect(frame, y_bar, x0, seg_h, seg_w, seg_color, h, w)
+
         return frame
 
 
