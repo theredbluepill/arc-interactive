@@ -36,6 +36,8 @@ A collection of games for the ARC-AGI-3 benchmark.
 
 <!-- readme-stats:end -->
 
+## What for?
+
 > The intelligence of a system is a measure of its skill-acquisition efficiency over a scope of tasks, with respect to priors, experience, and generalization difficulty.  
 > — François Chollet, *[On the Measure of Intelligence](https://arxiv.org/abs/1911.01547)* (2019)
 
