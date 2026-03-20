@@ -1,0 +1,18 @@
+{
+  "game_id": "tt03-v1",
+  "title": "Collection Spawn",
+  "description": "Patrol collection; new yellow targets spawn every K steps until a cap (`spawn_every`, `target_cap` in level data).",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "collection", "dynamic-target"],
+  "local_dir": "environment_files/tt03/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16, 24],
+    "action_space": 4,
+    "physics_rules": ["collection", "patrol"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

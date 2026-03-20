@@ -1,0 +1,18 @@
+{
+  "game_id": "fl01-v1",
+  "title": "Numberlink Lite",
+  "description": "Walk the cursor and use ACTION6 to extend a simple path between endpoints with an exact cell count.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 6],
+  "tags": ["static", "path", "puzzle"],
+  "local_dir": "environment_files/fl01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [12],
+    "action_space": 6,
+    "physics_rules": ["path-length"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

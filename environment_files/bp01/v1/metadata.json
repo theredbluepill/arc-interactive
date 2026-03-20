@@ -1,0 +1,18 @@
+{
+  "game_id": "bp01-v1",
+  "title": "Battery Mesh",
+  "description": "ACTION5 on each tower to power it; when all towers are active, reach the goal.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5],
+  "tags": ["static", "puzzle", "activation"],
+  "local_dir": "environment_files/bp01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [14],
+    "action_space": 5,
+    "physics_rules": ["towers"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

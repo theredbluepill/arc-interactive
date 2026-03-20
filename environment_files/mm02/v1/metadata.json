@@ -1,0 +1,18 @@
+{
+  "game_id": "mm02-v1",
+  "title": "Memory Triples",
+  "description": "Flip three tiles at a time; clear a triplet when all three match color.",
+  "default_fps": 20,
+  "baseline_actions": [6],
+  "tags": ["static", "memory", "hidden"],
+  "local_dir": "environment_files/mm02/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [64],
+    "action_space": 1,
+    "physics_rules": ["memory"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

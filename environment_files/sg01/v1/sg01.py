@@ -1,0 +1,138 @@
+"""Signal lock: sweep cursor advances every step; ACTION6 in the green window scores (miss shrinks window)."""
+
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    Level,
+    RenderableUserDisplay,
+    Sprite,
+)
+
+
+class Sg01UI(RenderableUserDisplay):
+    def __init__(self) -> None:
+        self._cur = 0
+        self._lo = 0
+        self._hi = 3
+        self._prog = 0
+        self._need = 4
+        self._cycle = 16
+
+    def update(self, cur: int, lo: int, hi: int, prog: int, need: int, cycle: int) -> None:
+        self._cur = cur
+        self._lo = lo
+        self._hi = hi
+        self._prog = prog
+        self._need = need
+        self._cycle = cycle
+
+    def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        bar_len = w - 2
+        for i in range(bar_len):
+            gi = int(i * self._cycle / max(1, bar_len - 1)) if bar_len > 1 else 0
+            c = 5
+            if self._lo <= gi <= self._hi:
+                c = 14
+            frame[1, 1 + i] = c
+        cx = 1 + int(self._cur * (bar_len - 1) / max(1, self._cycle - 1))
+        cx = min(w - 2, max(1, cx))
+        frame[2, cx] = 9
+        for i in range(min(self._prog, 10)):
+            frame[h - 2, 1 + i] = 11
+        return frame
+
+
+sprites = {
+    "bg": Sprite(
+        pixels=[[5]],
+        name="bg",
+        visible=False,
+        collidable=False,
+        tags=["decor"],
+    ),
+}
+
+
+def mk(cycle: int, win_w: int, need: int, d: int):
+    return Level(
+        sprites=[sprites["bg"].clone().set_position(0, 0)],
+        grid_size=(8, 8),
+        data={
+            "difficulty": d,
+            "cycle": cycle,
+            "window": win_w,
+            "hits_needed": need,
+        },
+    )
+
+
+levels = [
+    mk(16, 5, 4, 1),
+    mk(20, 4, 5, 2),
+    mk(24, 4, 6, 3),
+    mk(18, 3, 7, 4),
+    mk(22, 3, 8, 5),
+]
+
+BACKGROUND_COLOR = 5
+PADDING_COLOR = 4
+
+
+class Sg01(ARCBaseGame):
+    def __init__(self) -> None:
+        self._ui = Sg01UI()
+        super().__init__(
+            "sg01",
+            levels,
+            Camera(0, 0, 8, 8, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            False,
+            1,
+            [1, 2, 3, 4, 6],
+        )
+
+    def on_set_level(self, level: Level) -> None:
+        self._cycle = int(self.current_level.get_data("cycle") or 16)
+        self._win_w = int(self.current_level.get_data("window") or 3)
+        self._need = int(self.current_level.get_data("hits_needed") or 4)
+        self._cur = 0
+        self._prog = 0
+        self._lo = max(0, self._cycle // 2 - self._win_w // 2)
+        self._hi = min(self._cycle - 1, self._lo + self._win_w - 1)
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        self._ui.update(self._cur, self._lo, self._hi, self._prog, self._need, self._cycle)
+
+    def _in_window(self) -> bool:
+        return self._lo <= self._cur <= self._hi
+
+    def step(self) -> None:
+        if self.action.id == GameAction.ACTION6:
+            if self._in_window():
+                self._prog += 1
+                if self._prog >= self._need:
+                    self.next_level()
+                    self._cur = (self._cur + 1) % self._cycle
+                    self._sync_ui()
+                    self.complete_action()
+                    return
+            else:
+                w = self._hi - self._lo + 1
+                w = max(1, w - 1)
+                mid = (self._lo + self._hi) // 2
+                self._lo = max(0, mid - w // 2)
+                self._hi = min(self._cycle - 1, self._lo + w - 1)
+            self._cur = (self._cur + 1) % self._cycle
+            self._sync_ui()
+            self.complete_action()
+            return
+
+        self._cur = (self._cur + 1) % self._cycle
+        self._sync_ui()
+        self.complete_action()

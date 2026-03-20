@@ -1,0 +1,18 @@
+{
+  "game_id": "ff02-v1",
+  "title": "Flood Unpaint",
+  "description": "Inverse flood fill: interiors start yellow; ACTION6 erases a clicked enclosure; gray hint cells must end unpainted. ACTION1–4 no-op.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 6],
+  "tags": ["static", "topology", "click"],
+  "local_dir": "environment_files/ff02/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [64],
+    "action_space": 5,
+    "physics_rules": ["enclosure", "erase"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

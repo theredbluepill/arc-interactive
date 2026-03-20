@@ -1,0 +1,18 @@
+{
+  "game_id": "sk03-v1",
+  "title": "Sokoban Mud Stop",
+  "description": "Slide-push sokoban where the extra slide stops on mud cells.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "push", "mud"],
+  "local_dir": "environment_files/sk03/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 12],
+    "action_space": 4,
+    "physics_rules": ["slide", "mud"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}

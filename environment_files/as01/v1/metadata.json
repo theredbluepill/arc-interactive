@@ -1,0 +1,18 @@
+{
+  "game_id": "as01-v1",
+  "title": "Assembly Fetch",
+  "description": "Pick up parts with ACTION5 and deliver to workstations in level order before reaching the goal.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5],
+  "tags": ["static", "logistics", "puzzle"],
+  "local_dir": "environment_files/as01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [12],
+    "action_space": 5,
+    "physics_rules": ["pickup-order"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  }
+}
