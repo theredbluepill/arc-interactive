@@ -1,0 +1,40 @@
+# Smoke-test games touched by a PR (Arcade load + random ACTION1–5 steps).
+name: PR game smoke
+
+on:
+  pull_request:
+    paths:
+      - "environment_files/**"
+      - "devtools/**"
+      - ".github/workflows/pr-game-smoke.yml"
+
+concurrency:
+  group: pr-smoke-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Smoke changed games
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          uv run python devtools/smoke_games.py \
+            --git-range "$BASE_SHA" "$HEAD_SHA" \
+            --steps 40

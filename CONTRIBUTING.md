@@ -189,6 +189,7 @@ elif not sprite or not sprite.is_collidable:
 
 ```
 arc-interactive/
+├── devtools/                # Tracked maintainer tools (e.g. `smoke_games.py` for CI/local checks)
 ├── environment_files/     # All games
 │   ├── ez01/v1/
 │   ├── tt01/v1/
@@ -206,6 +207,8 @@ arc-interactive/
 ## Issues and pull requests
 
 Use the repo’s [issue templates](.github/ISSUE_TEMPLATE/) (bug report, game idea / feature) and [pull request template](.github/PULL_REQUEST_TEMPLATE.md) so reports include game IDs, repro steps, and the same `run_game.py` checks as above. Blank issues stay enabled if none of the templates fit.
+
+Pull requests that change files under `environment_files/` are **smoke-tested in CI** (`devtools/smoke_games.py` via [`.github/workflows/pr-game-smoke.yml`](.github/workflows/pr-game-smoke.yml)): each affected game is loaded and stepped with random ACTION1–5. That catches load/`step()` crashes and missing `GAMES.md` rows; it does not replace manual or agent review for design and solvability.
 
 ## Documentation
 
