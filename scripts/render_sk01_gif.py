@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 from collections import deque
 from pathlib import Path
 
@@ -14,6 +13,12 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parents[1]
+import sys
+
+_SCRIPTS = ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
 
 _COLOR_HEX = {
     0: "#FFFFFFFF",
@@ -52,11 +57,7 @@ _DELTAS = [(-1, 0, 1), (1, 0, 2), (0, -1, 3), (0, 1, 4)]
 
 
 def _load_sk01_levels():
-    path = ROOT / "environment_files" / "sk01" / "v1" / "sk01.py"
-    spec = importlib.util.spec_from_file_location("sk01_gif_mod", path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.levels
+    return load_stem_game_py("sk01", "sk01_gif_mod").levels
 
 
 def _parse_level(level):
@@ -155,7 +156,7 @@ def main() -> None:
         environments_dir=str(ROOT / "environment_files"),
         operation_mode=OperationMode.OFFLINE,
     )
-    env = arc.make("sk01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("sk01"), seed=0, render_mode=None)
     res = env.reset()
 
     images: list[Image.Image] = []

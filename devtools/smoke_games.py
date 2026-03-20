@@ -22,6 +22,12 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from env_resolve import sole_package_version  # noqa: E402
+
 ENV_DIR = ROOT / "environment_files"
 GAMES_MD = ROOT / "GAMES.md"
 
@@ -108,8 +114,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--version",
-        default="v1",
-        help="Version directory when using --game (default: v1)",
+        default="auto",
+        help="Version directory when using --game, or 'auto' for sole dir (default: auto)",
     )
     parser.add_argument(
         "--steps",
@@ -135,7 +141,10 @@ def main() -> int:
     if args.git_range:
         pairs = _pairs_from_git_diff(args.git_range[0], args.git_range[1])
     for stem in args.game:
-        pairs.append((stem, args.version))
+        ver = args.version
+        if ver == "auto":
+            ver = sole_package_version(stem)
+        pairs.append((stem, ver))
 
     if not pairs:
         print("smoke_games: no targets (no environment_files paths in diff, no --game). OK.")

@@ -1,0 +1,33 @@
+{
+  "game_id": "ob01-63be02fb",
+  "title": "Odd One Out Tri-Cycle",
+  "description": "Three bodies; ACTION5 cycles which avatar ACTION1\u20134 moves. Each must reach its colored pad.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "static",
+    "multi-agent",
+    "puzzle"
+  ],
+  "local_dir": "environment_files/ob01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      16
+    ],
+    "action_space": 5,
+    "physics_rules": [
+      "active-swap"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.347084+00:00"
+}

@@ -1,0 +1,18 @@
+{
+  "game_id": "ms01-63be02fb",
+  "title": "Blind Sapper",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "deduction",
+    "memory",
+    "hidden-state"
+  ],
+  "local_dir": "environment_files/ms01/63be02fb",
+  "date_downloaded": "2026-03-20T09:53:23.336742+00:00"
+}

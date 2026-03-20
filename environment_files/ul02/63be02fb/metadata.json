@@ -1,0 +1,32 @@
+{
+  "game_id": "ul02-63be02fb",
+  "title": "Two-Key Unlock",
+  "description": "Two keys and two doors; stepping on a door without its matching key loses.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "keys"
+  ],
+  "local_dir": "environment_files/ul02/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      10
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "keys-doors"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.487584+00:00"
+}

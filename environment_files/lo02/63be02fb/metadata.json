@@ -1,0 +1,34 @@
+{
+  "game_id": "lo02-63be02fb",
+  "title": "Torus Lights Out",
+  "description": "Lights Out on a torus: orthogonal neighbors wrap at grid edges. Walls block toggles on their cells.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    6
+  ],
+  "tags": [
+    "static",
+    "click",
+    "topology"
+  ],
+  "local_dir": "environment_files/lo02/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      4,
+      6
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "torus-neighbors"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.323699+00:00"
+}

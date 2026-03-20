@@ -20,13 +20,13 @@ Agent responsible for designing and implementing ARC-AGI-3 games.
 **Output**: Working game in `environment_files/`
 
 **Steps**:
-1. Create directory: `environment_files/{game_id}/{version}/`
-2. Implement `{game_id}.py` with:
+1. Create directory: `environment_files/{stem}/{version}/` (two-letter stem + digits, e.g. `ez01`; version folder is usually `v1` on first landing, then often an 8-char git prefix after CI — see `CONTRIBUTING.md`)
+2. Implement `{stem}.py` with:
    - Sprite definitions
    - Static levels (no PCG)
    - Game class extending `ARCBaseGame`
    - Win/lose conditions
-3. Test with: `arc.make("{game_id}-{version}", seed=0)`
+3. Test with: `arc.make` using the full `game_id` from that folder’s `metadata.json`, or locally `uv run python run_game.py --game {stem} --version auto`
 
 ### 3. Documentation Phase
 **Input**: Completed game
@@ -222,10 +222,11 @@ sprite.collides_with(other_sprite)
 ```
 arc-interactive/
 ├── environment_files/          # All games
-│   ├── {game_id}/
-│   │   └── {version}/
-│   │       ├── {game_id}.py
-│   │       └── metadata.json
+│   ├── {stem}/                 # e.g. ez01 (table column in GAMES.md)
+│   │   └── {version}/          # e.g. 8-char SHA or v1 before CI bump
+│   │       ├── {stem}.py
+│   │       └── metadata.json   # game_id must equal "{stem}-{version}"
+├── scripts/env_resolve.py      # full_game_id_for_stem / load_stem_game_py
 ├── GAMES.md                    # Game registry table
 └── AGENTS.md                   # This file
 ```
@@ -428,7 +429,7 @@ def step(self) -> None:
 - **Islands**: 3x3 maroon squares
 - **Goal island**: 3x3 green square
 - **Water**: cyan/light-blue background (not sprites)
-- **Reefs / caps**: gray **rock** cells (no walk / no bridge); **max_bridges** and **step_limit** optional per level (generous on v1)
+- **Reefs / caps**: gray **rock** cells (no walk / no bridge); **max_bridges** and **step_limit** optional per level (generous defaults on first shipped tb01 tuning)
 - **Bridges**: 1x1 orange overlay on water only; **ACTION6** → `display_to_grid`; toggle
 - **Actions**: 1-4 movement, 6=toggle bridge on water
 - **Lives**: 3 per level

@@ -25,6 +25,7 @@ from gif_common import (
 )
 
 # Import table parser (same repo, scripts/ on sys.path when run as file)
+from env_resolve import full_game_id_for_stem
 from gif_inventory import parse_games_table
 from registry_gif_lib import (
     bfs_next_action,
@@ -86,7 +87,7 @@ def _frame_layer0(res) -> list:
 def record_one(game_id: str, root: Path, *, verbose: bool = False) -> Path:
     out = root / "assets" / f"{game_id}.gif"
     arc = offline_arcade(root)
-    env = arc.make(f"{game_id}-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem(game_id), seed=0, render_mode=None)
     res = env.reset()
     images: list = []
 

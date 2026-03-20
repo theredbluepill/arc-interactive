@@ -1,0 +1,36 @@
+{
+  "game_id": "rs01-63be02fb",
+  "title": "Rule Switcher",
+  "description": "Collect colored targets. A signpost shows which color is currently SAFE. Wrong color = lose. After all colors have been safe, any remaining targets can be collected.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "rule-switching",
+    "cognitive-flexibility"
+  ],
+  "local_dir": "environment_files/rs01/63be02fb",
+  "date_created": "2026-03-19",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      8,
+      16
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "movement",
+      "collision",
+      "rule-switching"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.367054+00:00"
+}

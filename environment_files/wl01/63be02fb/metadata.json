@@ -1,0 +1,35 @@
+{
+  "game_id": "wl01-63be02fb",
+  "title": "Wall Craft",
+  "description": "Reach the green goal on a 32\u00d732 map. ACTION5 toggles build mode; in build mode ACTION6 places or removes your gray walls (shared budget). Static dark walls cannot be edited.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "building"
+  ],
+  "local_dir": "environment_files/wl01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      32
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "movement",
+      "place-wall"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.494611+00:00"
+}

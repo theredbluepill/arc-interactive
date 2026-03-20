@@ -1,0 +1,34 @@
+{
+  "game_id": "ck01-63be02fb",
+  "title": "Circuit Stitch",
+  "description": "Lay orange wire on a 24\u00d724 grid. Signal spreads from the cyan input through wire cells to reach the yellow output. ACTION6 toggles wire; ACTION5 tests connectivity (limited checks per level).",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "graph"
+  ],
+  "local_dir": "environment_files/ck01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      24
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "connectivity"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.276982+00:00"
+}

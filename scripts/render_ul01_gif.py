@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from PIL import Image
 
+from env_resolve import full_game_id_for_stem
 from gif_common import (
     ACTIONS_UDLR,
     append_frame_repeats,
@@ -30,7 +31,7 @@ def main() -> None:
     m = ACTIONS_UDLR
 
     arc = offline_arcade(root)
-    env = arc.make("ul01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("ul01"), seed=0, render_mode=None)
     res = env.reset()
 
     images: list[Image.Image] = []

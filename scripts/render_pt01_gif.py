@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-import importlib.util
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +13,10 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parents[1]
+_SCRIPTS = ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
 
 _COLOR_HEX = {
     0: "#FFFFFFFF",
@@ -42,11 +46,7 @@ for i, hx in _COLOR_HEX.items():
 
 
 def _load_pt01_helpers():
-    path = ROOT / "environment_files" / "pt01" / "v1" / "pt01.py"
-    spec = importlib.util.spec_from_file_location("pt01_gif", path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.get_sprite_rotation
+    return load_stem_game_py("pt01", "pt01_gif").get_sprite_rotation
 
 
 def _frame_to_rgb(frame: np.ndarray) -> Image.Image:
@@ -74,7 +74,7 @@ def main() -> None:
         environments_dir=str(ROOT / "environment_files"),
         operation_mode=OperationMode.OFFLINE,
     )
-    env = arc.make("pt01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("pt01"), seed=0, render_mode=None)
     res = env.reset()
     game = env._game
 

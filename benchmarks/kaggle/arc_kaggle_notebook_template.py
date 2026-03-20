@@ -11,7 +11,7 @@ Optionally run ``python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py`` to emit
 
 Prerequisites:
   1. Add a dataset that includes the full ``environment_files/`` tree (or at least
-     the game folders you reference: ez01, sk01, tt01, sv01 under ``*/v1/``).
+     the game folders you reference: ez01, sk01, tt01, sv01 each with one version dir).
   2. Publish the dataset, then attach it via "+ Add data". It mounts as
      ``/kaggle/input/datasets/<user>/<dataset>/`` (e.g. ``…/poonszesen/arc-interactive``).
 
@@ -80,7 +80,34 @@ if not _ef.is_dir():
         f"/kaggle/input: {names!r}"
     )
 if not any(_ef.iterdir()):
-    raise RuntimeError(f"environment_files is empty at {_ef}. Re-upload the dataset with game folders (e.g. ez01/v1/).")
+    raise RuntimeError(
+        f"environment_files is empty at {_ef}. Re-upload the dataset with game folders (one dir per stem with metadata.json)."
+    )
+
+import json
+
+
+def _full_game_id(stem: str) -> str:
+    base = _ef / stem
+    if not base.is_dir():
+        raise RuntimeError(f"missing {base}")
+    found: list[str] = []
+    for d in sorted(base.iterdir(), key=lambda p: p.name.lower()):
+        if not d.is_dir():
+            continue
+        mp = d / "metadata.json"
+        if not mp.is_file():
+            continue
+        data = json.loads(mp.read_text(encoding="utf-8"))
+        gid = data.get("game_id")
+        if isinstance(gid, str):
+            found.append(gid)
+    if len(found) == 1:
+        return found[0]
+    if len(found) == 0:
+        raise RuntimeError(f"{base}: no metadata.json with game_id")
+    raise RuntimeError(f"{base}: multiple version dirs; disambiguate in dataset")
+
 
 sys.path.insert(0, str(INPUT_DIR))
 
@@ -183,7 +210,7 @@ def run_game_with_llm(arc, game_id, llm, seed=0, max_steps=50, grid_size=8, acti
 def arc_ez01_go_up(llm, seed: int = 0, max_steps: int = 30):
     """Play ARC-AGI-3 ez01 (Go Up): reach the goal using ACTION1–4 (IDs 1–4); semantics are game-specific."""
     arc = Arcade(environments_dir=ENVIRONMENTS_DIR, operation_mode=OperationMode.OFFLINE)
-    levels_completed, _, _ = run_game_with_llm(arc, "ez01-v1", llm, seed, max_steps, 8)
+    levels_completed, _, _ = run_game_with_llm(arc, _full_game_id("ez01"), llm, seed, max_steps, 8)
     kbench.assertions.assert_true(levels_completed >= 1, expectation="Complete at least 1 level.")
 
 
@@ -191,7 +218,7 @@ def arc_ez01_go_up(llm, seed: int = 0, max_steps: int = 30):
 def arc_sk01_sokoban(llm, seed: int = 0, max_steps: int = 200):
     """sk01 Sokoban: push blocks onto targets via ACTION1–4 (IDs 1–4)."""
     arc = Arcade(environments_dir=ENVIRONMENTS_DIR, operation_mode=OperationMode.OFFLINE)
-    levels_completed, _, _ = run_game_with_llm(arc, "sk01-v1", llm, seed, max_steps, 16)
+    levels_completed, _, _ = run_game_with_llm(arc, _full_game_id("sk01"), llm, seed, max_steps, 16)
     kbench.assertions.assert_true(levels_completed >= 1, expectation="Complete at least 1 level.")
 
 
@@ -199,7 +226,7 @@ def arc_sk01_sokoban(llm, seed: int = 0, max_steps: int = 200):
 def arc_tt01_collect(llm, seed: int = 0, max_steps: int = 200):
     """tt01: collect yellow targets, avoid red hazards via ACTION1–4 (IDs 1–4)."""
     arc = Arcade(environments_dir=ENVIRONMENTS_DIR, operation_mode=OperationMode.OFFLINE)
-    levels_completed, _, _ = run_game_with_llm(arc, "tt01-v1", llm, seed, max_steps, 24)
+    levels_completed, _, _ = run_game_with_llm(arc, _full_game_id("tt01"), llm, seed, max_steps, 24)
     kbench.assertions.assert_true(levels_completed >= 1, expectation="Complete at least 1 level.")
 
 
@@ -207,7 +234,7 @@ def arc_tt01_collect(llm, seed: int = 0, max_steps: int = 200):
 def arc_sv01_survive(llm, seed: int = 0, max_steps: int = 80):
     """sv01: survive 60 steps per level (ACTION1–5; see game / GAMES.md for this build)."""
     arc = Arcade(environments_dir=ENVIRONMENTS_DIR, operation_mode=OperationMode.OFFLINE)
-    levels_completed, _, _ = run_game_with_llm(arc, "sv01-v1", llm, seed, max_steps, 24)
+    levels_completed, _, _ = run_game_with_llm(arc, _full_game_id("sv01"), llm, seed, max_steps, 24)
     kbench.assertions.assert_true(levels_completed >= 1, expectation="Complete at least 1 survival level.")
 
 # --- Cell 3: Run one task (duplicate cell or notebook per task on Kaggle) ---

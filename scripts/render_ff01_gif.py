@@ -7,7 +7,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS = ROOT / "scripts"
+sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT))
+
+from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
 
 import numpy as np
 from PIL import Image
@@ -16,7 +20,9 @@ from arc_agi import Arcade, OperationMode
 from arc_agi.rendering import COLOR_MAP, hex_to_rgb
 from arcengine import GameAction, GameState
 
-from environment_files.ff01.v1.ff01 import Ff01UI, LEVEL_CONFIGS
+_ff = load_stem_game_py("ff01", "ff01_gif")
+Ff01UI = _ff.Ff01UI
+LEVEL_CONFIGS = _ff.LEVEL_CONFIGS
 
 OUTPUT = ROOT / "assets" / "ff01.gif"
 ENV_DIR = str(ROOT / "environment_files")
@@ -40,7 +46,7 @@ def frame_to_image_layer(layer) -> Image.Image:
 
 def main() -> None:
     arc = Arcade(environments_dir=ENV_DIR, operation_mode=OperationMode.OFFLINE)
-    env = arc.make("ff01-v1", seed=0, include_frame_data=True)
+    env = arc.make(full_game_id_for_stem("ff01"), seed=0, include_frame_data=True)
     obs = env.reset()
 
     images: list[Image.Image] = []

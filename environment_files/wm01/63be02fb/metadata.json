@@ -1,0 +1,30 @@
+{
+  "game_id": "wm01-63be02fb",
+  "title": "Whack-a-Mole",
+  "description": "Click moles before they escape! Meet checkpoint requirements to advance.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "action",
+    "whack-a-mole"
+  ],
+  "local_dir": "environment_files/wm01/63be02fb",
+  "date_created": "2026-03-18",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      32
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "timing",
+      "click"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.503028+00:00"
+}

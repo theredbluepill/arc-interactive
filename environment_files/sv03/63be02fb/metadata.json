@@ -1,0 +1,34 @@
+{
+  "game_id": "sv03-63be02fb",
+  "title": "Dual Shelter Survival",
+  "description": "Separate warm vs food shelter zones; alternate shelter types on entry while surviving 60 steps.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "static",
+    "survival"
+  ],
+  "local_dir": "environment_files/sv03/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      8,
+      24
+    ],
+    "action_space": 5,
+    "physics_rules": [
+      "dual-shelter",
+      "alternate"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.411240+00:00"
+}

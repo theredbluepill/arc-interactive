@@ -130,7 +130,7 @@ def run_game_with_llm(
 
     Args:
         arc: Arcade instance (from arc_agi.Arcade).
-        game_id: Full game ID (e.g. "ez01-v1").
+        game_id: Full game ID from package ``metadata.json`` (e.g. ``ez01-<8hex>``).
         llm: Kaggle benchmark LLM object with .prompt(text) -> str.
         seed: Random seed for environment.
         max_steps: Maximum steps before stopping.

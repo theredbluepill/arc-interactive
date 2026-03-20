@@ -6,9 +6,9 @@ CLI tool for running and testing ARC-AGI-3 games.
 Based on patterns from redpill/launch.py and redpill/remote_attempt.py
 
 Usage:
-    uv run python run_game.py --game co01 --version v1
-    uv run python run_game.py --game co01 --version v1 --mode auto --steps 50
-    ARC_GAME_ID=co01-v1 uv run python run_game.py
+    uv run python run_game.py --game co01 --version auto
+    uv run python run_game.py --game co01 --mode auto --steps 50
+    ARC_GAME_ID=co01-<ver> uv run python run_game.py
     ARC_OPERATION_MODE=offline uv run python run_game.py
 """
 
@@ -23,6 +23,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+_ROOT = Path(__file__).resolve().parent
+_SCRIPTS = _ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem  # noqa: E402
+
 try:
     from arc_agi import Arcade, OperationMode
     from arcengine import GameAction
@@ -36,8 +42,8 @@ except ImportError as e:
 class GameConfig:
     """Configuration for running a game."""
 
-    game_id: str = "co01-v1"
-    version: str = "v1"
+    game_id: str = "co01"
+    version: str = "auto"
     seed: int = 0
     steps: int = 100
     mode: str = "terminal"  # "terminal" or "auto"
@@ -63,24 +69,15 @@ def get_operation_mode() -> OperationMode:
     return OperationMode.NORMAL
 
 
-def _parse_game_id(game_id: str, default_version: str = "v1") -> str:
-    """Parse game ID and append version if not already present.
-
-    Handles two version patterns:
-      - Git hash:  -cb3b57cc  (8 hex chars)
-      - Semantic:  -v1, -v2   (-v followed by digits)
-
-    Args:
-        game_id:    The game ID (may or may not include version).
-        default_version: Version to append if not present.
-
-    Returns:
-        game_id with version appended.
-    """
+def resolve_full_game_id(raw_id: str, version_arg: str) -> str:
+    """Return full ``arc.make`` id: either ``raw_id`` if it already has a version suffix, else stem + resolved package."""
     version_pattern = re.compile(r"-[0-9a-f]{8}$|-[vV]\d+$")
-    if version_pattern.search(game_id):
-        return game_id
-    return f"{game_id}-{default_version}"
+    if version_pattern.search(raw_id):
+        return raw_id
+    stem = raw_id
+    if version_arg == "auto":
+        return full_game_id_for_stem(stem)
+    return full_game_id_for_stem(stem, version_arg)
 
 
 def get_game_id(default: str = "co01") -> str:
@@ -128,7 +125,7 @@ def list_available_games():
     print("\nTo run a game:")
     print("  uv run python run_game.py --game <game_id> --version <version>")
     print("\nOr use environment variable:")
-    print("  ARC_GAME_ID=co01-v1 uv run python run_game.py")
+    print("  ARC_GAME_ID=co01-<ver> uv run python run_game.py")
 
 
 def run_game(config: GameConfig) -> GameResult:
@@ -250,19 +247,23 @@ def setup_argparser():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  uv run python run_game.py --game co01 --version v1
-  uv run python run_game.py --game co01 --version v1 --mode auto --steps 50
+  uv run python run_game.py --game co01 --version auto
+  uv run python run_game.py --game co01 --mode auto --steps 50
   uv run python run_game.py --list
   
 Environment Variables:
-  ARC_GAME_ID=co01-v1        # Specify game ID
+  ARC_GAME_ID=co01-<ver>     # Full game id from metadata
   ARC_OPERATION_MODE=offline # Set operation mode (online/offline/normal)
         """,
     )
 
     parser.add_argument("--game", "-g", type=str, help="Game ID (e.g., co01)")
     parser.add_argument(
-        "--version", "-v", type=str, default="v1", help="Game version (default: v1)"
+        "--version",
+        "-v",
+        type=str,
+        default="auto",
+        help="Version dir when --game is stem-only, or 'auto' for sole dir (default: auto)",
     )
     parser.add_argument(
         "--seed", "-s", type=int, default=0, help="Random seed (default: 0)"
@@ -306,7 +307,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    full_game_id = _parse_game_id(game_id, args.version)
+    full_game_id = resolve_full_game_id(game_id, args.version)
 
     # Create configuration
     config = GameConfig(

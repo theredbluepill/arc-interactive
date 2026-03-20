@@ -42,10 +42,10 @@ uv sync
 Then run a game (example: tutorial **ez01**):
 
 ```bash
-uv run python run_game.py --game ez01 --version v1
+uv run python run_game.py --game ez01 --version auto
 ```
 
-Use any `game_id` / `version` pair that appears in `uv run python run_game.py --list`.
+Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
 
 ## Kaggle Benchmarks
 

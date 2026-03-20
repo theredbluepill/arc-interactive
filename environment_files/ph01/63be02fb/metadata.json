@@ -1,0 +1,34 @@
+{
+  "game_id": "ph01-63be02fb",
+  "title": "Phase Interference",
+  "description": "24\u00d724 phase field (0\u20133 per cell). ACTION6 increments a cell\u2019s phase; ACTION5 blurs every non-wall cell with (self + sum of 4-neighbors) mod 4. Match gray-marked target phases.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "field"
+  ],
+  "local_dir": "environment_files/ph01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      24
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "modular-field"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.351908+00:00"
+}

@@ -136,3 +136,5 @@
 | ck03 | Graph / Logic | 24×24 | 5 | **Checkpoint wire** (ck02 variant): cyan checkpoint must lie on successful test path. | ![ck03](assets/ck03.gif) | • 1-4: No-op • 5: Test • 6: Toggle |
 | ph03 | Field / Math | 24×24 | 5 | **XOR neighbor step** (ph02 variant): **ACTION5** XORs cell with orth neighbors mod N. | ![ph03](assets/ph03.gif) | • 1-4: No-op • 5: Step • 6: Inc |
 | bn03 | Exploration | 64×64 | 5 | **Shrinking beacon** (bn02 variant): each **ACTION5** beacon reduces max light radius by 1. | ![bn03](assets/bn03.gif) | • 1-4: Move • 5: Beacon • 6: Flag |
+
+Implementation for each row lives under `environment_files/<Game>/<version>/` (one package dir per stem; `run_game.py --game <Game> --version auto` picks it). Registry column **Game** is the stem, not the full `game_id` in `metadata.json`.

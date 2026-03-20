@@ -1,0 +1,33 @@
+{
+  "game_id": "sp01-63be02fb",
+  "title": "Sandpile",
+  "description": "ACTION6 adds a grain; cells with \u22654 topple to neighbors. Win when the grid is stable and total grains equals `target_sum`.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    6
+  ],
+  "tags": [
+    "static",
+    "simulation",
+    "click"
+  ],
+  "local_dir": "environment_files/sp01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      12
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "abelian-sandpile"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.395126+00:00"
+}

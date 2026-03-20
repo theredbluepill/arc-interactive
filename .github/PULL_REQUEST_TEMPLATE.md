@@ -27,5 +27,5 @@
 
 ```text
 # Example test command (replace game/version)
-uv run python run_game.py --game ez01 --version v1
+uv run python run_game.py --game ez01 --version auto
 ```

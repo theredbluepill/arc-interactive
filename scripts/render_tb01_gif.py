@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
 Record tb01 levels 1–5 into assets/tb01.gif.
-Action plans are hand-authored to match environment_files/tb01/v1/tb01.py (no search).
+Action plans are hand-authored to match environment_files/tb01/<ver>/tb01.py (no search).
 ACTION1–4 = U,D,L,R; ("c", gx, gy) = ACTION6 at cell center in display space.
 """
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,10 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parents[1]
+_SCRIPTS = ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem  # noqa: E402
 
 TB_GRID_W = TB_GRID_H = 24
 
@@ -113,7 +118,7 @@ def main() -> None:
         environments_dir=str(ROOT / "environment_files"),
         operation_mode=OperationMode.OFFLINE,
     )
-    env = arc.make("tb01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("tb01"), seed=0, render_mode=None)
     res = env.reset()
 
     images: list[Image.Image] = []

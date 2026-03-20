@@ -1,0 +1,30 @@
+{
+  "game_id": "va01-63be02fb",
+  "title": "Visit All",
+  "description": "Walk on every floor cell at least once. Walls are not floor.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "coverage"
+  ],
+  "local_dir": "environment_files/va01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      4,
+      8
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "movement"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.489790+00:00"
+}

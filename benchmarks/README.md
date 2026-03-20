@@ -10,12 +10,14 @@ Benchmarks for evaluating AI models on ARC-AGI-3 games, including Kaggle benchma
 
 ## Kaggle tasks (executive / cognitive suite)
 
-| Task name | Game | Grid crop | Default `max_steps` | Success |
-|-----------|------|-----------|---------------------|---------|
-| `arc_ez01_go_up` | ez01-v1 | 8 | 30 | ≥ 1 level |
-| `arc_sk01_sokoban` | sk01-v1 | 16 | 200 | ≥ 1 level |
-| `arc_tt01_collect` | tt01-v1 | 24 | 200 | ≥ 1 level |
-| `arc_sv01_survive` | sv01-v1 | 24 | 80 | ≥ 1 level (60 survival steps each) |
+| Task name | Game stem | Grid crop | Default `max_steps` | Success |
+|-----------|-----------|-----------|---------------------|---------|
+| `arc_ez01_go_up` | ez01 | 8 | 30 | ≥ 1 level |
+| `arc_sk01_sokoban` | sk01 | 16 | 200 | ≥ 1 level |
+| `arc_tt01_collect` | tt01 | 24 | 200 | ≥ 1 level |
+| `arc_sv01_survive` | sv01 | 24 | 80 | ≥ 1 level (60 survival steps each) |
+
+Full `game_id` strings come from each package’s `metadata.json` (resolved in `arc_tasks.py` via `scripts/env_resolve.py`).
 
 Source of truth: `benchmarks/kaggle/arc_tasks.py` (`ARC_TASK_NAMES`).  
 `benchmarks/kaggle/arc_ez01_task.py` re-exports `arc_ez01_go_up` for backward compatibility.
@@ -38,10 +40,10 @@ Then:
 uv run python -m benchmarks.kaggle.arc_ez01_task
 ```
 
-Wrapper smoke test (always move up on ez01, no kaggle_benchmarks):
+Wrapper smoke test (always move up on ez01, no kaggle_benchmarks; repo root on `PYTHONPATH`):
 
 ```bash
-uv run python -m benchmarks.run_task_test
+PYTHONPATH=. uv run python benchmarks/run_task_test.py
 ```
 
 All four `@kbench.task` entries with **mock** LLMs (no proxy HTTP to a real model):
@@ -52,7 +54,7 @@ uv run python -m benchmarks.kaggle.run_task_kbench_mock
 
 ### Publishing to Kaggle Benchmarks
 
-1. **Dataset** – Zip and upload **`environment_files/`** (full tree is simplest so every `*-v1` game resolves). On Kaggle it appears under e.g. **`/kaggle/input/datasets/poonszesen/arc-interactive/`**; notebooks resolve that path automatically.
+1. **Dataset** – Zip and upload **`environment_files/`** (full tree is simplest so every stem’s package dir resolves). On Kaggle it appears under e.g. **`/kaggle/input/datasets/poonszesen/arc-interactive/`**; notebooks resolve that path automatically.
 2. **Task notebook** – [Create new task](https://www.kaggle.com/benchmarks/tasks/new), attach the dataset, then paste cells from `benchmarks/kaggle/arc_kaggle_notebook_template.py` (one `@kbench.task` per published task), or run `python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py` to generate `benchmarks/kaggle/notebooks/*.ipynb`. See `benchmarks/kaggle/notebooks/README.md` for **3.11 vs 3.12** / bootstrap deps.
 3. **Benchmark** – Add each published task to your benchmark; see [Kaggle Benchmarks docs](https://www.kaggle.com/docs/benchmarks).
 
@@ -60,4 +62,4 @@ uv run python -m benchmarks.kaggle.run_task_kbench_mock
 
 ## Adding more games
 
-Call `run_game_with_llm(..., game_id="…-v1", grid_size=<camera width>, max_steps=…)` from a new `@kbench.task` in `arc_tasks.py`, and add a row above. For mocks, record a digit string with `ReplayMockLLM` (see `MOCK_*` constants in `arc_tasks.py`).
+From a new `@kbench.task` in `arc_tasks.py`, call `run_game_with_llm(..., game_id=…, grid_size=<camera width>, max_steps=…)` where `game_id` is the string in that package’s `metadata.json` (see `full_game_id_for_stem` in `scripts/env_resolve.py`, as used at the top of `arc_tasks.py`). Add a row to the table above. For mocks, record a digit string with `ReplayMockLLM` (see `MOCK_*` constants in `arc_tasks.py`).

@@ -8,6 +8,7 @@ timing (sv01), plus ez01 as a minimal ACTION1–4 baseline (semantics are game-s
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import kaggle_benchmarks as kbench
@@ -15,7 +16,17 @@ import kaggle_benchmarks as kbench
 from arc_agi import Arcade, OperationMode
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+_SCRIPTS = REPO_ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem  # noqa: E402
+
 ENVIRONMENTS_DIR = str(REPO_ROOT / "environment_files")
+
+_EZ01 = full_game_id_for_stem("ez01")
+_SK01 = full_game_id_for_stem("sk01")
+_TT01 = full_game_id_for_stem("tt01")
+_SV01 = full_game_id_for_stem("sv01")
 
 # Deterministic replays for MockLLM smoke tests (seed=0).
 MOCK_SK01_L1_DIGITS = "224441422"
@@ -44,7 +55,7 @@ def arc_ez01_go_up(llm, seed: int = 0, max_steps: int = 30):
     )
     levels_completed, _, _ = run_game_with_llm(
         arc=arc,
-        game_id="ez01-v1",
+        game_id=_EZ01,
         llm=llm,
         seed=seed,
         max_steps=max_steps,
@@ -67,7 +78,7 @@ def arc_sk01_sokoban(llm, seed: int = 0, max_steps: int = 200):
     )
     levels_completed, _, _ = run_game_with_llm(
         arc=arc,
-        game_id="sk01-v1",
+        game_id=_SK01,
         llm=llm,
         seed=seed,
         max_steps=max_steps,
@@ -90,7 +101,7 @@ def arc_tt01_collect(llm, seed: int = 0, max_steps: int = 200):
     )
     levels_completed, _, _ = run_game_with_llm(
         arc=arc,
-        game_id="tt01-v1",
+        game_id=_TT01,
         llm=llm,
         seed=seed,
         max_steps=max_steps,
@@ -113,7 +124,7 @@ def arc_sv01_survive(llm, seed: int = 0, max_steps: int = 80):
     )
     levels_completed, _, _ = run_game_with_llm(
         arc=arc,
-        game_id="sv01-v1",
+        game_id=_SV01,
         llm=llm,
         seed=seed,
         max_steps=max_steps,

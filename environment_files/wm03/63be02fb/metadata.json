@@ -1,0 +1,29 @@
+{
+  "game_id": "wm03-63be02fb",
+  "title": "Decoy Moles",
+  "description": "Lane moles with occasional gray decoys in wrong lanes; whacking a decoy costs a life.",
+  "default_fps": 20,
+  "baseline_actions": [
+    6
+  ],
+  "tags": [
+    "static",
+    "timing",
+    "32-grid"
+  ],
+  "local_dir": "environment_files/wm03/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      32
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "decoy"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.528155+00:00"
+}

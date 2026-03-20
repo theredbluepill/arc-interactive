@@ -6,7 +6,7 @@ cell center — inverse of camera.display_to_grid per create-arc-game SKILL.md.
 
 from __future__ import annotations
 
-import importlib.util
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +16,10 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parents[1]
+_SCRIPTS = ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
 
 _COLOR_HEX = {
     0: "#FFFFFFFF",
@@ -45,11 +49,7 @@ for i, hx in _COLOR_HEX.items():
 
 
 def _load_sy01_module():
-    path = ROOT / "environment_files" / "sy01" / "v1" / "sy01.py"
-    spec = importlib.util.spec_from_file_location("sy01_gif_mod", path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return load_stem_game_py("sy01", "sy01_gif_mod")
 
 
 def _grid_center_display(gw: int, gh: int, gx: int, gy: int) -> tuple[int, int]:
@@ -85,7 +85,7 @@ def main() -> None:
         environments_dir=str(ROOT / "environment_files"),
         operation_mode=OperationMode.OFFLINE,
     )
-    env = arc.make("sy01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("sy01"), seed=0, render_mode=None)
     res = env.reset()
 
     images: list[Image.Image] = []

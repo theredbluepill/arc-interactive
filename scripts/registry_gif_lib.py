@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from arcengine import GameAction, GameState, Level
+from env_resolve import full_game_id_for_stem
 from gif_common import (
     append_frame_repeats,
     grid_cell_center_display,
@@ -323,7 +324,7 @@ def record_registry_gif(
     min_frames = int(o.get("min_frames", 36))
 
     arc = offline_arcade(root)
-    env = arc.make(f"{game_id}-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem(game_id), seed=0, render_mode=None)
     res = env.reset()
     rng = random.Random(seed + sum(ord(c) for c in game_id))
 

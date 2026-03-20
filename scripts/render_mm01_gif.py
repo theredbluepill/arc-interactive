@@ -7,7 +7,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS = ROOT / "scripts"
+sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT))
+
+from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
 
 import numpy as np
 from PIL import Image
@@ -16,11 +20,10 @@ from arc_agi import Arcade, OperationMode
 from arc_agi.rendering import COLOR_MAP, hex_to_rgb
 from arcengine import GameAction, GameState
 
-from environment_files.mm01.v1.mm01 import (
-    LEVEL_DIMS,
-    LEVEL_LAYOUTS,
-    _compute_tile_size_and_offsets,
-)
+_mm = load_stem_game_py("mm01", "mm01_gif")
+LEVEL_DIMS = _mm.LEVEL_DIMS
+LEVEL_LAYOUTS = _mm.LEVEL_LAYOUTS
+_compute_tile_size_and_offsets = _mm._compute_tile_size_and_offsets
 
 OUTPUT = ROOT / "assets" / "mm01.gif"
 ENV_DIR = str(ROOT / "environment_files")
@@ -80,7 +83,7 @@ def frame_to_image(frame) -> Image.Image:
 
 def main() -> None:
     arc = Arcade(environments_dir=ENV_DIR, operation_mode=OperationMode.NORMAL)
-    env = arc.make("mm01-v1", seed=0, include_frame_data=True)
+    env = arc.make(full_game_id_for_stem("mm01"), seed=0, include_frame_data=True)
     obs = env.reset()
 
     images: list[Image.Image] = []

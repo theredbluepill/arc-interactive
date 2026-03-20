@@ -6,29 +6,33 @@ Skill for playing and testing ARC-AGI-3 games using `run_game.py`.
 
 ### Interactive Mode
 ```bash
-uv run python run_game.py --game <game_id> --version v1
+uv run python run_game.py --game <stem> --version auto
 ```
+
+(`<stem>` is the two-letter+digits id from `GAMES.md`, e.g. `ez01`. `auto` picks the sole package dir under `environment_files/<stem>/`.)
 
 ### Auto Mode (Random Actions)
 ```bash
-uv run python run_game.py --game <game_id> --version v1 --mode auto --steps 50
+uv run python run_game.py --game <stem> --version auto --mode auto --steps 50
 ```
 
 ### Programmatic Testing
+
+`arc.make` needs the **full** `game_id` string from that package’s `metadata.json` (e.g. `ez01-63be02fb`). From repo root you can resolve it with `scripts/env_resolve.full_game_id_for_stem("ez01")`.
 
 ```python
 from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
-arc = Arcade('environment_files', OperationMode.OFFLINE)
-env = arc.make('ez01-v1', seed=0)
+arc = Arcade("environment_files", OperationMode.OFFLINE)
+env = arc.make("ez01-63be02fb", seed=0)  # replace with your tree’s metadata game_id
 
 # Execute actions
-result = env.step(GameAction.ACTION1, reasoning={'test': 0})
+result = env.step(GameAction.ACTION1, reasoning={"test": 0})
 print(f"State: {result.state}")
 ```
 
-Other examples: `pb02-v1` (two-crate push), `nw01-v1` (arrow-tile forcing), `ex01-v1` (uses **ACTION5** on the exit pad), `gp01-v1` / `lo01-v1` (**ACTION6**-only play; **ACTION1–4** are no-ops).
+Other stems: **pb02** (two-crate push), **nw01** (arrow-tile forcing), **ex01** (uses **ACTION5** on the exit pad), **gp01** / **lo01** (**ACTION6**-only play; **ACTION1–4** are no-ops) — each uses its own `game_id` from disk.
 
 ## ACTION6: Click/Coordinate Actions
 
@@ -153,7 +157,7 @@ def create_gif(game_id, action, steps_per_level, output_path):
                    duration=150, loop=0, optimize=False)
 
 # Example: ez01 (5 levels, UP action)
-create_gif('ez01-v1', GameAction.ACTION1, [2, 4, 6, 6, 7], 'assets/ez01.gif')
+create_gif("<ez01 game_id from metadata>", GameAction.ACTION1, [2, 4, 6, 6, 7], "assets/ez01.gif")
 ```
 
 ## Checking Game State
@@ -192,7 +196,7 @@ for level_num in range(5):  # Adjust for number of levels
 
 ## Common Issues
 
-1. **Missing metadata.json**: Game won't load. Create one in `environment_files/{game_id}/v1/`
+1. **Missing metadata.json**: Game won't load. New packages usually start at `environment_files/{stem}/v1/`; CI may rename the folder to an 8-char prefix — `game_id` / `local_dir` in metadata must stay in sync.
 
 2. **Camera size mismatch**: Camera must match largest level grid size (16x16, 24x24, etc.)
 
@@ -205,7 +209,7 @@ for level_num in range(5):  # Adjust for number of levels
 | Task | Command/Tool |
 |------|--------------|
 | List games | `run_game.py --list` |
-| Play game | `run_game.py --game <id> --version v1` |
-| Auto test | `run_game.py --game <id> --mode auto --steps 100` |
+| Play game | `run_game.py --game <stem> --version auto` |
+| Auto test | `run_game.py --game <stem> --version auto --mode auto --steps 100` |
 | Check state | `result.state`, `result.levels_completed` |
 | Create GIF | Use `include_frame_data=True` + colorize function |

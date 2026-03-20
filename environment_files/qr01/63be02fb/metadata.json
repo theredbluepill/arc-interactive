@@ -1,0 +1,33 @@
+{
+  "game_id": "qr01-63be02fb",
+  "title": "Quad Twist",
+  "description": "ACTION6 rotates the 2\u00d72 block of pattern tiles anchored at the clicked cell clockwise; match the target bitmap in level data.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    6
+  ],
+  "tags": [
+    "static",
+    "pattern",
+    "click"
+  ],
+  "local_dir": "environment_files/qr01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      8
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "local-rotate"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.361438+00:00"
+}

@@ -2,7 +2,8 @@
 """Smoke-test registry games: load via Arcade, random ACTION1–6 steps (no render).
 
 Scans [GAMES.md](GAMES.md) table order. Use ``--from`` / ``--through`` to limit rows
-(e.g. post-rs01 slice ``pb01`` … ``bn03``). Requires ``environment_files/{stem}/v1/metadata.json``.
+(e.g. post-rs01 slice ``pb01`` … ``bn03``). Resolves ``metadata.json`` via the sole
+version dir under each stem (or ``--version``).
 
 Exit non-zero on exceptions. Random ACTION6 uses letterboxed cell centers (same as GIF scripts).
 """
@@ -24,6 +25,7 @@ if str(SCRIPTS) not in sys.path:
 from arc_agi import Arcade, OperationMode  # noqa: E402
 from arcengine import GameAction, GameState  # noqa: E402
 from gif_common import grid_cell_center_display  # noqa: E402
+from env_resolve import sole_package_version  # noqa: E402
 from gif_inventory import parse_games_table  # noqa: E402
 
 GAMES_MD = ROOT / "GAMES.md"
@@ -45,6 +47,8 @@ def _slice_ids(all_ids: list[str], from_id: str | None, through_id: str | None) 
 
 
 def _load_full_game_id(stem: str, version: str) -> str:
+    if version == "auto":
+        version = sole_package_version(stem)
     meta = ENV_DIR / stem / version / "metadata.json"
     if not meta.is_file():
         raise FileNotFoundError(f"Missing metadata: {meta}")
@@ -131,8 +135,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--version",
-        default="v1",
-        help="Version directory under environment_files/{stem}/ (default: v1)",
+        default="auto",
+        help="Version dir under environment_files/{stem}/, or 'auto' for sole dir (default: auto)",
     )
     parser.add_argument(
         "--steps",

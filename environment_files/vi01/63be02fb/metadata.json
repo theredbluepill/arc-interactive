@@ -1,0 +1,32 @@
+{
+  "game_id": "vi01-63be02fb",
+  "title": "Infection Run",
+  "description": "Plague spreads periodically; take the vaccine before walking infected cells; then reach the exit.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "static",
+    "hazard",
+    "12-grid"
+  ],
+  "local_dir": "environment_files/vi01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      12
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "spread"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.492299+00:00"
+}

@@ -15,12 +15,12 @@ uv run python run_game.py --list
 
 ### Run a Game
 ```bash
-uv run python run_game.py --game ez01 --version v1
+uv run python run_game.py --game ez01 --version auto
 ```
 
 ### Interactive Play
 ```bash
-uv run python run_game.py --game ez01 --version v1 --mode terminal
+uv run python run_game.py --game ez01 --version auto --mode terminal
 ```
 
 Controls (actions are abstract - each game defines what they mean):
@@ -32,7 +32,7 @@ Controls (actions are abstract - each game defines what they mean):
 
 ### Auto Mode (Random Actions)
 ```bash
-uv run python run_game.py --game ez01 --version v1 --mode auto --steps 50
+uv run python run_game.py --game ez01 --version auto --mode auto --steps 50
 ```
 
 ## Creating a New Game
@@ -50,7 +50,7 @@ The repo exposes that skill in three equivalent places: **`skills/`** (symlink a
 
 **Minimal prompt you can paste:** *Implement a new ARC-AGI-3 game `{game_id}` at `environment_files/{game_id}/v1/`. Follow [AGENTS.md](AGENTS.md) and [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md): static levels only, `ARCBaseGame` + `metadata.json`, register a row in [GAMES.md](GAMES.md). Game design: [grid size, entities, win/lose, which actions 1–7 do].*
 
-**Done when:** `uv run python run_game.py --game {game_id} --version v1` runs, win advances levels, and [GAMES.md](GAMES.md) has a complete table row (optional: preview GIF under `assets/` like existing games).
+**Done when:** `uv run python run_game.py --game {game_id} --version auto` runs, win advances levels, and [GAMES.md](GAMES.md) has a complete table row (optional: preview GIF under `assets/` like existing games).
 
 If you prefer to implement without an agent, follow the numbered steps below.
 
@@ -149,7 +149,7 @@ Add entry to [GAMES.md](GAMES.md):
 
 ### 5. Test
 ```bash
-uv run python run_game.py --game mygame --version v1
+uv run python run_game.py --game mygame --version auto
 ```
 
 ## Key Patterns
@@ -191,8 +191,8 @@ elif not sprite or not sprite.is_collidable:
 arc-interactive/
 ├── devtools/                # `smoke_games.py`, `check_registry.py` (CI / local; see Issues & PRs below)
 ├── environment_files/     # All games
-│   ├── ez01/v1/
-│   ├── tt01/v1/
+│   ├── ez01/<ver>/
+│   ├── tt01/<ver>/
 │   └── ...
 ├── skills/                  # Symlink → .opencode/skills (create-arc-game, play-arc-game, …)
 ├── .opencode/skills/        # Canonical skill definitions
@@ -210,7 +210,7 @@ Use the repo’s [issue templates](.github/ISSUE_TEMPLATE/) (bug report, game id
 
 Pull requests that change files under `environment_files/` are **smoke-tested in CI** (`devtools/smoke_games.py` via [`.github/workflows/pr-game-smoke.yml`](.github/workflows/pr-game-smoke.yml)): each affected game is loaded and stepped with random ACTION1–5. That catches load/`step()` crashes and missing `GAMES.md` rows; it does not replace manual or agent review for design and solvability.
 
-**Package version folders (commit short SHA, same idea as `ls20/cb3b57cc`)** — [`.github/workflows/bump-env-versions.yml`](.github/workflows/bump-env-versions.yml) runs on same-repo PRs that touch `environment_files/**`. It renames any changed `environment_files/<stem>/<old>/` tree to `environment_files/<stem>/<8-hex-of-PR-head>/`, rewrites that folder’s `metadata.json` (`game_id`, `local_dir`, `date_downloaded`), and removes `<old>`. Stems `vc33`, `ls20`, and `ft09` are skipped (see [`devtools/bump_env_versions.py`](devtools/bump_env_versions.py)). Fork PRs are skipped (no push permission). The repo needs **Settings → Actions → General → Workflow permissions → Read and write** so the workflow can push the bump commit. Commits containing `[env-version-bump]` are not processed again (avoids loops). You can still start from `v1` locally; the first push that changes the game will retag the folder.
+**Package version folders (commit short SHA, same idea as `ls20/cb3b57cc`)** — One-shot bulk rename from `v1/` is [`devtools/migrate_all_v1_to_sha.py`](devtools/migrate_all_v1_to_sha.py); day-to-day, [`.github/workflows/bump-env-versions.yml`](.github/workflows/bump-env-versions.yml) runs on same-repo PRs that touch `environment_files/**`. It renames any changed `environment_files/<stem>/<old>/` tree to `environment_files/<stem>/<8-hex-of-PR-head>/`, rewrites that folder’s `metadata.json` (`game_id`, `local_dir`, `date_downloaded`), and removes `<old>`. Stems `vc33`, `ls20`, and `ft09` are skipped (see [`devtools/bump_env_versions.py`](devtools/bump_env_versions.py)). Fork PRs are skipped (no push permission). The repo needs **Settings → Actions → General → Workflow permissions → Read and write** so the workflow can push the bump commit. Commits containing `[env-version-bump]` are not processed again (avoids loops). You can still start from `v1` locally; the first push that changes the game will retag the folder.
 
 Optional local checks (not in CI by default):
 

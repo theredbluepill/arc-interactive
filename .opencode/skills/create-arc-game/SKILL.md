@@ -186,7 +186,7 @@ import arc_agi
 from arcengine import GameAction
 
 arc = arc_agi.Arcade()
-env = arc.make("mygame-v1", seed=0)
+env = arc.make("mygame-v1", seed=0)  # use the full game_id from your package metadata after CI naming
 result = env.step(GameAction.ACTION1, reasoning={})  # meaning defined by the game; often movement in this repo
 ```
 
@@ -202,6 +202,8 @@ result = env.step(GameAction.ACTION1, reasoning={})  # meaning defined by the ga
   "local_dir": "environment_files/mygame/v1"
 }
 ```
+
+`game_id` / `local_dir` must match the version directory name. Starting in `v1/` is typical; the repo’s **bump-env-versions** workflow may rename it to an 8-char SHA on merge and rewrite these fields.
 
 ## Common Patterns
 
@@ -385,7 +387,7 @@ Demos should make **where the agent clicked** obvious for several frames.
    ```
 
 2. **Animation, not a single frame**  
-   Use a multi-step overlay (e.g. **expanding ring + cross** over ~15–20 render passes) so GIFs and markdown previews show a clear tap. Store `_click_frames` and decrement inside `render_interface` each time the frame is composed. See `environment_files/sq01/v1/sq01.py` (`Sq01UI`).
+   Use a multi-step overlay (e.g. **expanding ring + cross** over ~15–20 render passes) so GIFs and markdown previews show a clear tap. Store `_click_frames` and decrement inside `render_interface` each time the frame is composed. See `environment_files/sq01/<version>/sq01.py` (`Sq01UI`; `<version>` is the sole package dir under `sq01/`).
 
 3. **Recording the GIF**  
    - `arc.make(..., include_frame_data=True)` and `env.reset()` / `env.step(GameAction.ACTION6, data={"x": ..., "y": ...})`.  
@@ -403,5 +405,5 @@ See established games:
 - `environment_files/vc33/9851e02b/vc33.py`
 - `environment_files/ls20/cb3b57cc/ls20.py`
 - `environment_files/ft09/9ab2447a/ft09.py`
-- `environment_files/ez01/v1/ez01.py`
-- `environment_files/sq01/v1/sq01.py` (ACTION6, grid→frame click FX, GIF script)
+- `environment_files/ez01/<version>/ez01.py`
+- `environment_files/sq01/<version>/sq01.py` (ACTION6, grid→frame click FX, GIF script)

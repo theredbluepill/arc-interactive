@@ -14,9 +14,9 @@ on:
         required: false
         default: ""
       version:
-        description: "Version directory under each stem"
+        description: "Version directory under each stem (use auto for sole dir)"
         required: false
-        default: "v1"
+        default: "auto"
       steps:
         description: "Random steps per game"
         required: false

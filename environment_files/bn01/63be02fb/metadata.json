@@ -1,0 +1,35 @@
+{
+  "game_id": "bn01-63be02fb",
+  "title": "Beacon Sweep",
+  "description": "64\u00d764 fog-of-war search. Hidden targets show as dim ghosts only inside beacon light. ACTION5 drops a beacon at the player (Chebyshev radius, limited count); ACTION6 flags a cell\u2014must be a real target; wrong cell ends the run.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tags": [
+    "static",
+    "exploration",
+    "64-grid"
+  ],
+  "local_dir": "environment_files/bn01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      64
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "fog",
+      "placement"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.273587+00:00"
+}

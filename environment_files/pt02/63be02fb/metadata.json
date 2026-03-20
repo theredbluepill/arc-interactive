@@ -1,0 +1,29 @@
+{
+  "game_id": "pt02-63be02fb",
+  "title": "Row Column Rotate",
+  "description": "Like pattern rotation, but ACTION6 rotates an entire row or column of 3\u00d73 tiles (nearest axis to the click).",
+  "default_fps": 20,
+  "baseline_actions": [
+    6
+  ],
+  "tags": [
+    "static",
+    "pattern",
+    "click"
+  ],
+  "local_dir": "environment_files/pt02/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      64
+    ],
+    "action_space": 1,
+    "physics_rules": [
+      "rotation"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.357361+00:00"
+}

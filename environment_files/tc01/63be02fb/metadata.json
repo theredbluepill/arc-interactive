@@ -1,0 +1,33 @@
+{
+  "game_id": "tc01-63be02fb",
+  "title": "Conveyor Layer",
+  "description": "After each move, the player is pushed one more step by the arrow at the destination cell (`arrows` in level data).",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "static",
+    "movement",
+    "field"
+  ],
+  "local_dir": "environment_files/tc01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      16
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "conveyor",
+      "arrow-push"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.477902+00:00"
+}

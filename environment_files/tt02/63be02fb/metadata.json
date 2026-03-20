@@ -1,0 +1,35 @@
+{
+  "game_id": "tt02-63be02fb",
+  "title": "Collection Patrol Hazards",
+  "description": "Like collection, but red patrol hazards step along authored tracks each player move (`patrols` in level data).",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "static",
+    "collection",
+    "dynamic-hazard"
+  ],
+  "local_dir": "environment_files/tt02/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      16,
+      24
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "collision",
+      "collection",
+      "patrol"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.484242+00:00"
+}

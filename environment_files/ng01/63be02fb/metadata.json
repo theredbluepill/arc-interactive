@@ -1,0 +1,31 @@
+{
+  "game_id": "ng01-63be02fb",
+  "title": "Nonogram Lite",
+  "description": "8\u00d78 nonogram. ACTION1\u20134 move cursor; ACTION6 (display click via display_to_grid) cycles empty / filled / mark on the clicked cell. Win when filled cells match the solution.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    6
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "logic"
+  ],
+  "local_dir": "environment_files/ng01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      8
+    ],
+    "action_space": 6,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.341278+00:00"
+}

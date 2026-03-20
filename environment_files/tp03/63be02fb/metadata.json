@@ -1,0 +1,31 @@
+{
+  "game_id": "tp03-63be02fb",
+  "title": "Single-Use Teleporters",
+  "description": "Portals vanish after you use a pair once; reach the goal.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "puzzle",
+    "teleport"
+  ],
+  "local_dir": "environment_files/tp03/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      8,
+      10
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "movement",
+      "teleport"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.481371+00:00"
+}

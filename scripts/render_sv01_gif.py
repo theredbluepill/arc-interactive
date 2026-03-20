@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import sys
 from collections import deque
 from pathlib import Path
 
@@ -13,6 +14,10 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parents[1]
+_SCRIPTS = ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem  # noqa: E402
 
 _COLOR_HEX = {
     0: "#FFFFFFFF",
@@ -143,7 +148,7 @@ def main() -> None:
         environments_dir=str(ROOT / "environment_files"),
         operation_mode=OperationMode.OFFLINE,
     )
-    env = arc.make("sv01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("sv01"), seed=0, render_mode=None)
     res = env.reset()
     game = env._game
 

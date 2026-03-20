@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-import importlib.util
+import sys
 from collections import deque
 from pathlib import Path
 
@@ -14,6 +14,10 @@ from arc_agi import Arcade, OperationMode
 from arcengine import GameAction
 
 ROOT = Path(__file__).resolve().parents[1]
+_SCRIPTS = ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
 
 _COLOR_HEX = {
     0: "#FFFFFFFF",
@@ -50,11 +54,7 @@ _MOVE_CHARS = {
 
 
 def _load_tt01_levels():
-    path = ROOT / "environment_files" / "tt01" / "v1" / "tt01.py"
-    spec = importlib.util.spec_from_file_location("tt01_levels", path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.levels
+    return load_stem_game_py("tt01", "tt01_levels").levels
 
 
 def _bfs_path(
@@ -143,7 +143,7 @@ def main() -> None:
         environments_dir=str(ROOT / "environment_files"),
         operation_mode=OperationMode.OFFLINE,
     )
-    env = arc.make("tt01-v1", seed=0, render_mode=None)
+    env = arc.make(full_game_id_for_stem("tt01"), seed=0, render_mode=None)
     res = env.reset()
 
     images: list[Image.Image] = []

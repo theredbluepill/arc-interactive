@@ -1,0 +1,35 @@
+{
+  "game_id": "ck02-63be02fb",
+  "title": "Circuit Junction",
+  "description": "Wire routing with T-junction rule: no right turn relative to incoming direction on `junction` cells.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tags": [
+    "static",
+    "graph",
+    "logic"
+  ],
+  "local_dir": "environment_files/ck02/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      24
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "connectivity",
+      "junction"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.277837+00:00"
+}

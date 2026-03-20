@@ -1,0 +1,34 @@
+{
+  "game_id": "fw01-63be02fb",
+  "title": "Wildfire",
+  "description": "Fire spreads to neighbors on a timer; ACTION6 splashes water in a 3\u00d73. Reach the green exit alive.",
+  "default_fps": 20,
+  "baseline_actions": [
+    1,
+    2,
+    3,
+    4,
+    6
+  ],
+  "tags": [
+    "static",
+    "survival",
+    "simulation"
+  ],
+  "local_dir": "environment_files/fw01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      24
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "fire-spread",
+      "water-splash"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T09:53:23.306327+00:00"
+}
