@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="64" viewBox="0 0 640 64">
+  <defs>
+    <style type="text/css"><![CDATA[
+      @font-face {
+        font-family: 'VT323';
+        src: url('fonts/VT323-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      .t {
+        font-family: 'VT323', ui-monospace, monospace;
+        font-size: 44px;
+        fill: #58A6FF;
+      }
+    ]]></style>
+  </defs>
+  <rect x="32" y="6" width="576" height="52" rx="6" fill="#0d1117"/>
+  <text x="320" y="44" text-anchor="middle" class="t">44 games in Game Registry</text>
+</svg>

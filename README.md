@@ -5,8 +5,9 @@ A collection of games for the ARC-AGI-3 benchmark.
 <!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`). -->
 <!-- readme-stats:begin -->
 
+<!-- Static SVG: VT323 + terminal blue (assets/fonts/VT323-Regular.ttf, OFL). -->
 <p align="center">
-  <strong>44</strong> games in Game Registry
+  <img src="assets/readme-registry-count.svg" width="640" height="64" alt="44 games in Game Registry" />
 </p>
 
 <!-- readme-stats:end -->

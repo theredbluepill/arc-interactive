@@ -7,6 +7,7 @@ on:
     paths:
       - "GAMES.md"
       - "update_readme_stats.py"
+      - "assets/fonts/**"
       - ".github/workflows/readme-stats.yml"
   workflow_dispatch:
 
@@ -33,7 +34,7 @@ jobs:
           if git diff --quiet README.md; then
             echo "README.md already up to date."
           else
-            git add README.md
+            git add README.md assets/readme-registry-count.svg
             git commit -m "chore: refresh README game stats [skip ci]"
             git push
           fi
