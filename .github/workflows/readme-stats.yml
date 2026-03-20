@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - "GAMES.md"
-      - "update_readme_stats.py"
+      - "devtools/scripts/update_readme_stats.py"
       - ".github/workflows/readme-stats.yml"
   workflow_dispatch:
 
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Regenerate README stats
-        run: python3 update_readme_stats.py
+        run: python3 devtools/scripts/update_readme_stats.py
 
       - name: Commit and push if changed
         run: |

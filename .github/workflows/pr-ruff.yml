@@ -34,7 +34,7 @@ jobs:
 
       - name: Ruff (manual — full enforced surface)
         if: github.event_name == 'workflow_dispatch'
-        run: uv run ruff check devtools run_game.py update_readme_stats.py
+        run: uv run ruff check devtools run_game.py
 
       - name: Ruff (PR — changed files under enforced paths only)
         if: github.event_name == 'pull_request'
@@ -45,7 +45,7 @@ jobs:
           out=""
           for f in $files; do
             case "$f" in
-              devtools/*|run_game.py|update_readme_stats.py) out="$out $f" ;;
+              devtools/*|run_game.py) out="$out $f" ;;
             esac
           done
           if [ -z "$out" ]; then

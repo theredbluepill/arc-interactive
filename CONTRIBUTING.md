@@ -220,7 +220,7 @@ Optional local checks (not in CI by default):
 Other automation:
 
 - **Registry check** — [`devtools/check_registry.py`](devtools/check_registry.py) on [`pr-registry.yml`](.github/workflows/pr-registry.yml): `metadata.json` shape, `game_id` / `local_dir`, `GAMES.md` rows vs disk (reference stems `vc33` / `ls20` / `ft09` are intentionally omitted from the table; see script).
-- **Ruff** — [`pr-ruff.yml`](.github/workflows/pr-ruff.yml) runs on `devtools/`, `run_game.py`, and `update_readme_stats.py` when those paths appear in the PR diff; use **Actions → PR Ruff → Run workflow** for a full pass on that surface.
+- **Ruff** — [`pr-ruff.yml`](.github/workflows/pr-ruff.yml) runs on `devtools/` (including `devtools/scripts/`), `run_game.py`, and related paths when those appear in the PR diff; use **Actions → PR Ruff → Run workflow** for a full pass on that surface.
 - **Labels** — [`labeler.yml`](.github/labeler.yml) (via [`labeler` workflow](.github/workflows/labeler.yml)) tags PRs by area (`game`, `documentation`, `ci`, `devtools`).
 - **Dependabot** — [`.github/dependabot.yml`](.github/dependabot.yml) bumps GitHub Actions and `uv` dependencies weekly.
 - **First PR welcome** — static comment with links (no code from the PR is executed).

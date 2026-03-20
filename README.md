@@ -20,7 +20,7 @@ A collection of games for the ARC-AGI-3 benchmark.
   <img src="assets/ff01.gif" alt="ff01 Flood Fill" width="64" height="64" />
 </p>
 
-<!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`). -->
+<!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`, `devtools/scripts/update_readme_stats.py`). -->
 <!-- readme-stats:begin -->
 
 <p align="center">

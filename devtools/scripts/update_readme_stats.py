@@ -7,7 +7,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 README = ROOT / "README.md"
 GAMES_MD = ROOT / "GAMES.md"
 
