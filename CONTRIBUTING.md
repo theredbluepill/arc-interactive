@@ -1,6 +1,6 @@
 # Contributing
 
-This guide covers how to run and create games for the ARC-AGI-3 benchmark.
+This guide covers how to run and create games for the ARC-AGI-3 benchmark. You can implement games by hand or **use an AI coding agent** (Cursor, Copilot, etc.) with the files linked below—the repo is set up so agents can follow one skill and land a complete game.
 
 ## Prerequisites
 
@@ -36,6 +36,23 @@ uv run python run_game.py --game ez01 --version v1 --mode auto --steps 50
 ```
 
 ## Creating a New Game
+
+### AI-assisted workflow (recommended for speed)
+
+Point your agent at the same conventions humans use:
+
+| Resource | What it’s for |
+|----------|----------------|
+| [AGENTS.md](AGENTS.md) | Camera/UI patterns, abstract actions, common bugs, testing checklist, palette |
+| [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md) | End-to-end steps: layout, sprites, levels, `step()`, metadata, registry |
+
+The repo exposes that skill in three equivalent places: **`skills/`** (symlink at repo root), **`.opencode/skills/`**, and **`.agents/skills/`**—use whichever path your tool resolves best.
+
+**Minimal prompt you can paste:** *Implement a new ARC-AGI-3 game `{game_id}` at `environment_files/{game_id}/v1/`. Follow [AGENTS.md](AGENTS.md) and [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md): static levels only, `ARCBaseGame` + `metadata.json`, register a row in [GAMES.md](GAMES.md). Game design: [grid size, entities, win/lose, which actions 1–7 do].*
+
+**Done when:** `uv run python run_game.py --game {game_id} --version v1` runs, win advances levels, and [GAMES.md](GAMES.md) has a complete table row (optional: preview GIF under `assets/` like existing games).
+
+If you prefer to implement without an agent, follow the numbered steps below.
 
 ### 1. Create Game Directory
 ```
@@ -176,14 +193,18 @@ arc-interactive/
 │   ├── ez01/v1/
 │   ├── tt01/v1/
 │   └── ...
-├── assets/              # Game preview GIFs
-├── run_game.py          # CLI runner
-├── GAMES.md            # Game registry
-├── README.md           # Quick start
-└── CONTRIBUTING.md    # This guide
+├── skills/                  # Symlink → .opencode/skills (create-arc-game, play-arc-game, …)
+├── .opencode/skills/        # Canonical skill definitions
+├── assets/                  # Game preview GIFs
+├── run_game.py              # CLI runner
+├── AGENTS.md                # Agent + human patterns for games
+├── GAMES.md                 # Game registry
+├── README.md                # Quick start
+└── CONTRIBUTING.md          # This guide
 ```
 
 ## Documentation
 
 - [ARC-AGI-3 Docs](https://docs.arcprize.org/add_game)
+- [AGENTS.md](AGENTS.md) — implementation patterns and pitfalls
 - [Game Registry](GAMES.md)
