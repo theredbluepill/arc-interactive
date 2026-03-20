@@ -1,0 +1,34 @@
+# metadata.json + GAMES.md consistency (stdlib script; no game deps).
+name: Registry check
+
+on:
+  pull_request:
+    paths:
+      - "environment_files/**"
+      - "GAMES.md"
+      - "devtools/check_registry.py"
+      - ".github/workflows/pr-registry.yml"
+  push:
+    branches: [main]
+    paths:
+      - "environment_files/**"
+      - "GAMES.md"
+      - "devtools/check_registry.py"
+      - ".github/workflows/pr-registry.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: registry-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate registry
+        run: python3 devtools/check_registry.py

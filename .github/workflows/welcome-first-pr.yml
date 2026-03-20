@@ -1,0 +1,36 @@
+# Friendly pointer for first-time contributors (static comment only).
+name: Welcome first-time contributor
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  welcome:
+    if: >-
+      contains(fromJson('["FIRST_TIME_CONTRIBUTOR","FIRST_TIMER"]'),
+      github.event.pull_request.author_association)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const base = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main`;
+            const body = [
+              'Thanks for opening your first pull request here.',
+              '',
+              `- [CONTRIBUTING.md](${base}/CONTRIBUTING.md) — run games, add games, CI expectations`,
+              `- [AGENTS.md](${base}/AGENTS.md) — patterns, pitfalls, testing notes`,
+              '- PRs touching `environment_files/` run **Registry check** + **PR game smoke**; `devtools/` / `run_game.py` changes run **PR Ruff** when those paths are in the diff.',
+              '',
+              'Maintainers will review design and solvability — automated checks only catch structural / runtime issues.',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

@@ -189,7 +189,7 @@ elif not sprite or not sprite.is_collidable:
 
 ```
 arc-interactive/
-├── devtools/                # Tracked maintainer tools (e.g. `smoke_games.py` for CI/local checks)
+├── devtools/                # `smoke_games.py`, `check_registry.py` (CI / local; see Issues & PRs below)
 ├── environment_files/     # All games
 │   ├── ez01/v1/
 │   ├── tt01/v1/
@@ -209,6 +209,16 @@ arc-interactive/
 Use the repo’s [issue templates](.github/ISSUE_TEMPLATE/) (bug report, game idea / feature) and [pull request template](.github/PULL_REQUEST_TEMPLATE.md) so reports include game IDs, repro steps, and the same `run_game.py` checks as above. Blank issues stay enabled if none of the templates fit.
 
 Pull requests that change files under `environment_files/` are **smoke-tested in CI** (`devtools/smoke_games.py` via [`.github/workflows/pr-game-smoke.yml`](.github/workflows/pr-game-smoke.yml)): each affected game is loaded and stepped with random ACTION1–5. That catches load/`step()` crashes and missing `GAMES.md` rows; it does not replace manual or agent review for design and solvability.
+
+Other automation:
+
+- **Registry check** — [`devtools/check_registry.py`](devtools/check_registry.py) on [`pr-registry.yml`](.github/workflows/pr-registry.yml): `metadata.json` shape, `game_id` / `local_dir`, `GAMES.md` rows vs disk (reference stems `vc33` / `ls20` / `ft09` are intentionally omitted from the table; see script).
+- **Ruff** — [`pr-ruff.yml`](.github/workflows/pr-ruff.yml) runs on `devtools/`, `run_game.py`, and `update_readme_stats.py` when those paths appear in the PR diff; use **Actions → PR Ruff → Run workflow** for a full pass on that surface.
+- **Labels** — [`labeler.yml`](.github/labeler.yml) (via [`labeler` workflow](.github/workflows/labeler.yml)) tags PRs by area (`game`, `documentation`, `ci`, `devtools`).
+- **Dependabot** — [`.github/dependabot.yml`](.github/dependabot.yml) bumps GitHub Actions and `uv` dependencies weekly.
+- **First PR welcome** — static comment with links (no code from the PR is executed).
+
+Maintainers: turn on **required status checks** for `main` as described in [`.github/BRANCH_PROTECTION.md`](.github/BRANCH_PROTECTION.md).
 
 ## Documentation
 

@@ -1,0 +1,16 @@
+# Labels are created automatically on first use (issues: write on the labeler workflow).
+game:
+  - changed-files:
+      - any-glob-to-any-file: "environment_files/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.md"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+
+devtools:
+  - changed-files:
+      - any-glob-to-any-file: "devtools/**"

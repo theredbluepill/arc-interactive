@@ -1,0 +1,56 @@
+# Ruff on devtools + runners; PRs only lint those paths when touched.
+name: PR Ruff
+
+on:
+  pull_request:
+    paths:
+      - "**/*.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/pr-ruff.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ruff-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install dependencies (incl. dev)
+        run: uv sync --group dev
+
+      - name: Ruff (manual — full enforced surface)
+        if: github.event_name == 'workflow_dispatch'
+        run: uv run ruff check devtools run_game.py update_readme_stats.py
+
+      - name: Ruff (PR — changed files under enforced paths only)
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          files=$(git diff --name-only "$BASE" "$HEAD" -- '*.py' || true)
+          out=""
+          for f in $files; do
+            case "$f" in
+              devtools/*|run_game.py|update_readme_stats.py) out="$out $f" ;;
+            esac
+          done
+          if [ -z "$out" ]; then
+            echo "No enforced Python paths in this PR diff — skip."
+            exit 0
+          fi
+          echo "Checking:$out"
+          uv run ruff check $out

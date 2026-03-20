@@ -7,6 +7,21 @@ on:
       - "environment_files/**"
       - "devtools/**"
       - ".github/workflows/pr-game-smoke.yml"
+  workflow_dispatch:
+    inputs:
+      game_stems:
+        description: "Comma-separated game stems (e.g. ez01,tt01). Empty = smoke ez01 only."
+        required: false
+        default: ""
+      version:
+        description: "Version directory under each stem"
+        required: false
+        default: "v1"
+      steps:
+        description: "Random steps per game"
+        required: false
+        default: "40"
+        type: string
 
 concurrency:
   group: pr-smoke-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -30,7 +45,8 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Smoke changed games
+      - name: Smoke changed games (PR)
+        if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -38,3 +54,22 @@ jobs:
           uv run python devtools/smoke_games.py \
             --git-range "$BASE_SHA" "$HEAD_SHA" \
             --steps 40
+
+      - name: Smoke selected games (manual)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          STEMS: ${{ inputs.game_stems }}
+          VER: ${{ inputs.version }}
+          STEPS: ${{ inputs.steps }}
+        run: |
+          set -euo pipefail
+          if [ -z "${STEMS// /}" ]; then
+            uv run python devtools/smoke_games.py --game ez01 --version "$VER" --steps "$STEPS"
+            exit 0
+          fi
+          IFS=',' read -ra ARR <<< "$STEMS"
+          for raw in "${ARR[@]}"; do
+            s=$(echo "$raw" | tr -d '[:space:]')
+            [ -n "$s" ] || continue
+            uv run python devtools/smoke_games.py --game "$s" --version "$VER" --steps "$STEPS"
+          done
