@@ -1,0 +1,40 @@
+# Refreshes the <!-- readme-stats:begin/end --> block in README.md (game counts).
+name: README statistics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "GAMES.md"
+      - "environment_files/**"
+      - "update_readme_stats.py"
+      - ".github/workflows/readme-stats.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: readme-stats-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate README stats
+        run: python3 update_readme_stats.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet README.md; then
+            echo "README.md already up to date."
+          else
+            git add README.md
+            git commit -m "chore: refresh README game stats [skip ci]"
+            git push
+          fi

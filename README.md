@@ -2,7 +2,18 @@
 
 A collection of games for the ARC-AGI-3 benchmark.
 
+It is a **working** copy you can run on your own machine: play in the terminal, hook up agents, read or change how levels work, ship new games, or reuse the same `environment_files/` layout in evaluation pipelines (including the optional Kaggle hooks below). No single "intended" role—pick whatever fits your project.
+
 ## Games
+
+<!-- Auto-updated on push to `main` when `GAMES.md` or `environment_files/` change (see `.github/workflows/readme-stats.yml`). -->
+<!-- readme-stats:begin -->
+
+- **Games listed in [GAMES.md](GAMES.md):** 44
+- **Runnable packages in `environment_files/`:** 47 (`game_id` + version folder with `metadata.json`)
+- *Counts differ — sync the registry table with on-disk packages when you add or remove games.*
+
+<!-- readme-stats:end -->
 
 See [GAMES.md](GAMES.md) for the complete game registry with previews.
 
