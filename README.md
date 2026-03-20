@@ -8,9 +8,19 @@ See [GAMES.md](GAMES.md) for the complete game registry with previews.
 
 ## Quick Run
 
+Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/astral-sh/uv). From the repo root, install dependencies once:
+
 ```bash
-uv run python run_game.py --game <game_id> --version v1
+uv sync
 ```
+
+Then run a game (example: tutorial **ez01**):
+
+```bash
+uv run python run_game.py --game ez01 --version v1
+```
+
+Use any `game_id` / `version` pair that appears in `uv run python run_game.py --list`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full documentation on running and creating games.
 
