@@ -58,6 +58,14 @@ Play by hand (matplotlib window):
 uv run python run_game.py --game sk01 --version auto --mode human
 ```
 
+### Create a game with AI Agent
+
+Paste into your coding agent (replace `{game_id}` and the bracketed design). Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
+
+```
+Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
+```
+
 ## Benchmarks
 
 ### Official ARC-AGI-3 (ARC Prize)
