@@ -16,6 +16,8 @@ A collection of games for the ARC-AGI-3 benchmark.
   <img src="assets/tt01.gif" alt="tt01 Collection" width="64" height="64" />
   &nbsp;
   <img src="assets/ms01.gif" alt="ms01 Blind Sapper" width="64" height="64" />
+  &nbsp;
+  <img src="assets/ff01.gif" alt="ff01 Flood Fill" width="64" height="64" />
 </p>
 
 <!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`). -->
