@@ -52,9 +52,9 @@ uv run python run_game.py --game ez01 --version auto
 
 Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
 
-### Public leaderboard (online)
+### ARC Leaderboard
 
-The interactive preview and leaderboard live at **[ARC-AGI-3 Preview](https://three.arcprize.org)**. Only **online** games are ratable there; local/offline play does not feed that path. If you want the toolkit to use the online service, copy [`.env.example`](.env.example) to **`.env`** and set **`ARC_API_KEY`** and **`ARC_OPERATION_MODE=online`**. `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
+**[ARC-AGI-3 Preview](https://three.arcprize.org/)** is where you’ll find the **ARC Leaderboard**, play online games, and **get your `ARC_API_KEY`** (use the site’s sign-in / API setup). Only **online** runs are ratable on that leaderboard; local/offline play does not count. To use the online service from this repo, copy [`.env.example`](.env.example) to **`.env`** and set **`ARC_API_KEY`** and **`ARC_OPERATION_MODE=online`**. `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
 
 ```bash
 # .env — replace angle-bracket placeholders; see .env.example for more options
