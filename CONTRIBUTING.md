@@ -203,6 +203,10 @@ arc-interactive/
 └── CONTRIBUTING.md          # This guide
 ```
 
+## Issues and pull requests
+
+Use the repo’s [issue templates](.github/ISSUE_TEMPLATE/) (bug report, game idea / feature) and [pull request template](.github/PULL_REQUEST_TEMPLATE.md) so reports include game IDs, repro steps, and the same `run_game.py` checks as above. Blank issues stay enabled if none of the templates fit.
+
 ## Documentation
 
 - [ARC-AGI-3 Docs](https://docs.arcprize.org/add_game)

@@ -1,0 +1,49 @@
+name: Game idea or feature request
+description: Propose a new ARC-AGI-3 game or a behavior change to an existing one
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For **implementing** a game, follow [CONTRIBUTING.md — Creating a new game](https://github.com/theredbluepill/arc-interactive/blob/main/CONTRIBUTING.md#creating-a-new-game) and [AGENTS.md](https://github.com/theredbluepill/arc-interactive/blob/main/AGENTS.md). This template is for discussion before or alongside a PR.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - New game (`environment_files/…`)
+        - Change to existing game
+        - Runner / tooling / docs only
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What should players or agents do? What makes it interesting for ARC-AGI-3?
+    validations:
+      required: true
+
+  - type: textarea
+    id: design
+    attributes:
+      label: Design notes
+      description: Grid size, entities, win/lose, and what ACTION1–7 mean in your design (actions are abstract per game).
+      placeholder: |
+        - Grid: e.g. 16×16
+        - Player / walls / goals / …
+        - Win: …
+        - Lose (if any): …
+        - Actions: 1–4 …, 5 …, 6 …, 7 …
+    validations:
+      required: false
+
+  - type: textarea
+    id: draft
+    attributes:
+      label: Draft PR or branch (optional)
+      description: Link to a PR or note `game_id`/path if you already started work.
+    validations:
+      required: false

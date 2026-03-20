@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/theredbluepill/arc-interactive/blob/main/CONTRIBUTING.md
+    about: Run games locally, create games with uv, and the GAMES.md checklist.
+  - name: AGENTS.md (implementation patterns)
+    url: https://github.com/theredbluepill/arc-interactive/blob/main/AGENTS.md
+    about: Camera/UI patterns, abstract actions, testing checklist, common bugs.
