@@ -2,6 +2,8 @@
 
 A collection of games for the ARC-AGI-3 benchmark.
 
+These games are designed to be easy for humans to solve, but very hard for modern AI systems—including frontier large language models. Together they stress reasoning, planning, and interactive control rather than memorized puzzle templates.
+
 <table align="center">
   <tr>
     <td align="center"><img src="assets/mm01.gif" alt="mm01 Memory Match" width="64" height="64" /></td>
