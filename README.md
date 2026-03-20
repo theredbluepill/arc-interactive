@@ -14,6 +14,16 @@ A collection of games for the ARC-AGI-3 benchmark.
 
 See [GAMES.md](GAMES.md) for the complete game registry with previews.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to run games locally and create new ones.
+
+**Add your game:** implement it under `environment_files/{game_id}/v1/`, add a row to the [GAMES.md](GAMES.md) registry (title, grid, levels, preview, actions), then open a pull request. The [create-arc-game skill](skills/create-arc-game/SKILL.md) and [AGENTS.md](AGENTS.md) describe the patterns reviewers expect—whether you code by hand or with an AI agent.
+
+<p align="center">
+  <a href="CONTRIBUTING.md#creating-a-new-game"><img src="https://img.shields.io/badge/Contributing-Add%20a%20game-238636?style=for-the-badge" alt="Contributing: add a game"></a>
+  &nbsp;
+  <a href="GAMES.md"><img src="https://img.shields.io/badge/Registry-GAMES.md-58A6FF?style=for-the-badge" alt="Game registry: GAMES.md"></a>
+</p>
+
 ## Quickstart
 
 Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/astral-sh/uv). From the repo root, install dependencies once:
@@ -29,8 +39,6 @@ uv run python run_game.py --game ez01 --version v1
 ```
 
 Use any `game_id` / `version` pair that appears in `uv run python run_game.py --list`.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full documentation on running and creating games.
 
 ## Kaggle Benchmarks
 
