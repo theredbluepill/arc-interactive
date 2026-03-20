@@ -1,0 +1,19 @@
+{
+  "game_id": "cu01-v1",
+  "title": "Multiset Cover",
+  "description": "Cover **yellow** cells with **domino** (two orth clicks) or **L-tromino** (three clicks); **ACTION5** switches tool.",
+  "default_fps": 20,
+  "baseline_actions": [5, 6],
+  "tags": ["tiling", "click"],
+  "local_dir": "environment_files/cu01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

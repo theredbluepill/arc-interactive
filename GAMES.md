@@ -203,5 +203,56 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | pj01 | Timing / Deflect | 14×14 | 5 | **Bolt bounce**: bolt steps each frame; ACTION6 toggles / vs \\ mirrors; sink the bolt without getting hit. | ![pj01](assets/pj01.gif) | • 1-4: Move • 6: Mirror |
 | gc01 | Growth / Routing | 14×14 | 5 | **Coral creep**: coral spreads to empty neighbors every M steps (blocking, non-lethal); reach the goal. | ![gc01](assets/gc01.gif) | • 1-4: Move |
 | sr01 | Logic / Algebra | 12×12 | 5 | **Aura XOR**: RGB zones toggle aura bits; wash clears; door opens when aura matches the target triple. | ![sr01](assets/sr01.gif) | • 1-4: Move |
+| cs01 | Graph / Click | 8×8 | 7 | **Vertex cover**: toggle cyan vertices so every edge touches a selected vertex within budget. | ![cs01](assets/cs01.gif) | • 1-4: No-op • 6: Toggle vertex |
+| ct01 | Graph / Click | 8×8 | 7 | **Independent cover**: no adjacent selections; every gray mark must be selected or orth-adjacent to one. | ![ct01](assets/ct01.gif) | • 1-4: No-op • 6: Toggle |
+| cz01 | Logic / Click | 8×8 | 7 | **Row XOR pick**: **ACTION1–4** select row 0–3; **ACTION6** flips all bits in that row; match target. | ![cz01](assets/cz01.gif) | • 1–4: Pick row • 6: Flip row |
+| eg01 | Pattern / Click | 6×6 | 7 | **Hamming target**: **ACTION6** cycles cell color; win when distance to target ≤ **D**. | ![eg01](assets/eg01.gif) | • 1-4: No-op • 6: Cycle cell |
+| ff04 | Precision / Topology | 8×8 | 7 | **Gradient budget flood**: grow paint from seed; total Manhattan cost to seed ≤ budget; match gray hints. | ![ff04](assets/ff04.gif) | • 1-4: No-op • 6: Add cell |
+| gp04 | Pattern Puzzles | 8×8 | 7 | **Blob cap**: paint like **gp01** but also keep ≤ **K** orthogonal yellow components. | ![gp04](assets/gp04.gif) | • 1-4: No-op • 6: Toggle paint |
+| lo04 | Pattern Puzzles | 5–6 | 7 | **Diagonal Lights Out**: **ACTION6** toggles cell + four diagonals only. | ![lo04](assets/lo04.gif) | • 1-4: No-op • 6: Click |
+| lo05 | Pattern Puzzles | 8×8 | 7 | **Knight Lights Out**: **ACTION6** toggles cell + all knight-move neighbors. | ![lo05](assets/lo05.gif) | • 1-4: No-op • 6: Click |
+| qr04 | Pattern Puzzles | 8×8 | 7 | **3×3 twist**: **ACTION6** rotates a **3×3** color block clockwise (**qr01** kernel). | ![qr04](assets/qr04.gif) | • 1-4: No-op • 6: Click |
+| sq04 | Sequencing / Ordering | 12×12 | 7 | **LIFO sequencing**: clear blocks in **stack** order (last in HUD first), **sq01**-style clicks. | ![sq04](assets/sq04.gif) | • 6: Click block |
+| sq05 | Sequencing / Ordering | 12×12 | 7 | **Double-tap lock**: FIFO order; each block needs **two** consecutive correct taps to clear. | ![sq05](assets/sq05.gif) | • 6: Click block |
+| pt04 | Pattern Puzzles | 8×8 | 7 | **Tile swap**: two **ACTION6** picks swap **1×1** colors; match the target grid. | ![pt04](assets/pt04.gif) | • 1–4: No-op • 6: Select / swap |
+| pt05 | Pattern Puzzles | 8×8 | 7 | **Slide row**: click yellow **header** (x=0) to cycle that row’s colors left; match key. | ![pt05](assets/pt05.gif) | • 1–4: No-op • 6: Header |
+| sy04 | Pattern Puzzles | 11×11 | 7 | **Diagonal mirror**: template on **i<j**; build matching dots on **x>y** across **y=x**. | ![sy04](assets/sy04.gif) | • 6: Toggle mirror |
+| dm04 | Tiling | 8×8 | 7 | **L-tromino cover**: three **ACTION6** picks forming an **L** in a 2×2 cover marked cells. | ![dm04](assets/dm04.gif) | • 6: Pick 3 cells |
+| pk02 | Topology / Packing | 10×10 | 7 | **Ribbon edges**: two-click adjacent vertices to claim a marked unit edge; cover all. | ![pk02](assets/pk02.gif) | • 5: No-op • 6: Edge |
+| fl04 | Path / Click | 12×12 | 7 | **Capped path**: connect **A→B** with click path length ≤ **max_len**. | ![fl04](assets/fl04.gif) | • 1–4: Move • 6: Path |
+| lw04 | Path / Click | 12×12 | 7 | **Corner budget**: connect **A→B** with length and **turn** caps. | ![lw04](assets/lw04.gif) | • 1–4: Move • 6: Path |
+| sf04 | Pattern / Stencil | 16×16 | 7 | **Rotate stencil**: **ACTION5** spins L-tromino mask; **ACTION6** paints. | ![sf04](assets/sf04.gif) | • 5: Rotate • 6: Paint |
+| sp04 | Simulation | 12×12 | 7 | **Sandpile sinks**: like **sp01** but grains falling into cyan sinks disappear. | ![sp04](assets/sp04.gif) | • 1–4: No-op • 6: Add grain |
+| ll04 | Simulation | 12×12 | 7 | **Torus Life**: Conway on a torus; **ACTION6** toggles; **ACTION5** steps. | ![ll04](assets/ll04.gif) | • 5: Gen • 6: Toggle |
+| ab01 | Simulation | 10×10 | 7 | **Mod sandpile**: stabilize with total grain count **mod P == R**. | ![ab01](assets/ab01.gif) | • 1–4: No-op • 6: Add grain |
+| df04 | Field / Simulation | 10×10 | 7 | **Diffuse only**: **ACTION5** heat step; **ACTION6** 3×3 vent; probe in band. | ![df04](assets/df04.gif) | • 5: Tick • 6: Vent |
+| ih01 | Field / Simulation | 10×10 | 7 | **Heaters**: **ACTION5** global chill; **ACTION6** toggles heater pads. | ![ih01](assets/ih01.gif) | • 5: Tick • 6: Toggle heater |
+| tc04 | Simulation / Routing | 10×10 | 7 | **Conveyor**: **ACTION5** moves packages on arrows; **ACTION6** rotates arrow. | ![tc04](assets/tc04.gif) | • 5: Step • 6: Rotate |
+| zm04 | Simulation / Spread | 12×12 | 7 | **Strains**: **ACTION5** switch+spread; **ACTION6** blocks a cell. | ![zm04](assets/zm04.gif) | • 5: Strain • 6: Block |
+| pu04 | Graph / Plumbing | 16×16 | 7 | **Tee pipes**: **ACTION6** cycles **H / V / T**; connect source→sink. | ![pu04](assets/pu04.gif) | • 1–4: No-op • 6: Cycle |
+| pd04 | Graph / Plumbing | 12×12 | 7 | **Plus junction**: toggle full **+** open/closed; connect flow. | ![pd04](assets/pd04.gif) | • 6: Toggle |
+| ck04 | Circuit / Logic | 14×14 | 7 | **Directed wire**: each tile’s arrow rotates with **ACTION6**; reach **out**. | ![ck04](assets/ck04.gif) | • 6: Rotate |
+| rp04 | Graph / Relay | 12×12 | 7 | **Relay pulse**: **ACTION6** toggles relays; **ACTION5** floods from source. | ![rp04](assets/rp04.gif) | • 5: Pulse • 6: Toggle |
+| ph04 | Logic / Algebra | 8×1 row | 7 | **Mod row step**: **ACTION5** applies neighbor-sum **mod R** on a cyclic row. | ![ph04](assets/ph04.gif) | • 5: Step |
+| ml04 | Timing / Laser | 16×16 | 7 | **Fixed emitter**: **ACTION5** fires; **ACTION6** cycles mirrors. | ![ml04](assets/ml04.gif) | • 5: Fire • 6: Mirror |
+| pj04 | Timing / Deflect | 14×14 | 7 | **Fixed shooter**: **ACTION5** bolt; **ACTION6** places mirrors (minimal avatar). | ![pj04](assets/pj04.gif) | • 5: Bolt • 6: Mirror |
+| wm04 | Timing / Reflex | 32×32 | 7 | **Whack**: wrong click shortens the timer. | ![wm04](assets/wm04.gif) | • 6: Click |
+| sg04 | Timing / Rhythm | 12×12 | 7 | **Dual commit**: two-arm timing like **sg01**. | ![sg04](assets/sg04.gif) | • 5–6: Timing |
+| ng04 | Pattern / Layer | 12×12 | 7 | **Multi-layer** cycle path edit (**ng01** family). | ![ng04](assets/ng04.gif) | • 6: Edit |
+| bn04 | Stealth / Reveal | 16×16 | 7 | **Line/column flash**: **ACTION5** axis reveal (**bn01** family). | ![bn04](assets/bn04.gif) | • 5: Axis • 6: Flag |
+| sk04 | Manipulation | 8×8 | 7 | **Fixed / winch sokoban**: minimal walking. | ![sk04](assets/sk04.gif) | • 1–4 / 6: Per level |
+| pb04 | Push / Minimal | 8×8 | 7 | **One crate** with constrained interaction. | ![pb04](assets/pb04.gif) | • 1–4 / 6: Per level |
+| wl05 | Dynamic / Physics | 12×12 | 7 | **Ball + ramps**: **ACTION5** tick; **ACTION6** toggles ramps. | ![wl05](assets/wl05.gif) | • 5: Tick • 6: Ramp |
+| hn04 | Logic / Classic | 10×12 | 7 | **4 peg Hanoi**: **ACTION1–4** select peg; **ACTION5** pick/drop. | ![hn04](assets/hn04.gif) | • 1–4: Peg • 5: Pick/drop |
+| kv04 | Circuit / Logic | 8×8 | 7 | **Two ladders**: **ACTION1–3** / **ACTION4** cycle branches; **ACTION5** verify. | ![kv04](assets/kv04.gif) | • 1–4: Cycle • 5: Check |
+| rs04 | Logic / Phase | 10×10 | 7 | **XOR-safe collect**: phase bits pick which target color may clear. | ![rs04](assets/rs04.gif) | • 5: Phase • 6: Clear |
+| ms04 | Logic / Deduction | 8×8 | 7 | **Edge-adjacent clues**: **ACTION6** flags mines. | ![ms04](assets/ms04.gif) | • 6: Flag |
+| cw01 | Logic / Click | 12×12 | 7 | **2-SAT literals**: **ACTION6** toggles a variable; satisfy all clauses. | ![cw01](assets/cw01.gif) | • 6: Toggle literal |
+| cx01 | Graph / Click | 10×10 | 7 | **Disconnect cut**: toggle **gates** until **S** and **T** split. | ![cx01](assets/cx01.gif) | • 6: Toggle gate |
+| cu01 | Tiling / Click | 10×10 | 7 | **Cover yellow**: **ACTION5** domino vs L-tool; **ACTION6** places. | ![cu01](assets/cu01.gif) | • 5: Tool • 6: Place |
+| cv01 | Graph / Click | 8×8 | 7 | **List coloring**: **ACTION6** cycles allowed colors; neighbors differ. | ![cv01](assets/cv01.gif) | • 6: Cycle |
+| mm04 | Memory | 64×64 | 7 | **One peek / level**: **ACTION5** briefly reveals unmatched tiles. | ![mm04](assets/mm04.gif) | • 5: Peek • 6: Flip |
+| mm05 | Memory | 64×64 | 7 | **Sticky matches**: cannot flip orthogonally adjacent to a matched pair. | ![mm05](assets/mm05.gif) | • 6: Flip |
+| fe02 | Simulation / Abstract | 8×8 | 7 | **Vote + ratify**: **ACTION1–4** tally; **ACTION5** applies policy **N** times. | ![fe02](assets/fe02.gif) | • 1–4: Vote • 5: Ratify |
 
 Implementation for each row lives under `environment_files/<Game>/<version>/` (one package dir per stem; `run_game.py --game <Game> --version auto` picks it). Registry column **Game** is the stem, not the full `game_id` in `metadata.json`.

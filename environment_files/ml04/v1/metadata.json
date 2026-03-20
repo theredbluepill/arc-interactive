@@ -1,0 +1,19 @@
+{
+  "game_id": "ml04-v1",
+  "title": "Fixed Emitter Laser",
+  "description": "Ray from emitter; **ACTION6** cycles mirror type on cell; **ACTION5** advances the bolt until receptor or wall.",
+  "default_fps": 20,
+  "baseline_actions": [5, 6],
+  "tags": ["laser", "click"],
+  "local_dir": "environment_files/ml04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

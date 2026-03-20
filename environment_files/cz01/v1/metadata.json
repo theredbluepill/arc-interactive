@@ -1,0 +1,19 @@
+{
+  "game_id": "cz01-v1",
+  "title": "Row XOR Pick",
+  "description": "ACTION1–4 select row 0–3; ACTION6 flips every bit in that row. Match the binary target within the step limit.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 6],
+  "tags": ["static", "logic"],
+  "local_dir": "environment_files/cz01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -1,0 +1,19 @@
+{
+  "game_id": "dm04-v1",
+  "title": "L-Tromino Cover",
+  "description": "Cover every marked cell with L-trominoes using three ACTION6 picks that form an L in a 2×2.",
+  "default_fps": 20,
+  "baseline_actions": [6],
+  "tags": ["static", "click", "tiling"],
+  "local_dir": "environment_files/dm04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

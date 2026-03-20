@@ -1,0 +1,19 @@
+{
+  "game_id": "sg04-v1",
+  "title": "Dual Arm Score",
+  "description": "**ACTION5** alternates arms A/B and increments the active arm; reach both targets within the step budget.",
+  "default_fps": 20,
+  "baseline_actions": [5],
+  "tags": ["timing", "abstract"],
+  "local_dir": "environment_files/sg04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

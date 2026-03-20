@@ -1,0 +1,19 @@
+{
+  "game_id": "ih01-v1",
+  "title": "Icing Heaters",
+  "description": "**ACTION5** chills the grid; **ACTION6** toggles heaters on pads; warm every cell to **min_warm**.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5, 6],
+  "tags": ["simulation", "click"],
+  "local_dir": "environment_files/ih01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -1,0 +1,19 @@
+{
+  "game_id": "kv04-v1",
+  "title": "Parallel Ladders",
+  "description": "Two **series** stacks (12 V top, ground bottom); **ACTION1–3** cycle **A**; **ACTION4** cycles **B**’s first resistor; **ACTION5** checks both probe pairs.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5],
+  "tags": ["circuit", "logic"],
+  "local_dir": "environment_files/kv04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -1,0 +1,19 @@
+{
+  "game_id": "sy04-v1",
+  "title": "Diagonal Mirror",
+  "description": "Template dots on cells with i<j; place dots on x>y so each (j,i) matches (i,j) across y=x.",
+  "default_fps": 20,
+  "baseline_actions": [6],
+  "tags": ["static", "click", "pattern"],
+  "local_dir": "environment_files/sy04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [11],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

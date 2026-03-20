@@ -1,0 +1,19 @@
+{
+  "game_id": "mm04-v1",
+  "title": "Memory Peek",
+  "description": "Match pairs like **mm01**; **ACTION5** once per level briefly reveals all unmatched tiles.",
+  "default_fps": 20,
+  "baseline_actions": [5, 6],
+  "tags": ["memory", "click"],
+  "local_dir": "environment_files/mm04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [64],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

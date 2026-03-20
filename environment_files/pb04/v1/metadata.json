@@ -1,0 +1,19 @@
+{
+  "game_id": "pb04-v1",
+  "title": "Winch Pull",
+  "description": "**ACTION5** reels the nearest crate one step along the winch **direction** vector toward the winch tile.",
+  "default_fps": 20,
+  "baseline_actions": [5],
+  "tags": ["push", "abstract"],
+  "local_dir": "environment_files/pb04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

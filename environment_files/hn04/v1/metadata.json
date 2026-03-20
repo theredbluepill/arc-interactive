@@ -1,0 +1,19 @@
+{
+  "game_id": "hn04-v1",
+  "title": "Four-Peg Hanoi",
+  "description": "**ACTION1–4** select peg; **ACTION5** pick/drop top disk; stack all on the **right** peg.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 5],
+  "tags": ["logic", "classic"],
+  "local_dir": "environment_files/hn04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

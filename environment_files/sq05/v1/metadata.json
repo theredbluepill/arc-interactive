@@ -1,0 +1,19 @@
+{
+  "game_id": "sq05-v1",
+  "title": "Parity Sequence",
+  "description": "FIFO order: tap the highlighted color twice in a row to lock each block; clear the full sequence.",
+  "default_fps": 20,
+  "baseline_actions": [6],
+  "tags": ["static", "click", "sequencing"],
+  "local_dir": "environment_files/sq05/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [12],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

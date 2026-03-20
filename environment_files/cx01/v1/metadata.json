@@ -1,0 +1,19 @@
+{
+  "game_id": "cx01-v1",
+  "title": "Cut Gates",
+  "description": "Toggle **gate** tiles until start **S** and goal **T** are no longer connected.",
+  "default_fps": 20,
+  "baseline_actions": [6],
+  "tags": ["graph", "click"],
+  "local_dir": "environment_files/cx01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

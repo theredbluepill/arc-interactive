@@ -1,0 +1,19 @@
+{
+  "game_id": "wm04-v1",
+  "title": "Echo Whack",
+  "description": "**ACTION6** hits the mole; wrong clicks add **penalty** randomization before the next spawn.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 6],
+  "tags": ["timing", "click"],
+  "local_dir": "environment_files/wm04/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 1,
+    "physics_rules": [],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}
