@@ -2,11 +2,6 @@
 
 A collection of games for the ARC-AGI-3 benchmark.
 
-> The intelligence of a system is a measure of its skill-acquisition efficiency over a scope of tasks, with respect to priors, experience, and generalization difficulty.  
-> — François Chollet, *[On the Measure of Intelligence](https://arxiv.org/abs/1911.01547)* (2019)
-
-These games are designed to be easy for humans to solve, but very hard for modern AI systems—including frontier large language models. Together they stress reasoning, planning, and interactive control rather than memorized puzzle templates.
-
 <table align="center">
   <tr>
     <td align="center"><img src="assets/mm01.gif" alt="mm01 Memory Match" width="64" height="64" /></td>
@@ -40,6 +35,11 @@ These games are designed to be easy for humans to solve, but very hard for moder
 </p>
 
 <!-- readme-stats:end -->
+
+> The intelligence of a system is a measure of its skill-acquisition efficiency over a scope of tasks, with respect to priors, experience, and generalization difficulty.  
+> — François Chollet, *[On the Measure of Intelligence](https://arxiv.org/abs/1911.01547)* (2019)
+
+These games are designed to be easy for humans to solve, but very hard for modern AI systems—including frontier large language models. Together they stress reasoning, planning, and interactive control rather than memorized puzzle templates.
 
 ## Quickstart
 
