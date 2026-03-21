@@ -45,7 +45,10 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-You can create or modify games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/) — **create-arc-game**, **play-arc-game**, **generate-arc-game-gif** for preview GIFs); see [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game). Static levels are enough; games land in a community pool through normal repo contributions. Many stems live in one tree, so the catalog grows with `main`. Preview GIFs use **`scripts/render_arc_game_gif.py`** per the **generate-arc-game-gif** skill. Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
+- Create or modify games quickly using patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/)): [create-arc-game](.opencode/skills/create-arc-game/SKILL.md), [play-arc-game](.opencode/skills/play-arc-game/SKILL.md).
+- Games land in a community pool through normal repo contributions.
+- Many stems live in one tree, so the catalog grows with `main`.
+- Powered by [ARC-AGI Toolkit](https://docs.arcprize.org/toolkit/overview).
 
 ## Quickstart
 
