@@ -4,6 +4,7 @@ notes/
 .DS_Store
 __pycache__/
 .worktrees/
+# Local / draft material — never commit (e.g. Kaggle quickstarter notebooks)
 docs/
 
 # Local kaggle_benchmarks task run exports
