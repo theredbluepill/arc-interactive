@@ -55,7 +55,7 @@ Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/ast
 uv sync
 ```
 
-Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit. Local play uses **disk** by default; add optional **`--offline`** if you want to **force** disk (same as omitting **`--online`** / **`--competition`**).
+Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit. Local play uses **local environments** (`environment_files/`) by default; add optional **`--offline`** if you want to **force** that (same as omitting **`--online`** / **`--competition`**).
 
 ```bash
 uv run python run_game.py \
@@ -63,7 +63,7 @@ uv run python run_game.py \
   --game ez01
 ```
 
-**Local disk, explicit `--offline`** (same tutorial **ez01**):
+**Local environments, explicit `--offline`** (same tutorial **ez01**):
 
 ```bash
 uv run python run_game.py \
@@ -72,7 +72,7 @@ uv run python run_game.py \
   --game ez01
 ```
 
-Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a guaranteed disk catalog). **`--version auto`** picks the sole package under that stem.
+Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a listing pinned to **local environments**). **`--version auto`** picks the sole package under that stem.
 
 ### Play by hand (pygame)
 
@@ -86,10 +86,10 @@ uv run python run_game.py \
 
 ### API / leaderboard / competition
 
-**[three.arcprize.org](https://three.arcprize.org/)** — leaderboard, online play, and **`ARC_API_KEY`**. Only **online** runs count there; local disk play does not.
+**[three.arcprize.org](https://three.arcprize.org/)** — leaderboard, online play, and **`ARC_API_KEY`**. Only **online** runs count there; play against **local environments** does not.
 
 1. Copy [`.env.example`](.env.example) → **`.env`** and set **`ARC_API_KEY`** (nothing else required in the template).
-2. For API play, pass **`--online`** (registry) or **`--competition`** ([competition rules](https://docs.arcprize.org/toolkit/competition_mode), Kaggle-style) — pick one; they are mutually exclusive. Omit both to use **local disk** (same as Quickstart). More flags: **`uv run python run_game.py --help`**.
+2. For API play, pass **`--online`** (registry) or **`--competition`** ([competition rules](https://docs.arcprize.org/toolkit/competition_mode), Kaggle-style) — pick one; they are mutually exclusive. Omit both to use **local environments** (same as Quickstart). More flags: **`uv run python run_game.py --help`**.
 
 **Online** (registry):
 

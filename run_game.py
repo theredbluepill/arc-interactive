@@ -11,7 +11,7 @@ Usage:
     uv run python run_game.py --game ls20 --mode human
     uv run python run_game.py --game sk01 --mode human
     uv run python run_game.py --game sk01 --mode human-toolkit
-    uv run python run_game.py   # disk, default stem co01; add --online for API + default stem ls20
+    uv run python run_game.py   # local environments, default stem co01; add --online for API + default stem ls20
 
 Game selection: use ``--game`` (recommended). ``ARC_GAME_ID`` is never required if you pass
 ``--game``. Env ``ARC_GAME_ID`` only applies when ``--game`` is omitted (overrides the mode default).
@@ -141,9 +141,9 @@ def get_game_id(operation_mode: OperationMode) -> str:
     return get_default_game_stem(operation_mode)
 
 
-def _list_available_games_disk_scan(env_dir: Path) -> None:
+def _list_available_games_env_walk(env_dir: Path) -> None:
     """Fallback: walk ``environment_files`` and read ``metadata.json`` titles."""
-    print("\nAvailable Games (disk scan):")
+    print("\nAvailable Games (local environments scan):")
     print("-" * 50)
 
     games_found: list[str] = []
@@ -218,13 +218,13 @@ def list_available_games(operation_mode: OperationMode) -> None:
         return
 
     if err is not None:
-        print(f"get_environments() unavailable ({err!r}); using disk scan.\n")
+        print(f"get_environments() unavailable ({err!r}); using local environments scan.\n")
     elif games is not None:
-        print("get_environments() returned empty; using disk scan.\n")
+        print("get_environments() returned empty; using local environments scan.\n")
     else:
-        print("get_environments() not found on Arcade; using disk scan.\n")
+        print("get_environments() not found on Arcade; using local environments scan.\n")
 
-    _list_available_games_disk_scan(env_dir)
+    _list_available_games_env_walk(env_dir)
 
 
 def run_game(config: GameConfig) -> GameResult:
@@ -378,9 +378,9 @@ Examples:
 Render modes (https://docs.arcprize.org/toolkit/render-games):
   default, none, terminal, terminal-fast  (human GUI: use --mode human, pygame)
 
-Operation mode (pick one; default offline / disk):
+Operation mode (pick one; default offline / local environments):
   --online       API / online registry (put ARC_API_KEY in .env)
-  --offline      Force disk even if .env sets ARC_OPERATION_MODE=online
+  --offline      Force local environments even if .env sets ARC_OPERATION_MODE=online
   --competition  Competition toolkit rules (API); see docs.arcprize.org/toolkit/competition_mode
   If none of the above: ARC_OPERATION_MODE / OPERATION_MODE env (legacy), else offline.
 
@@ -407,7 +407,7 @@ Note:
         type=str,
         help=(
             "Game stem or full id. If set, ignores ARC_GAME_ID. If omitted: default stem is "
-            "co01 (disk / competition) or ls20 (--online); ARC_GAME_ID env overrides that."
+            "co01 (local environments / competition) or ls20 (--online); ARC_GAME_ID env overrides that."
         ),
     )
     parser.add_argument(
@@ -464,7 +464,7 @@ Note:
     om.add_argument(
         "--offline",
         action="store_true",
-        help="Force local disk environments (ignore ARC_OPERATION_MODE=online in .env)",
+        help="Force local environments (ignore ARC_OPERATION_MODE=online in .env)",
     )
     om.add_argument(
         "--competition",
