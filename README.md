@@ -59,17 +59,8 @@ uv sync
 Run a game (tutorial **ez01**):
 
 ```bash
-# Put --game last so swapping stems is a one-line edit.
 # Omitting --mode defaults to random-agent (random ACTION1–ACTION5 for --steps); set explicitly below.
 # Local play uses environment_files/ by default unless --online / --competition.
-uv run python run_game.py \
-  --version auto \
-  --mode random-agent \
-  --game ez01
-```
-
-```bash
-# Same as above; --offline forces local environments (same as omitting --online / --competition).
 uv run python run_game.py \
   --offline \
   --version auto \
@@ -77,10 +68,10 @@ uv run python run_game.py \
   --game ez01
 ```
 
-Discover stems:
+Discover local environments:
 
 ```bash
-# List stems; add --offline to pin the listing to local environment_files/.
+# List local environments; add --offline to pin the listing to local environment_files/.
 # For a chosen stem, --version auto picks the sole package under it.
 uv run python run_game.py --list
 # uv run python run_game.py --offline --list
@@ -162,7 +153,7 @@ Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Fol
 **Available skills** (under [`.opencode/skills/`](.opencode/skills/), mirrored at [`skills/`](skills/)):
 
 - **[create-arc-game](.opencode/skills/create-arc-game/SKILL.md)** — End-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
-- **[play-arc-game](.opencode/skills/play-arc-game/SKILL.md)** — Run and smoke-test stems with `run_game.py` (list, random agent, human pygame, offline/online flags).
+- **[play-arc-game](.opencode/skills/play-arc-game/SKILL.md)** — Run and smoke-test local environments with `run_game.py` (list, random agent, human pygame, offline/online flags).
 - **[generate-arc-game-gif](.opencode/skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
 
 Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
