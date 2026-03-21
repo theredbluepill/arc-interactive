@@ -98,7 +98,8 @@ def _box(cx: int, cy: int, r: int) -> list[tuple[int, int]]:
 
 
 levels = [
-    mk(_box(32, 32, 1), [], (31, 31), 400, 1),
+    # Stencil must not start aligned with the 3×3 goal (was (31,31) = instant ACTION5 win).
+    mk(_box(32, 32, 1), [], (4, 4), 400, 1),
     mk(_box(40, 32, 2), [(x, 20) for x in range(30, 45)], (10, 10), 500, 2),
     mk([(30 + i, 30) for i in range(6)] + [(30, 31), (35, 31)], [], (28, 28), 600, 3),
     mk(

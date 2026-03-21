@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Record assets/ll01.gif: place target 2×2 still-life blocks, then Conway steps per level."""
+"""Record assets/ll01.gif: full 5-level clear (toggle target 2×2 blocks, then N Conway steps).
+
+Strategy (verified against ``Ll01``): each level’s target is a union of 2×2 still-lifes; toggling
+those cells on then applying exactly ``need_generations`` ACTION5 steps leaves the pattern
+unchanged and matches the target on the final check. ``next_level()`` loads a fresh board.
+
+Uses only the **last** raster per env step so the GIF clearly shows level-to-level progression.
+"""
 
 from __future__ import annotations
 
@@ -12,60 +19,52 @@ sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT))
 
 from env_resolve import full_game_id_for_stem, load_stem_game_py  # noqa: E402
-
-import numpy as np
-from PIL import Image
+from gif_common import frame_to_rgb, observation_frame_layers, repo_root  # noqa: E402
 
 from arc_agi import Arcade, OperationMode
-from arc_agi.rendering import COLOR_MAP, hex_to_rgb
 from arcengine import GameAction, GameState
 
 _ll = load_stem_game_py("ll01", "ll01_gif")
 
-OUTPUT = ROOT / "assets" / "ll01.gif"
-ENV_DIR = str(ROOT / "environment_files")
+OUTPUT = repo_root() / "assets" / "ll01.gif"
+ENV_DIR = str(repo_root() / "environment_files")
 
 CAM_W = CAM_H = 32
 
-MS_OPEN = 420
-MS_TOGGLE = 100
-MS_STEP = 220
-MS_LEVEL_HOLD = 380
-MS_END = 550
+MS_OPEN = 480
+MS_TOGGLE = 140
+MS_AFTER_PATTERN = 260
+MS_STEP = 280
+MS_LEVEL_BREAK = 520
+MS_END = 600
 
-A1 = GameAction.ACTION1
 A5 = GameAction.ACTION5
 A6 = GameAction.ACTION6
 
 
 def grid_to_display(gx: int, gy: int) -> tuple[int, int]:
+    """Center of cell in ACTION6 64×64 space (matches ``Camera.display_to_grid`` inverse)."""
     scale = min(64 // CAM_W, 64 // CAM_H)
     pad = (64 - CAM_W * scale) // 2
     return gx * scale + scale // 2 + pad, gy * scale + scale // 2 + pad
-
-
-def frame_to_image_layer(layer) -> Image.Image:
-    arr = np.asarray(layer, dtype=np.uint8)
-    h, w = arr.shape
-    rgb = np.zeros((h, w, 3), dtype=np.uint8)
-    for idx, hx in COLOR_MAP.items():
-        rgb[arr == idx] = hex_to_rgb(hx)
-    return Image.fromarray(rgb, "RGB")
 
 
 def main() -> None:
     arc = Arcade(environments_dir=ENV_DIR, operation_mode=OperationMode.OFFLINE)
     env = arc.make(full_game_id_for_stem("ll01"), seed=0, include_frame_data=True)
     obs = env.reset()
+    if obs is None:
+        raise RuntimeError("reset returned None")
 
     images: list[Image.Image] = []
     durations: list[int] = []
 
-    def snap_all(ms: int) -> None:
-        fr = getattr(obs, "frame", None) or []
-        for layer in fr:
-            images.append(frame_to_image_layer(layer))
-            durations.append(ms)
+    def snap_latest(ms: int) -> None:
+        layers = observation_frame_layers(obs)
+        if not layers:
+            return
+        images.append(frame_to_rgb(layers[-1]))
+        durations.append(ms)
 
     def hold_last(ms: int, times: int) -> None:
         if not images:
@@ -76,13 +75,19 @@ def main() -> None:
             durations.append(ms)
 
     def step_action(
-        a: GameAction, data: dict[str, int] | None = None, ms: int = MS_TOGGLE
+        a: GameAction,
+        data: dict[str, int] | None = None,
+        *,
+        ms: int,
     ) -> None:
         nonlocal obs
-        obs = env.step(a, reasoning={}, data=data if data is not None else {})
-        snap_all(ms)
+        nxt = env.step(a, reasoning={}, data=data if data is not None else {})
+        if nxt is None:
+            raise RuntimeError("env.step returned None")
+        obs = nxt
+        snap_latest(ms)
 
-    snap_all(MS_OPEN)
+    snap_latest(MS_OPEN)
 
     n_levels = len(_ll.levels)
     for li, lv in enumerate(_ll.levels):
@@ -91,20 +96,25 @@ def main() -> None:
         need = int(lv.get_data("need_generations") or 1)
 
         for gx, gy in cells:
-            x, y = grid_to_display(gx, gy)
-            step_action(A6, {"x": x, "y": y}, MS_TOGGLE)
+            dx, dy = grid_to_display(gx, gy)
+            step_action(A6, {"x": dx, "y": dy}, ms=MS_TOGGLE)
+
+        hold_last(MS_AFTER_PATTERN, 2)
 
         for _ in range(need):
-            step_action(A5, None, MS_STEP)
-            for _ in range(2):
-                step_action(A1, None, 90)
+            step_action(A5, None, ms=MS_STEP)
 
-        hold_last(MS_LEVEL_HOLD, 4 if li < n_levels - 1 else 5)
+        if obs.state == GameState.GAME_OVER:
+            raise RuntimeError(f"GAME_OVER after level {li + 1} (scripted solution should pass)")
+        if li < n_levels - 1 and obs.state not in (GameState.NOT_FINISHED,):
+            raise RuntimeError(f"unexpected state {obs.state} after level {li + 1}")
+
+        hold_last(MS_LEVEL_BREAK, 1 if li < n_levels - 1 else 2)
 
     if obs.state != GameState.WIN:
         raise RuntimeError(f"expected WIN after {n_levels} levels, got {obs.state}")
 
-    hold_last(MS_END, 6)
+    hold_last(MS_END, 8)
 
     images[0].save(
         OUTPUT,

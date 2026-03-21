@@ -86,9 +86,20 @@ def _block(ax: int, ay: int) -> list[tuple[int, int]]:
     return [(ax, ay), (ax + 1, ay), (ax, ay + 1), (ax + 1, ay + 1)]
 
 
+def _pit_walls_around_block(ax: int, ay: int) -> list[tuple[int, int]]:
+    """Walls on a 4×4 ring; interior is exactly the 2×2 at (ax, ay)..(ax+1, ay+1) (no goal overlay)."""
+    out: list[tuple[int, int]] = []
+    for x in range(ax - 1, ax + 3):
+        for y in range(ay - 1, ay + 3):
+            if not (ax <= x <= ax + 1 and ay <= y <= ay + 1):
+                out.append((x, y))
+    return out
+
+
 # Stable 2×2 blocks; after each generation the pattern is unchanged if it matches the block.
 levels = [
-    mk([], _block(15, 15), 2, 60, 1),
+    # Level 1: walled pit is the only 2×2 non-wall region (same target as before).
+    mk(_pit_walls_around_block(15, 15), _block(15, 15), 2, 60, 1),
     mk([(x, 14) for x in range(10, 22)], _block(18, 10), 1, 100, 2),
     mk([], _block(8, 8) + _block(20, 20), 3, 180, 3),
     mk([(16, y) for y in range(32) if 10 < y < 20], _block(22, 12), 2, 220, 4),

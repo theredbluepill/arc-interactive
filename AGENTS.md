@@ -3,6 +3,12 @@
 ## Role
 Agent responsible for designing and implementing ARC-AGI-3 games.
 
+## Benchmark principle
+
+ARC-AGI-style benchmarks are about **whether an AI can solve puzzles that humans can solve** when both operate under the **same official interface**: defined actions, observation format, and stated game rules. The goal is to measure **general problem-solving**, not which system had the **most task-specific training data** or memorized solutions.
+
+When you author games in this repo, treat **human solvability (given that shared spec)** as a design guide: prefer **well-posed** levels—where goals are clear from layout, mechanics, or fair in-observation cues—over **under-specified** puzzles that only yield to guessing, huge search, or spoilers absent from the agent’s observation.
+
 ## Workflow
 
 ### 1. Game Design Phase
