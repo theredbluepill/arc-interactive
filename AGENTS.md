@@ -40,7 +40,7 @@ When you author games in this repo, treat **human solvability (given that shared
 
 **Steps**:
 1. Add entry to `GAMES.md` with all metadata columns
-2. If you discover a **reusable** pattern (not stem-specific), add a short bullet under **Lessons learned (cross-repo)** below; otherwise rely on `GAMES.md`, `{stem}.py`, and `scripts/render_*_gif.py`
+2. If you discover a **reusable** pattern (not stem-specific), add a short bullet under **Lessons learned (cross-repo)** below; otherwise rely on `GAMES.md`, `{stem}.py`, and **`scripts/render_arc_game_gif.py`** (see skill **`generate-arc-game-gif`**)
 
 ## Established Game Patterns
 
@@ -399,7 +399,7 @@ def step(self) -> None:
 
 ## Lessons learned (cross-repo)
 
-Condensed from many shipped stems. **Game-specific scripts** (preview GIFs, registry hooks) live under `scripts/render_*_gif.py`, `scripts/render_registry_gifs.py`, and `devtools/` — search by stem there before duplicating long per-game notes here.
+Condensed from many shipped stems. **Preview GIFs** use **`scripts/render_arc_game_gif.py`** + **`registry_gif_lib`** / **`registry_gif_overrides.json`** (skill **`generate-arc-game-gif`**); other automation lives under **`devtools/`**.
 
 ### ACTION6, camera, and HUD
 
@@ -436,10 +436,12 @@ Condensed from many shipped stems. **Game-specific scripts** (preview GIFs, regi
 
 ### Preview GIFs and automation
 
+- Prefer a **GIF-ready** **`RenderableUserDisplay`** (HUD + multi-frame click/ping cues in final **64×64** space); see skill **`generate-arc-game-gif`** and **`mm01`** / **`sq01`**.
+- Extend **`registry_gif_lib`** (and, when needed, shared **`registry_*_gif.py`** helpers it imports) for **reusable** capture patterns; tune stems via **`registry_gif_overrides.json`**. Do **not** add new **`scripts/render_<stem>_gif.py`** CLI entrypoints—use **`render_arc_game_gif.py`** only.
 - Build plans from **authored levels** (import **`levels`**, layout constants, tile geometry from the game module).
 - **Append every** sub-frame when one logical step emits multiple layers (death animation, multi-hit).
 - After **`next_level()`**, assert **`level_index` / `WIN`** — reset mutable state; do not compare **old** paint/counters to the **new** level’s goal.
-- New stems that need **registry GIFs**: wire **`registry_*`** / **`render_registry_gifs.py`** (see existing stems in the same family).
+- New stems that need **registry GIFs**: extend **`registry_gif_overrides.json`** / **`registry_gif_lib`** as needed; record with **`scripts/render_arc_game_gif.py`** (see existing stems in the same family).
 
 ### API / toolkit gotchas
 
@@ -452,8 +454,8 @@ Condensed from many shipped stems. **Game-specific scripts** (preview GIFs, regi
 | Need | Start here |
 |------|------------|
 | Mechanic summary | `GAMES.md` row + `{stem}.py` module docstring |
-| Scripted demo / timing | `scripts/render_{stem}_gif.py` (or nearest stem) |
-| Batch / registry GIF | `render_registry_gifs.py`, `registry_*_gif*.py`, `registry_gif_lib` |
+| Preview / registry GIF | `scripts/render_arc_game_gif.py` + `registry_gif_lib`, `registry_gif_overrides.json` |
+| GIF-ready HUD audit | Skill **`generate-arc-game-gif`** (`skills/` / `.opencode/skills/` / `.agents/skills/`) |
 | Solvability smoke | `scripts/verify_*solvability*.py` when one exists for your batch |
 
 ---

@@ -65,37 +65,9 @@ def click_at(env, grid_x, grid_y, camera_width=64):
     )
 ```
 
-### Click Cursor for GIFs
+### Click visibility in previews
 
-To make clicking visible in GIF captures, add a click indicator to your game's UI:
-
-```python
-class GameUI(RenderableUserDisplay):
-    def __init__(self):
-        self._click_pos = None
-        self._click_frames = 0
-    
-    def set_click(self, x, y):
-        """Show click cursor at grid position."""
-        self._click_pos = (x, y)
-        self._click_frames = 10  # Show for 10 frames
-    
-    def render_interface(self, frame):
-        if self._click_pos and self._click_frames > 0:
-            cx, cy = self._click_pos
-            scale = 2  # Match your grid-to-display ratio
-            # Draw crosshair cursor
-            for dx in range(-2, 3):
-                for dy in range(-2, 3):
-                    if abs(dx) == 2 or abs(dy) == 2:
-                        px, py = cx * scale + dx, cy * scale + dy
-                        if 0 <= px < 64 and 0 <= py < 64:
-                            frame[py, px] = 7  # Navy color
-            self._click_frames -= 1
-        return frame
-```
-
-Then call `self._ui.set_click(grid_x, grid_y)` when ACTION6 is executed.
+Put tap/cursor feedback in **`RenderableUserDisplay`** (final **64×64** frame pixels, multi-frame decay). See **`skills/generate-arc-game-gif/SKILL.md`** and **`environment_files/mm01/63be02fb/mm01.py`** (`Mm01UI`).
 
 ## Action Mapping
 
@@ -109,57 +81,9 @@ Actions are **abstract** - each game defines what they mean. The canonical mappi
 - **ACTION6**: Click/Coordinate (requires x,y in action.data)
 - **ACTION7**: Undo (when the environment supports it)
 
-## Capturing Frames for GIFs
+## Capturing preview GIFs
 
-```python
-from arc_agi import Arcade, OperationMode
-from arcengine import GameAction
-from PIL import Image
-import numpy as np
-
-# ARC color palette
-COLOR_MAP = {
-    0: (0, 0, 0),        # Black (background)
-    2: (255, 0, 0),      # Red (hazard)
-    3: (0, 255, 0),      # Green
-    4: (255, 255, 0),    # Yellow (target)
-    5: (128, 128, 128), # Gray (wall)
-    6: (0, 255, 255),    # Cyan
-    7: (0, 0, 255),      # Navy
-    8: (128, 0, 0),      # Maroon
-    9: (0, 128, 255),    # Blue (player)
-}
-
-def colorize(frame):
-    """Convert ARC color indices to RGB."""
-    h, w = frame.shape
-    rgb = np.zeros((h, w, 3), dtype=np.uint8)
-    for color_idx, rgb_val in COLOR_MAP.items():
-        mask = frame == color_idx
-        rgb[mask] = rgb_val
-    return rgb
-
-def create_gif(game_id, action, steps_per_level, output_path):
-    """Create a GIF of gameplay."""
-    arc = Arcade('environment_files', OperationMode.OFFLINE)
-    env = arc.make(game_id, seed=0, include_frame_data=True)
-    
-    frames = []
-    for level_num, n in enumerate(steps_per_level):
-        for i in range(n):
-            result = env.step(action, reasoning={'step': i})
-            frame = result.frame[0]
-            rgb = colorize(frame)
-            img = Image.fromarray(rgb, 'RGB')
-            img = img.convert('P', palette=Image.ADAPTIVE, colors=256)
-            frames.append(img)
-    
-    frames[0].save(output_path, save_all=True, append_images=frames[1:], 
-                   duration=150, loop=0, optimize=False)
-
-# Example: ez01 (5 levels, UP action)
-create_gif("<ez01 game_id from metadata>", GameAction.ACTION1, [2, 4, 6, 6, 7], "assets/ez01.gif")
-```
+Use the repo’s **`scripts/render_arc_game_gif.py`** and the **`generate-arc-game-gif`** skill (`skills/generate-arc-game-gif/SKILL.md`, also under `.opencode/skills/` and `.agents/skills/`). Palette helpers live in **`scripts/gif_common.py`**.
 
 ## Checking Game State
 
@@ -213,4 +137,4 @@ for level_num in range(5):  # Adjust for number of levels
 | Play game (pygame) | `run_game.py --game <stem> --version auto --mode human` |
 | Auto test | `run_game.py --game <stem> --version auto --mode auto --steps 100` |
 | Check state | `result.state`, `result.levels_completed` |
-| Create GIF | Use `include_frame_data=True` + colorize function |
+| Create GIF | `uv run python scripts/render_arc_game_gif.py --stem <stem>` (see **generate-arc-game-gif** skill) |

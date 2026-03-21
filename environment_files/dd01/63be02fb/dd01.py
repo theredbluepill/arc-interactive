@@ -256,11 +256,15 @@ class Dd01(ARCBaseGame):
 
         if aid == GameAction.ACTION5:
             px, py = self._player.x, self._player.y
-            here = self.current_level.get_sprite_at(px, py, ignore_collidable=True)
-            if not self._holding and here and "crate" in here.tags:
-                self.current_level.remove_sprite(here)
+            # Player shares a cell with crate/pad; get_sprite_at without a tag can return the avatar.
+            crate_here = self.current_level.get_sprite_at(
+                px, py, tag="crate", ignore_collidable=True
+            )
+            pad_here = self.current_level.get_sprite_at(px, py, tag="pad", ignore_collidable=True)
+            if not self._holding and crate_here:
+                self.current_level.remove_sprite(crate_here)
                 self._holding = True
-            elif self._holding and here and "pad" in here.tags:
+            elif self._holding and pad_here:
                 self._holding = False
             else:
                 p = self._nearest_pad()

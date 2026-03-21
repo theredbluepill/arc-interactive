@@ -1,14 +1,13 @@
 {
   "game_id": "wl01-63be02fb",
   "title": "Wall Craft",
-  "description": "Reach the green goal on a 32\u00d732 map. ACTION5 toggles build mode; in build mode ACTION6 places or removes your gray walls (shared budget). Static dark walls cannot be edited.",
+  "description": "Reach the green goal on a 32\u00d732 map. Maroon chasms are deadly gaps\u2014bridge them with ACTION6 clicks (limited budget). Red tiles are one-touch hazards. Every action costs steps.",
   "default_fps": 20,
   "baseline_actions": [
     1,
     2,
     3,
     4,
-    5,
     6
   ],
   "tags": [
@@ -23,10 +22,11 @@
     "grid_range": [
       32
     ],
-    "action_space": 6,
+    "action_space": 5,
     "physics_rules": [
       "movement",
-      "place-wall"
+      "place-wall",
+      "chasm-bridge"
     ],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000

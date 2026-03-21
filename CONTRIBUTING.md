@@ -45,8 +45,9 @@ Point your agent at the same conventions humans use:
 |----------|----------------|
 | [AGENTS.md](AGENTS.md) | Camera/UI patterns, abstract actions, common bugs, testing checklist, palette |
 | [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md) | End-to-end steps: layout, sprites, levels, `step()`, metadata, registry |
+| [skills/generate-arc-game-gif/SKILL.md](skills/generate-arc-game-gif/SKILL.md) | Preview GIFs: `RenderableUserDisplay` GIF-readiness, `scripts/render_arc_game_gif.py` |
 
-The repo exposes that skill in three equivalent places: **`skills/`** (symlink at repo root), **`.opencode/skills/`**, and **`.agents/skills/`**—use whichever path your tool resolves best.
+The **create-arc-game** and **play-arc-game** skills (and **generate-arc-game-gif** for previews) are mirrored under **`skills/`** (repo root), **`.opencode/skills/`**, and **`.agents/skills/`**—use whichever path your tool resolves best.
 
 **Minimal prompt you can paste:** *Implement a new ARC-AGI-3 game `{game_id}` at `environment_files/{game_id}/v1/`. Follow [AGENTS.md](AGENTS.md) and [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md): static levels only, `ARCBaseGame` + `metadata.json`, register a row in [GAMES.md](GAMES.md). Game design: [grid size, entities, win/lose, which actions 1–7 do].*
 
@@ -215,7 +216,7 @@ Pull requests that change files under `environment_files/` are **smoke-tested in
 Optional local checks (not in CI by default):
 
 - **Full-table smoke with ACTION6** — [`devtools/smoke_registry_games.py`](devtools/smoke_registry_games.py): e.g. `uv run python devtools/smoke_registry_games.py --from pb01 --through bn03 --steps 80`
-- **Batch preview GIFs (multi-level + wall-bump “fails”)** — [`scripts/render_registry_gifs.py`](scripts/render_registry_gifs.py) + [`scripts/registry_gif_lib.py`](scripts/registry_gif_lib.py); per-game tuning in [`scripts/registry_gif_overrides.json`](scripts/registry_gif_overrides.json). Example: `uv run python scripts/render_registry_gifs.py --from pb01 --through bn03`
+- **Batch preview GIFs (multi-level + wall-bump “fails”)** — [`scripts/render_arc_game_gif.py`](scripts/render_arc_game_gif.py) + [`scripts/registry_gif_lib.py`](scripts/registry_gif_lib.py); per-stem tuning in [`scripts/registry_gif_overrides.json`](scripts/registry_gif_overrides.json). Example: `uv run python scripts/render_arc_game_gif.py --from pb01 --through bn03`. Pending/backfill: add `--pending` (see [`skills/generate-arc-game-gif/SKILL.md`](skills/generate-arc-game-gif/SKILL.md)).
 
 Other automation:
 

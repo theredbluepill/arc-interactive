@@ -1,4 +1,4 @@
-"""wl05: ball rolls — ACTION5 tick; ACTION6 toggles ramp (turn-right tile)."""
+"""rr01: ball rolls with persistent heading; on a ramp tile ACTION5 first rotates heading CW, then steps one cell. ACTION6 toggles ramp on an empty cell (not wall / ball / exit)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ DX = (1, 0, -1, 0)
 DY = (0, 1, 0, -1)
 
 
-class Wl05UI(RenderableUserDisplay):
+class Rr01UI(RenderableUserDisplay):
     def render_interface(self, frame):
         return frame
 
@@ -22,20 +22,7 @@ E = Sprite(pixels=[[14]], name="e", visible=True, collidable=False, tags=["exit"
 R = Sprite(pixels=[[6]], name="r", visible=True, collidable=False, tags=["ramp"])
 
 
-def mk(walls, ramps, ball, exitp, d):
-    sl = [W.clone().set_position(x, y) for x, y in walls]
-    for x, y in ramps:
-        sl.append(R.clone().set_position(x, y))
-    sl.append(B.clone().set_position(*ball))
-    sl.append(E.clone().set_position(*exitp))
-    return Level(
-        sprites=sl,
-        grid_size=(G, G),
-        data={"ramps": [list(p) for p in ramps], "difficulty": d},
-    )
-
-
-def bd():
+def bd() -> list[tuple[int, int]]:
     return (
         [(x, 0) for x in range(G)]
         + [(x, G - 1) for x in range(G)]
@@ -44,23 +31,48 @@ def bd():
     )
 
 
+def mk(
+    ramps: list[tuple[int, int]],
+    ball: tuple[int, int],
+    exitp: tuple[int, int],
+    difficulty: int,
+    *,
+    initial_dir: int = 0,
+) -> Level:
+    sl: list[Sprite] = [W.clone().set_position(x, y) for x, y in bd()]
+    for x, y in ramps:
+        sl.append(R.clone().set_position(x, y))
+    sl.append(B.clone().set_position(*ball))
+    sl.append(E.clone().set_position(*exitp))
+    return Level(
+        sprites=sl,
+        grid_size=(G, G),
+        data={
+            "ramps": [list(p) for p in ramps],
+            "difficulty": difficulty,
+            "initial_dir": initial_dir,
+        },
+    )
+
+
+# All levels verified A5-solvable from initial_dir (default 0) with authored ramps.
 levels = [
-    mk(bd(), [(5, 5)], (2, 6), (10, 6), 1),
-    mk(bd(), [(4, 4), (7, 7)], (1, 1), (10, 10), 2),
-    mk(bd(), [(6, y) for y in range(3, 9)], (2, 6), (9, 6), 3),
-    mk(bd(), [(5, 5)], (5, 2), (5, 10), 4),
-    mk(bd(), [(3, 6), (8, 6)], (1, 6), (10, 6), 5),
-    mk(bd(), [(x, x) for x in range(3, 9)], (2, 2), (9, 9), 6),
-    mk(bd(), [(6, 4), (6, 8)], (6, 2), (6, 10), 7),
+    mk([], (2, 6), (10, 6), 1),
+    mk([(1, 5), (1, 7), (3, 6), (3, 7)], (2, 6), (10, 5), 2),
+    mk([(10, 1)], (1, 1), (10, 10), 3),
+    mk([(9, 2)], (2, 2), (9, 9), 4),
+    mk([(6, 2), (6, 9)], (5, 2), (5, 9), 5),
+    mk([(10, 5)], (2, 5), (10, 8), 6),
+    mk([(8, 3)], (3, 3), (8, 8), 7),
 ]
 
 
-class Wl05(ARCBaseGame):
+class Rr01(ARCBaseGame):
     def __init__(self) -> None:
         super().__init__(
-            "wl05",
+            "rr01",
             levels,
-            Camera(0, 0, CAM, CAM, BG, PAD, [Wl05UI()]),
+            Camera(0, 0, CAM, CAM, BG, PAD, [Rr01UI()]),
             False,
             1,
             [5, 6],
@@ -72,7 +84,7 @@ class Wl05(ARCBaseGame):
         self._ramp = {
             (s.x, s.y) for s in self.current_level.get_sprites_by_tag("ramp")
         }
-        self._dir = 0
+        self._dir = int(self.current_level.get_data("initial_dir") or 0) % 4
 
     def _toggle_ramp(self, gx: int, gy: int) -> None:
         if (gx, gy) in self._wall_cells():

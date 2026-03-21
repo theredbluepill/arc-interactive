@@ -1,0 +1,19 @@
+{
+  "game_id": "rr01-v1",
+  "title": "Ramp Rollout",
+  "description": "Blue ball moves one cell per **ACTION5** with a **persistent heading**; on a **magenta ramp** tile the heading turns **clockwise** before the step. **ACTION6** toggles a ramp on a free inner cell (not wall, ball, or exit). Reach the green exit.",
+  "default_fps": 20,
+  "baseline_actions": [5, 6],
+  "tags": ["physics", "click"],
+  "local_dir": "environment_files/rr01/v1",
+  "date_created": "2026-03-21",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16],
+    "action_space": 2,
+    "physics_rules": ["momentum-heading", "ramp-turn-cw", "toggle-ramp"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-21T12:00:00+00:00"
+}
