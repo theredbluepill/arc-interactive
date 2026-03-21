@@ -56,18 +56,20 @@ Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/ast
 uv sync
 ```
 
-Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit. Omitting **`--mode`** defaults to **`random-agent`** (random **ACTION1–ACTION5** for **`--steps`**); the examples below set **`--mode random-agent`** explicitly. Local play uses **local environments** (`environment_files/`) by default; add optional **`--offline`** if you want to **force** that (same as omitting **`--online`** / **`--competition`**).
+Run a game (tutorial **ez01**):
 
 ```bash
+# Put --game last so swapping stems is a one-line edit.
+# Omitting --mode defaults to random-agent (random ACTION1–ACTION5 for --steps); set explicitly below.
+# Local play uses environment_files/ by default unless --online / --competition.
 uv run python run_game.py \
   --version auto \
   --mode random-agent \
   --game ez01
 ```
 
-**Local environments, explicit `--offline`** (same tutorial **ez01**):
-
 ```bash
+# Same as above; --offline forces local environments (same as omitting --online / --competition).
 uv run python run_game.py \
   --offline \
   --version auto \
@@ -75,9 +77,21 @@ uv run python run_game.py \
   --game ez01
 ```
 
-Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a listing pinned to **local environments**). **`--version auto`** picks the sole package under that stem.
+Discover stems:
 
-**Headless random smoke:** omit **`--mode`** or pass **`--mode random-agent`**; use **`--steps`** for how many random **ACTION1–ACTION5** steps to take (default 100). Example: `uv run python run_game.py --offline --version auto --mode random-agent --steps 50 --game ez01`.
+```bash
+# List stems; add --offline to pin the listing to local environment_files/.
+# For a chosen stem, --version auto picks the sole package under it.
+uv run python run_game.py --list
+# uv run python run_game.py --offline --list
+```
+
+Headless random smoke:
+
+```bash
+# Omit --mode or pass --mode random-agent; --steps is how many random ACTION1–ACTION5 steps (default 100).
+uv run python run_game.py --offline --version auto --mode random-agent --steps 50 --game ez01
+```
 
 ### Human play
 
