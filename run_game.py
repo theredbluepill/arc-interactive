@@ -8,13 +8,14 @@ Based on patterns from redpill/launch.py and redpill/remote_attempt.py
 Usage:
     uv run python run_game.py --game co01 --version auto
     uv run python run_game.py --game co01 --mode auto --steps 50
-    uv run python run_game.py --game ls20 --mode auto --render-mode human
+    uv run python run_game.py --game ls20 --mode human
     uv run python run_game.py --game sk01 --mode human
     uv run python run_game.py --game sk01 --mode human-toolkit
     ARC_GAME_ID=co01-<ver> uv run python run_game.py
     ARC_OPERATION_MODE=offline uv run python run_game.py
+    ARC_OPERATION_MODE=competition uv run python run_game.py  # toolkit competition rules
 
-Online scoring: this script does not pass scorecard_id to arc.make; see README (Online scorecard).
+Online scoring: this script does not pass scorecard_id to arc.make; see README (Online scorecard / competition).
 """
 
 from __future__ import annotations
@@ -49,7 +50,7 @@ except ImportError as e:
 
 
 def _load_dotenv() -> None:
-    """Load repo-root ``.env`` so ``ARC_API_KEY`` / ``ARC_OPERATION_MODE`` work with ``uv run``."""
+    """Load repo-root ``.env`` so ``ARC_API_KEY``, ``ARC_OPERATION_MODE`` / ``OPERATION_MODE`` work with ``uv run``."""
     if load_dotenv is not None:
         load_dotenv(_ROOT / ".env")
 
@@ -62,8 +63,8 @@ class GameConfig:
     version: str = "auto"
     seed: int = 0
     steps: int = 100
-    mode: str = "terminal"  # terminal, auto, human (interactive), human-toolkit (official render)
-    #: Passed to ``arc.make(..., render_mode=...)`` — see toolkit render-games docs.
+    mode: str = "terminal"  # terminal, auto, human / human-toolkit (pygame GUI)
+    #: Passed to ``arc.make(..., render_mode=...)`` — terminal / none / terminal-fast (not GUI).
     render_mode: str | None = None
     operation_mode: OperationMode = OperationMode.NORMAL
 
@@ -77,12 +78,15 @@ class GameResult:
 
 
 def get_operation_mode() -> OperationMode:
-    """Get operation mode from environment variable."""
-    mode = os.getenv("ARC_OPERATION_MODE", "normal").lower()
+    """Get operation mode from ``ARC_OPERATION_MODE`` (or ``OPERATION_MODE`` toolkit alias)."""
+    raw = os.getenv("ARC_OPERATION_MODE") or os.getenv("OPERATION_MODE", "normal")
+    mode = raw.strip().lower()
     if mode == "online":
         return OperationMode.ONLINE
     if mode == "offline":
         return OperationMode.OFFLINE
+    if mode == "competition":
+        return OperationMode.COMPETITION
     return OperationMode.NORMAL
 
 
@@ -213,11 +217,14 @@ def run_game(config: GameConfig) -> GameResult:
         operation_mode=operation_mode,
     )
 
-    environment = arc.make(
-        config.game_id,
-        seed=config.seed,
-        render_mode=config.render_mode,
-    )
+    make_kw: dict[str, Any] = {
+        "seed": config.seed,
+        "render_mode": config.render_mode,
+    }
+    if config.mode in ("human", "human-toolkit"):
+        make_kw["include_frame_data"] = True
+
+    environment = arc.make(config.game_id, **make_kw)
 
     if environment is None:
         raise RuntimeError(f"Failed to create environment for game {config.game_id}")
@@ -226,31 +233,25 @@ def run_game(config: GameConfig) -> GameResult:
     final_state = None
 
     try:
-        if config.mode == "human":
-            from human_play_matplotlib import run_interactive_matplotlib
+        if config.mode in ("human", "human-toolkit"):
+            from human_play_pygame import run_interactive_pygame
 
             print(
-                "Matplotlib window: WASD/Arrows = ACTION1–4, Space/F = ACTION5, "
-                "click = ACTION6 (0–63), Ctrl/Cmd+Z = undo, R = reset, Q = quit"
+                "Pygame window: WASD/Arrows = ACTION1–4, Space/F/5 = ACTION5, "
+                "click = ACTION6 (0–63), U or Ctrl/Cmd+Z = ACTION7, R = reset, Q = quit"
             )
             print("See https://docs.arcprize.org/actions")
             print("-" * 50)
-            step_count = run_interactive_matplotlib(environment)
+            step_count = run_interactive_pygame(environment)
             final_state = environment.observation_space
 
         elif config.mode == "terminal":
-            # Interactive mode (optionally with arc.make(render_mode="human") — see human-toolkit)
-            print("Controls: 1-4=Movement, 5-6=Special, q=Quit")
-            if config.render_mode == "human":
-                print(
-                    "Toolkit render_mode=human: a matplotlib window will play each step’s "
-                    "frames, then close (https://docs.arcprize.org/toolkit/render-games)."
-                )
+            print("Controls: 1-4=Movement, 5-6=Special, 7=Undo (if game supports), q=Quit")
             print("-" * 50)
 
             while True:
                 try:
-                    cmd = input("\nAction [1-6/q]: ").strip().lower()
+                    cmd = input("\nAction [1-7/q]: ").strip().lower()
 
                     if cmd == "q":
                         print("\nGame exited by user")
@@ -263,6 +264,7 @@ def run_game(config: GameConfig) -> GameResult:
                         "4": GameAction.ACTION4,
                         "5": GameAction.ACTION5,
                         "6": GameAction.ACTION6,
+                        "7": GameAction.ACTION7,
                     }
 
                     if cmd in action_map:
@@ -278,7 +280,7 @@ def run_game(config: GameConfig) -> GameResult:
                         final_state = result
                         print(f"Step {step_count}: Action={action.name}")
                     else:
-                        print("Invalid action. Use 1-6 or q")
+                        print("Invalid action. Use 1-7 or q")
 
                 except KeyboardInterrupt:
                     print("\n\nGame interrupted")
@@ -335,18 +337,19 @@ def setup_argparser():
 Examples:
   uv run python run_game.py --game co01 --version auto
   uv run python run_game.py --game co01 --mode auto --steps 50
-  uv run python run_game.py --game ls20 --mode auto --render-mode human
+  uv run python run_game.py --game ls20 --mode human
   uv run python run_game.py --game sk01 --mode human
   uv run python run_game.py --game sk01 --mode human-toolkit
   uv run python run_game.py --list
 
 Render modes (https://docs.arcprize.org/toolkit/render-games):
-  default, none, terminal, terminal-fast, human
+  default, none, terminal, terminal-fast  (human GUI: use --mode human, pygame)
 
 Environment Variables:
   ARC_GAME_ID=co01-<ver>     # Full game id from metadata
-  ARC_OPERATION_MODE=offline # online / offline / normal
-  ARC_API_KEY=...            # Required when OPERATION_MODE=online (see .env.example)
+  ARC_OPERATION_MODE=offline # normal / online / offline / competition
+  OPERATION_MODE=...         # Optional toolkit alias (if ARC_OPERATION_MODE unset)
+  ARC_API_KEY=...            # Required when online/competition uses API (see .env.example)
 
 Optional:
   Repo-root .env is loaded at startup when python-dotenv is installed (bundled with arc-agi).
@@ -375,18 +378,18 @@ Note:
         choices=["terminal", "auto", "human", "human-toolkit"],
         default="auto",
         help=(
-            "Play: terminal (typed 1–6), human (repo interactive WASD/click), "
-            "human-toolkit (typed 1–6 + official render_mode=human), or auto (random)"
+            "Play: terminal (typed 1–6), human (pygame WASD/click), "
+            "human-toolkit (same pygame UI; legacy name), or auto (random)"
         ),
     )
     parser.add_argument(
         "--render-mode",
         type=str,
-        choices=["default", "none", "terminal", "terminal-fast", "human"],
+        choices=["default", "none", "terminal", "terminal-fast"],
         default="default",
         help=(
-            "arc.make(render_mode=...): default=infer from --mode (terminal play uses "
-            "terminal; else none). Matches toolkit: terminal, terminal-fast, human, none."
+            "arc.make(render_mode=...): default=infer from --mode (terminal uses "
+            "terminal; else none). For a GUI use --mode human (pygame), not render_mode."
         ),
     )
     parser.add_argument(
@@ -428,13 +431,9 @@ def main():
 
     # Resolve arc.make(render_mode=...) and which play loop runs.
     play_mode = args.mode
-    if args.mode == "human":
-        # Repo interactive window only; skip toolkit human to avoid double matplotlib.
+    if args.mode in ("human", "human-toolkit"):
+        # Pygame UI in run_game; do not attach arc-agi matplotlib renderer.
         make_render_mode: str | None = None
-    elif args.mode == "human-toolkit":
-        # Official toolkit matplotlib playback after each step; same loop as terminal.
-        make_render_mode = "human"
-        play_mode = "terminal"
     elif args.render_mode == "default":
         make_render_mode = "terminal" if args.mode == "terminal" else None
     elif args.render_mode == "none":

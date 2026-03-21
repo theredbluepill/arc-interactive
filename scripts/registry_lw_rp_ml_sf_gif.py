@@ -12,6 +12,8 @@ from gif_common import (
     append_frame_repeats,
     append_frame_repeats_each_layer,
     append_frame_repeats_latest,
+    append_registry_click_ripple,
+    observation_frame_layers,
     offline_arcade,
 )
 from registry_gif_lib import _StepAbort, _cap_gif_frames, safe_env_step
@@ -254,7 +256,11 @@ def record_ml01_registry_gif(
 
             if li == 0:
                 _click6(env, g, 10, 10, res_box)
-                snap(4)
+                ly = observation_frame_layers(res_box[0])
+                if ly:
+                    fcx, fcy = g._grid_to_frame_pixel(10, 10)
+                    append_registry_click_ripple(images, ly[-1], fcx, fcy)
+                append_frame_repeats_latest(images, res_box[0], 2)
                 res_box[0] = safe_env_step(env, A5, reasoning={})
                 append_frame_repeats_each_layer(images, res_box[0], 6)
             else:

@@ -246,11 +246,31 @@ class Mm05(ARCBaseGame):
             if tile[0] == row and tile[1] == col:
                 return False
 
-        for si, ok in enumerate(self._matched):
-            if not ok:
+        # Sticky only for an **edge-aligned** matched pair (Manhattan distance 1):
+        # block flips on cells that are orthogonal neighbors of **both** endpoints.
+        # Diagonal (or distant) pairs do not create a shared neighbor on the grid.
+        by_color: dict[int, list[int]] = {}
+        for i, cl in enumerate(self._slot_colors):
+            if self._matched[i]:
+                by_color.setdefault(cl, []).append(i)
+        for slots in by_color.values():
+            if len(slots) != 2:
                 continue
-            mr, mc = si // self._cols, si % self._cols
-            if abs(mr - row) + abs(mc - col) == 1:
+            a, b = slots
+            ra, ca = a // self._cols, a % self._cols
+            rb, cb = b // self._cols, b % self._cols
+            if abs(ra - rb) + abs(ca - cb) != 1:
+                continue
+
+            def orth_neighbors(rr: int, cc: int) -> set[tuple[int, int]]:
+                out: set[tuple[int, int]] = set()
+                for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nr, nc = rr + dr, cc + dc
+                    if 0 <= nr < self._rows and 0 <= nc < self._cols:
+                        out.add((nr, nc))
+                return out
+
+            if (row, col) in (orth_neighbors(ra, ca) & orth_neighbors(rb, cb)):
                 return False
 
         return True

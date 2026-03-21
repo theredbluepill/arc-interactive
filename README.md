@@ -45,7 +45,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the create-game skill (static levels are enough); games land in a community pool through normal repo contributions, so you can fork and share layouts; many stems live in one tree, so the catalog grows with `main` and is handy for probing mechanics; locally, `run_game.py --mode human` (matplotlib) gives a human-friendly play loop before you automate; and Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
+You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the create-game skill (static levels are enough); games land in a community pool through normal repo contributions, so you can fork and share layouts; many stems live in one tree, so the catalog grows with `main` and is handy for probing mechanics; locally, `run_game.py --mode human` opens a **pygame** window (persistent grid + mouse clicks for ACTION6) before you automate; and Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
 
 ## Quickstart
 
@@ -63,11 +63,13 @@ uv run python run_game.py --game ez01 --version auto
 
 Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
 
-### Play by hand (matplotlib window)
+### Play by hand (pygame window)
 
 ```bash
 uv run python run_game.py --game sk01 --version auto --mode human
 ```
+
+`--mode human-toolkit` uses the same pygame UI (legacy name). Requires a working SDL/video backend for pygame (see [pygame Getting Started](https://www.pygame.org/wiki/GettingStarted)).
 
 ### ARC Leaderboard
 
@@ -79,6 +81,10 @@ ARC_API_KEY=<your-arc-api-key>
 ARC_OPERATION_MODE=online
 # ARC_GAME_ID=<full-game-id>   # optional, e.g. ls20
 ```
+
+#### Competition mode
+
+The official toolkit’s [Competition mode](https://docs.arcprize.org/toolkit/competition_mode) matches Kaggle and the unverified leaderboard: API-only environments, one `make` per environment, a single scorecard, no inflight `get_scorecard`, and stricter reset semantics. Set **`ARC_OPERATION_MODE=competition`** (or `OPERATION_MODE=COMPETITION` if you follow the env name from those docs and leave `ARC_OPERATION_MODE` unset). `run_game.py` wires the same `Arcade(..., operation_mode=...)` as in your own scripts; it still does not attach a scorecard—use the toolkit scorecard flow under competition rules for scored runs.
 
 ### Create a game with AI Agent
 

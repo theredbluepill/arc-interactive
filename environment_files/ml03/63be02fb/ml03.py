@@ -1,4 +1,14 @@
-"""Mirror laser (splitter): fire must illuminate **all** yellow receptors in one shot; beam passes through receptors. Mirrors reflect as in ml01."""
+"""Mirror laser — **ml03** (fragile mirrors).
+
+**Win:** Same as **ml02** — one shot must visit **every** yellow receptor; beam passes through
+receptors.
+
+**Difference vs ml02:** Every mirror the beam **reflects from** is **removed** after that
+shot (win or lose). Plan for **disposable** optics; failed fires permanently change the board.
+
+**Vs ml01:** **ml01** uses **global** mirror clicks. **ml02**/**ml03** use a **blue technician**:
+**ACTION1–4** move; **ACTION6** only on cells **orthogonally adjacent** to the technician.
+"""
 
 from __future__ import annotations
 
@@ -25,6 +35,8 @@ MIR_BS = 7
 
 
 class Ml03UI(RenderableUserDisplay):
+    """HUD + red **fragile** cue (ml02 has no red corner — helps tell GIFs apart)."""
+
     def __init__(self, inv: int, steps: int) -> None:
         self._inv = inv
         self._steps = steps
@@ -43,6 +55,10 @@ class Ml03UI(RenderableUserDisplay):
             frame[h - 2, 1 + i] = 15
         for i in range(min(self._steps, 30)):
             frame[h - 1, 1 + i] = 10
+        # Fragile mirrors: red corner (ml02 omits this)
+        if w > 3 and h > 4:
+            frame[h - 4, w - 2] = 8
+            frame[h - 3, w - 3] = 8
         return frame
 
 
@@ -142,69 +158,70 @@ def mk(
 
 
 levels = [
+    # Same geometry as ml02; ml03 removes mirrors used by the beam after each fire.
     mk(
         (24, 24),
-        [(x, 12) for x in range(5, 20)],
+        [(10, y) for y in range(24) if y != 12],
         [],
-        (2, 11),
-        (2, 12),
+        (4, 11),
+        (4, 12),
         (1, 0),
-        [(20, 12), (22, 12)],
+        [(18, 12), (21, 12)],
         [],
-        10,
-        240,
+        4,
+        200,
         1,
     ),
     mk(
         (24, 24),
-        [(x, 12) for x in range(6, 18)],
+        [(x, 12) for x in range(5, 12)] + [(x, 12) for x in range(13, 18)],
         [],
-        (3, 12),
+        (3, 11),
         (3, 12),
         (1, 0),
         [(19, 12), (22, 12)],
-        [(18, 10, "\\"), (18, 14, "/")],
-        6,
+        [],
+        4,
         220,
         2,
     ),
     mk(
         (24, 24),
-        [(10, y) for y in range(24) if y != 11],
-        [(15, 15)],
-        (5, 11),
-        (5, 11),
-        (1, 0),
-        [(18, 12), (22, 12)],
+        [(x, 12) for x in range(8, 15)],
         [],
-        8,
-        280,
+        (3, 11),
+        (3, 12),
+        (1, 0),
+        [(19, 12), (19, 7)],
+        [],
+        6,
+        300,
         3,
     ),
     mk(
         (24, 24),
         [],
         [(8, 8), (16, 16)],
-        (1, 1),
+        (1, 2),
         (1, 1),
         (0, 1),
-        [(20, 1), (22, 1)],
+        [(22, 20), (22, 16)],
         [(12, 6, "/"), (6, 12, "\\")],
         8,
-        300,
+        340,
         4,
     ),
     mk(
         (24, 24),
         [(x, x) for x in range(24) if x % 4 == 0 and x not in (0, 20)],
         [],
-        (2, 22),
+        (2, 21),
         (2, 22),
         (1, 0),
-        [(18, 22), (21, 22)],
+        [(20, 4), (20, 1)],
         [],
         10,
-        350,
+        400,
         5,
     ),
 ]
@@ -235,10 +252,14 @@ class Ml03(ARCBaseGame):
         self._receptors = {
             (s.x, s.y) for s in self.current_level.get_sprites_by_tag("receptor")
         }
-        self._edx = int(self.current_level.get_data("emit_dx") or 1)
-        self._edy = int(self.current_level.get_data("emit_dy") or 0)
-        self._inv = int(self.current_level.get_data("mirror_inv") or 6)
-        self._steps = int(self.current_level.get_data("max_steps") or 250)
+        edx_raw = self.current_level.get_data("emit_dx")
+        edy_raw = self.current_level.get_data("emit_dy")
+        self._edx = int(edx_raw) if edx_raw is not None else 1
+        self._edy = int(edy_raw) if edy_raw is not None else 0
+        mi = self.current_level.get_data("mirror_inv")
+        self._inv = int(mi) if mi is not None else 6
+        ms = self.current_level.get_data("max_steps")
+        self._steps = int(ms) if ms is not None else 250
         self._sync_ui()
 
     def _sync_ui(self) -> None:
@@ -263,9 +284,10 @@ class Ml03(ARCBaseGame):
         dx, dy = self._edx, self._edy
         gw, gh = self.current_level.grid_size
         hit: set[tuple[int, int]] = set()
+        mirrors_used: list[Sprite] = []
         for _ in range(gw * gh + 10):
             if not (0 <= x < gw and 0 <= y < gh):
-                return
+                break
             sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
             if sp and "receptor" in sp.tags:
                 hit.add((x, y))
@@ -273,10 +295,11 @@ class Ml03(ARCBaseGame):
                 y += dy
                 continue
             if sp and "wall" in sp.tags:
-                return
+                break
             if sp and "hazard" in sp.tags:
-                return
+                break
             if sp and "mirror" in sp.tags:
+                mirrors_used.append(sp)
                 slash = "slash" in sp.tags
                 dx, dy = _reflect(dx, dy, slash)
                 x += dx
@@ -292,6 +315,8 @@ class Ml03(ARCBaseGame):
                 continue
             x += dx
             y += dy
+        for m in mirrors_used:
+            self.current_level.remove_sprite(m)
         if self._receptors and hit >= self._receptors:
             self.next_level()
 

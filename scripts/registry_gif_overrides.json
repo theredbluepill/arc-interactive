@@ -21,5 +21,14 @@
   "fs02": {
     "switch_or_door_open_hold_frames": 18,
     "switch_level_hold_frames": 22
+  },
+  "mm04": {
+    "gif_duration_ms": 220
+  },
+  "mm05": {
+    "gif_duration_ms": 220
+  },
+  "fe02": {
+    "gif_duration_ms": 180
   }
 }

@@ -102,6 +102,71 @@ def append_frame_repeats_each_layer(
         append_frame_repeats(images, layer, times_per_layer)
 
 
+def _registry_ring_rgb(
+    rgb: np.ndarray, h: int, w: int, cx: int, cy: int, r: int, col: np.ndarray
+) -> None:
+    if r <= 0:
+        return
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            if max(abs(dx), abs(dy)) != r:
+                continue
+            px, py = cx + dx, cy + dy
+            if 0 <= px < w and 0 <= py < h:
+                rgb[py, px] = col
+
+
+def _registry_plus_rgb(
+    rgb: np.ndarray, h: int, w: int, cx: int, cy: int, arm: int, col: np.ndarray
+) -> None:
+    if 0 <= cx < w and 0 <= cy < h:
+        rgb[cy, cx] = col
+    for a in range(1, arm + 1):
+        for px, py in (
+            (cx - a, cy),
+            (cx + a, cy),
+            (cx, cy - a),
+            (cx, cy + a),
+        ):
+            if 0 <= px < w and 0 <= py < h:
+                rgb[py, px] = col
+
+
+def append_registry_click_ripple(
+    images: list[Image.Image],
+    base_palette_frame: np.ndarray | Any,
+    cx: int,
+    cy: int,
+    *,
+    phase_count: int = 14,
+    repeats_per_phase: int = 2,
+) -> None:
+    """
+    Chebyshev ring + plus at ``(cx,cy)`` in 64×64 **display** space, ff01/sq01-style.
+    Used only when building **preview GIFs** — not part of shipped game logic.
+    """
+    lut = palette_lut()
+    frozen = np.asarray(frame_to_rgb(base_palette_frame), dtype=np.uint8).copy()
+    h, w = frozen.shape[:2]
+    white = lut[0]
+    yellow = lut[11]
+    orange = lut[12]
+
+    for phase in range(phase_count):
+        layer = frozen.copy()
+        if phase < 8:
+            ring_r = phase + 1 if phase < 4 else 8 - phase
+            if ring_r > 0:
+                ring_col = white if ring_r >= 4 else (yellow if ring_r == 3 else orange)
+                _registry_ring_rgb(layer, h, w, cx, cy, ring_r, ring_col)
+        arm = 2 if phase < 10 else 1
+        plus_col = white if phase < 2 else orange
+        _registry_plus_rgb(layer, h, w, cx, cy, arm, plus_col)
+        pil = Image.fromarray(layer)
+        for _ in range(repeats_per_phase):
+            images.append(pil.copy())
+
+
 def save_gif(
     path: Path | str,
     images: Sequence[Image.Image],

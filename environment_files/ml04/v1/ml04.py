@@ -1,4 +1,11 @@
-"""ml04: fixed emitter; ACTION6 cycles mirror (/ \\ none); ACTION5 fires ray one step at a time."""
+"""**ml04** — stepped bolt, fixed mirror slots (10×10 grid).
+
+**Vs ml01–ml03:** **ml04** is **16×16 camera** over a **10×10** playfield. **ACTION5** advances
+the laser **one cell** per press (visible **bolt** sprite). **ACTION6** cycles each mirror
+tile through **``/`` → ``\\`` → empty** — no inventory, no free placement. **ml01** is
+global placement + continuous ray; **ml02**/**ml03** add a moving technician and adjacency
+for mirror edits; **ml03** also **consumes** mirrors that reflected the beam.
+"""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 # Games
 
-Human-edited registry for this repo. To **enumerate installable packages** from `environment_files/` (full `game_id` + title), run `uv run python run_game.py --list` — it uses [`Arcade.get_environments()`](https://docs.arcprize.org/toolkit/list-games) when the toolkit supports it. In code: `Arcade(environments_dir="environment_files", operation_mode=OperationMode.OFFLINE).get_environments()`.
+Human-edited registry for this repo. To **enumerate installable packages** from `environment_files/` (full `game_id` + title), run `uv run python run_game.py --list` — it uses [`Arcade.get_environments()`](https://docs.arcprize.org/toolkit/list-games) when the toolkit supports it. In code: `Arcade(environments_dir="environment_files", operation_mode=OperationMode.OFFLINE).get_environments()`. **Hand-play** (WASD, click for ACTION6, etc.): `uv run python run_game.py --game <stem> --version auto --mode human` — **pygame** window via `scripts/human_play_pygame.py`.
 
 | Game | Category | Grid | Levels | Description | Preview | Actions |
 |------|----------|------|--------|-------------|---------|---------|
@@ -50,7 +50,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | lo01 | Pattern Puzzles | 3×3–5×5 | 5 | **Lights Out**: **ACTION6** toggles a cell and its neighbors; clear all lights. **ACTION1–4** are no-ops. | ![lo01](assets/lo01.gif) | • 1-4: No-op • 6: Click |
 | lw01 | Path / Topology | 24–32 | 5 | **Line weave**: connect colored starts to matching ends with orthogonal paths; colors cannot share cells. | ![lw01](assets/lw01.gif) | • 1–2: Prev/next color • 3–4: No-op • 5: Undo segment • 6: Extend path (click) |
 | rp01 | Graph / Logic | 32×32 | 5 | **Relay pulse**: **ACTION6** toggles relays; **ACTION5** fires from the source; orthogonal relay chain must light every lamp (adjacent to a visited relay). | ![rp01](assets/rp01.gif) | • 1–4: No-op • 5: Fire pulse • 6: Toggle relay |
-| ml01 | Geometry | 24×24 | 5 | **Mirror laser**: steer a beam from the emitter to the receptor using placeable mirrors (**ACTION6** adjacent); **ACTION5** fires. | ![ml01](assets/ml01.gif) | • 1–4: Move • 5: Fire laser • 6: Place/cycle mirror |
+| ml01 | Geometry | 24×24 | 5 | **Mirror laser (single goal)**: **global** **ACTION6** clicks place/cycle mirrors (**purple** = ``/``, **light magenta** = ``\\``) on any valid floor cell; **ACTION5** fires a full ray; **1–4** no-op. **No** blue avatar — only emitter / receptor / walls / mirrors. Levels: wall detours → preset shortcut → south emitter + hazards → diagonal posts. **Magenta** = last-shot trace. See `scripts/render_ml01_gif.py`. | ![ml01](assets/ml01.gif) | • 1–4: No-op • 5: Fire • 6: Mirror (click) • 7: Undo last 5/6 |
 | sf01 | Pattern Puzzles | 64×64 | 5 | **Stencil paint**: move a 3×3 stencil with **ACTION1–4**; **ACTION5** paints all non-wall cells under it; match gray hints. | ![sf01](assets/sf01.gif) | • 1–4: Move stencil • 5: Paint |
 | ll01 | Simulation | 32×32 | 5 | **Generations lock**: Conway Life; **ACTION6** toggles cells (budget); **ACTION5** advances one generation; after exactly **N** steps the live set must equal the target. | ![ll01](assets/ll01.gif) | • 1–4: No-op • 5: Step CA • 6: Toggle cell |
 | wl01 | Environmental Manipulation | 32×32 | 5 | **Wall craft**: reach the goal; **ACTION5** toggles build mode; **ACTION6** places/removes your walls (shared budget). | ![wl01](assets/wl01.gif) | • 1–4: Move • 5: Build mode • 6: Toggle my wall |
@@ -89,7 +89,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | ff02 | Precision / Topology | 64×64 | 5 | **Flood unpaint**: interiors start filled; **ACTION6** erases a clicked enclosure; gray hints must end empty. **ACTION1–4** no-op. | ![ff02](assets/ff02.gif) | • 1-4: No-op • 6: Click erase region |
 | gp03 | Pattern Puzzles | 8×8 | 5 | **Three-state grid paint**: cycle cell colors with **ACTION6**; match per-cell `goal` palette in data. | ![gp03](assets/gp03.gif) | • 1-4: No-op • 6: Cycle paint |
 | lw02 | Path / Topology | 24–32 | 5 | **Shared corridor weave**: like lw01 but paths may **share** cells; **perpendicular** entry to another color’s visited cell is forbidden. | ![lw02](assets/lw02.gif) | • 1–2: Color • 3–4: No-op • 5: Undo • 6: Extend |
-| ml02 | Geometry | 24×24 | 5 | **Dual-receptor laser**: **ACTION5** fires; beam must hit **all** receptors in one shot (beam passes through receptors). | ![ml02](assets/ml02.gif) | • 1-4: Move • 5: Fire • 6: Mirror |
+| ml02 | Geometry | 24×24 | 5 | **Dual-receptor laser**: like **ml01** optics but **all** yellow receptors in **one** shot; **blue** technician **moves** (**1–4**); **ACTION6** only on cells **orthogonally adjacent** to technician; mirrors **persist** after each shot. | ![ml02](assets/ml02.gif) | • 1-4: Move • 5: Fire • 6: Mirror |
 | mm02 | Memory / Hidden State | 64×64 | 5 | **Memory triples**: flip three tiles; clear when all three match color. | ![mm02](assets/mm02.gif) | • 6: Click tile |
 | ms02 | Memory / Hidden State | 8-16 | 5 | **Flag sapper**: **ACTION6** plants flags on hidden mines; wrong flag = lose; reach the goal. | ![ms02](assets/ms02.gif) | • 1-4: Move • 6: Flag |
 | mx01 | Puzzle Mechanics | 10×10 | 5 | **Maze melt**: **ACTION5** melts one adjacent wall segment (budget); reach exit when a path exists. | ![mx01](assets/mx01.gif) | • 1-4: Move • 5: Melt |
@@ -134,7 +134,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | ff03 | Precision / Topology | 64×64 | 5 | **Limited erases** (ff02 variant): capped enclosure erasers per level in data. | ![ff03](assets/ff03.gif) | • 1-4: No-op • 6: Click |
 | lw03 | Path / Topology | 24–32 | 5 | **Shared edges OK** (lw02 variant): relaxed perpendicular corridor rule; segment edge ownership. | ![lw03](assets/lw03.gif) | • 1–2 • 5 undo • 6: Extend |
 | rp03 | Graph / Logic | 32×32 | 5 | **Splitter relay** (rp02 variant): T-relays fork pulses to both arms. | ![rp03](assets/rp03.gif) | • 1–4: No-op • 5: Fire • 6: Toggle |
-| ml03 | Geometry | 24×24 | 5 | **One-shot mirrors** (ml02 variant): mirrors absorb beam after one reflection. | ![ml03](assets/ml03.gif) | • 1-4: Move • 5: Fire • 6: Mirror |
+| ml03 | Geometry | 24×24 | 5 | **Fragile mirrors** (ml02 rules): same **move + adjacent mirror** play as **ml02**, but every mirror the beam **reflects from** is **removed** after that shot (failed shots eat optics). | ![ml03](assets/ml03.gif) | • 1-4: Move • 5: Fire • 6: Mirror |
 | ck03 | Graph / Logic | 24×24 | 5 | **Checkpoint wire** (ck02 variant): cyan checkpoint must lie on successful test path. | ![ck03](assets/ck03.gif) | • 1-4: No-op • 5: Test • 6: Toggle |
 | ph03 | Field / Math | 24×24 | 5 | **XOR neighbor step** (ph02 variant): **ACTION5** XORs cell with orth neighbors mod N. | ![ph03](assets/ph03.gif) | • 1-4: No-op • 5: Step • 6: Inc |
 | bn03 | Exploration | 64×64 | 5 | **Shrinking beacon** (bn02 variant): each **ACTION5** beacon reduces max light radius by 1. | ![bn03](assets/bn03.gif) | • 1-4: Move • 5: Beacon • 6: Flag |
@@ -234,7 +234,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | ck04 | Circuit / Logic | 14×14 | 7 | **Directed wire**: each tile’s arrow rotates with **ACTION6**; reach **out**. | ![ck04](assets/ck04.gif) | • 6: Rotate |
 | rp04 | Graph / Relay | 12×12 | 7 | **Relay pulse**: **ACTION6** toggles relays; **ACTION5** floods from source. | ![rp04](assets/rp04.gif) | • 5: Pulse • 6: Toggle |
 | ph04 | Logic / Algebra | 8×1 row | 7 | **Mod row step**: **ACTION5** applies neighbor-sum **mod R** on a cyclic row. | ![ph04](assets/ph04.gif) | • 5: Step |
-| ml04 | Timing / Laser | 16×16 | 7 | **Fixed emitter**: **ACTION5** fires; **ACTION6** cycles mirrors. | ![ml04](assets/ml04.gif) | • 5: Fire • 6: Mirror |
+| ml04 | Timing / Laser | 16×16 | 7 | **Stepped bolt** on **10×10**: **ACTION5** advances laser **one cell** per press; **ACTION6** cycles fixed mirror tiles **/ → \\ → empty** (no placement inventory). Distinct from **ml01–ml03** continuous-ray + place/cycle model. | ![ml04](assets/ml04.gif) | • 5: Fire • 6: Mirror |
 | pj04 | Timing / Deflect | 14×14 | 7 | **Fixed shooter**: **ACTION5** bolt; **ACTION6** places mirrors (minimal avatar). | ![pj04](assets/pj04.gif) | • 5: Bolt • 6: Mirror |
 | wm04 | Timing / Reflex | 32×32 | 7 | **Whack**: wrong click shortens the timer. | ![wm04](assets/wm04.gif) | • 6: Click |
 | sg04 | Timing / Rhythm | 12×12 | 7 | **Dual commit**: two-arm timing like **sg01**. | ![sg04](assets/sg04.gif) | • 5–6: Timing |
@@ -252,7 +252,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | cu01 | Tiling / Click | 10×10 | 7 | **Cover yellow**: **ACTION5** domino vs L-tool; **ACTION6** places. | ![cu01](assets/cu01.gif) | • 5: Tool • 6: Place |
 | cv01 | Graph / Click | 8×8 | 7 | **List coloring**: **ACTION6** cycles allowed colors; neighbors differ. | ![cv01](assets/cv01.gif) | • 6: Cycle |
 | mm04 | Memory | 64×64 | 7 | **One peek / level**: **ACTION5** briefly reveals unmatched tiles. | ![mm04](assets/mm04.gif) | • 5: Peek • 6: Flip |
-| mm05 | Memory | 64×64 | 7 | **Sticky matches**: cannot flip orthogonally adjacent to a matched pair. | ![mm05](assets/mm05.gif) | • 6: Flip |
-| fe02 | Simulation / Abstract | 8×8 | 7 | **Vote + ratify**: **ACTION1–4** tally; **ACTION5** applies policy **N** times. | ![fe02](assets/fe02.gif) | • 1–4: Vote • 5: Ratify |
+| mm05 | Memory | 64×64 | 7 | **Sticky matches**: an **edge-aligned** matched pair blocks flips on cells that sit orthogonally next to **both** tiles (diagonal pairs do not). | ![mm05](assets/mm05.gif) | • 6: Flip |
+| fe02 | Simulation / Abstract | 8×8 | 7 | **Vote + ratify**: **ACTION1–4** tally; **ACTION5** picks the leading rule (tie → higher index) and applies **one** `(a,b,c)` tick; **`need`** ratifications / level; keep **a,b,c** in **1..9**. | ![fe02](assets/fe02.gif) | • 1–4: Vote • 5: Ratify |
 
 Implementation for each row lives under `environment_files/<Game>/<version>/` (one package dir per stem; `run_game.py --game <Game> --version auto` picks it). Registry column **Game** is the stem, not the full `game_id` in `metadata.json`.

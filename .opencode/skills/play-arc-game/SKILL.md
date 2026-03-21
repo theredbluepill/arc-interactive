@@ -107,6 +107,7 @@ Actions are **abstract** - each game defines what they mean. The canonical mappi
 - **ACTION4**: Right-like (semantic "right" for the game)
 - **ACTION5**: Special (game-dependent: interact, select, rotate, etc.)
 - **ACTION6**: Click/Coordinate (requires x,y in action.data)
+- **ACTION7**: Undo (when the environment supports it)
 
 ## Capturing Frames for GIFs
 
@@ -209,7 +210,7 @@ for level_num in range(5):  # Adjust for number of levels
 | Task | Command/Tool |
 |------|--------------|
 | List games | `run_game.py --list` |
-| Play game | `run_game.py --game <stem> --version auto` |
+| Play game (pygame) | `run_game.py --game <stem> --version auto --mode human` |
 | Auto test | `run_game.py --game <stem> --version auto --mode auto --steps 100` |
 | Check state | `result.state`, `result.levels_completed` |
 | Create GIF | Use `include_frame_data=True` + colorize function |

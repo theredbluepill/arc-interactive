@@ -26,7 +26,7 @@ Agent responsible for designing and implementing ARC-AGI-3 games.
    - Static levels (no PCG)
    - Game class extending `ARCBaseGame`
    - Win/lose conditions
-3. Test with: `arc.make` using the full `game_id` from that folder’s `metadata.json`, or locally `uv run python run_game.py --game {stem} --version auto`
+3. Test with: `arc.make` using the full `game_id` from that folder’s `metadata.json`, or locally `uv run python run_game.py --game {stem} --version auto` — add `--mode human` for **pygame** hand-play (`scripts/human_play_pygame.py`).
 
 ### 3. Documentation Phase
 **Input**: Completed game
@@ -524,6 +524,12 @@ def step(self) -> None:
 3. **Lose state**: `lose()` sets **`GameState.GAME_OVER`** (not a separate `LOSE` enum).
 4. **Preview GIF**: `uv run python scripts/render_mm01_gif.py` — **slow** frame durations; **2–3** deliberate **wrong pairs** (flip-back) across **levels 1–3** via `MISMATCHES_PER_LEVEL`, then scripted clears from `LEVEL_LAYOUTS`; holds after level-ups and at the end.
 
+## Lessons Learned (mm04 / mm05 / fe02)
+
+1. **mm04**: **`[5,6]`** — **ACTION5** enables **one peek / level** (**5** steps of full reveal; only **ACTION5**/**ACTION6** exist, so burn the countdown with extra **ACTION5**). **`ACTION6`** uses **tile-center** frame pixels from **`LEVEL_DIMS`** + **`_compute_tile_size_and_offsets`**. **Registry GIF**: **`registry_mm_fe_gif.record_mm04_registry_gif`** / `render_registry_gifs.py --game mm04`.
+2. **mm05**: **Sticky** only for an **edge-aligned** matched pair (Manhattan **1** apart): block flips on cells in the **intersection** of orthogonal neighborhoods of **both** matched cells. **Diagonal** (or distant) pairs do **not** stick — a blanket “adjacent to any matched tile” rule made **all** prior boards unwinnable.
+3. **fe02**: **ACTION1–4** increment vote bins; **ACTION5** ratifies **`argmax (votes[k], -k)`** and applies **`RULES[j]`** to **`(a,b,c)`**, then clears votes; survive **`need`** ratifications per level without **`a,b,c`** leaving **1..9**. **Registry GIF**: **`record_fe02_registry_gif`** (`--game fe02`); default **`target_levels=3`**.
+
 ## Lessons Learned (pb01 / fs01 / tp01 / ic01 / va01 batch)
 
 1. **pb01**: Single **block** + **target** — reuse sk01-style push (next cell block → push if beyond free). **`Pb01UI`** corner tile turns **green** when the crate sits on the goal. **`_sync_ui()`** maps **14/15** when the block enters/leaves the pad; step limit **60 + 15×difficulty**.
@@ -569,7 +575,7 @@ def step(self) -> None:
 
 1. **lw01**: Store path endpoints in **`level.data["pairs"]`**; keep per-color trails and enforce **no shared cells** across colors; **ACTION6** requires **Manhattan distance 1** from the active path tip. **`Lw01UI`**: bottom row = step budget (**14** = remaining, **3** = used cap); color dots bottom-left. **Registry GIF** (`registry_lw_rp_ml_sf_gif.py` / `render_registry_gifs.py --game lw01`): on the **winning extend**, **`next_level()`** resets **`_paths`** — do not assert tip equals the pre-click `(cx,cy)`; break when **`level_index`** advances.
 2. **rp01**: Pulse **BFS** only through **`relay`** tiles from **orthogonal neighbors of `source`**; lamps count lit when **orthogonally adjacent** to a **visited relay** (BFS expansion from relays). Place relays so the chain reaches **beside** each lamp (not on the lamp cell). **Registry GIF**: default **`target_levels=1`** (horizontal row east of source). **`len(horiz) == len(targets)`** was wrong for two lamps on **different** rows — use **`all(ly == sy)`** for the simple row script. If the GIF stops before the **final game level**, **`GameState.WIN`** may not fire — accept **`levels_completed`** / **`level_index`** advance instead.
-3. **ml01**: Laser **raycast** with slash vs backslash mirrors via **`(-dy,-dx)`** vs **`(dy,dx)`**; **ACTION5** = fire only; **ACTION6** places/cycles mirrors on **player-adjacent** cells. **Registry GIF**: L0 tutorial + **`_grid_to_frame_pixel`** for **ACTION6**; deeper levels need an explicit plan. **`perform_action`** may return **`frame` with multiple rasters** (e.g. one before **`next_level`** cleanup, one after) — GIF scripts must use **`obs.frame[-1]`** (see **`gif_common.append_frame_repeats_latest`**), not **`frame[0]`**, or the animation looks frozen.
+3. **ml01**: Laser **raycast** with slash vs backslash mirrors via **`(-dy,-dx)`** vs **`(dy,dx)`**; **ACTION1–4** = **no-op**; **ACTION5** = fire full ray; **ACTION6** = place/cycle on any **valid** cell (**`camera.display_to_grid`**), not on wall / hazard / emitter / receptor — **no** separate **player** sprite (unlike **ml02**/**ml03**); **ACTION7** = **undo** last **5**/**6** (level clone + **`mirror_inv`** + **`_steps`**, stack cleared on **`on_set_level`**, cap **`MAX_UNDO`**). **`Ml01UI`** = inventory + step ticks + **magenta** beam trace (**/** = **15**, **\\** = **7**; steps HUD **10**). **`on_set_level`**: **`emit_dx` / `emit_dy` / `mirror_inv` / `max_steps`** with **`is not None`**. **ml02**/**ml03**: **technician** moves (**1–4**); **ACTION6** only on **Manhattan-1** cells; **ml03** **removes** every mirror the beam **reflected from** after each shot. **ml04**: **10×10** playfield, **stepped** bolt, **cycle** fixed slots (**/** / **\\** / empty). **Preview GIF**: **`render_ml01_gif.py`**. **Registry GIF**: synthetic click ripple (**preview-only**).
 4. **sf01**: **64×64** camera; **3×3 stencil** clamped to grid; **`ACTION5`** paints; win when **`goal <= painted`** (subset); refresh **`paint`** sprites each stamp. **Registry GIF**: inner paint loop must guard with **`g.level_index == li`** so clearing a level does not keep painting the next. Use **`append_frame_repeats_latest`** for observations so multi-layer actions stay correct.
 5. **ll01**: **Conway** on full grid; evaluate **`_alive()`** into a **snapshot** before mutating sprites; **lose** on generation **`== need`** if pattern mismatch, or **`>` need**.
 6. **wl01**: Tag player-placed tiles **`mywall`** separately from static **`wall`**; **goal** is **non-collidable** — win by **position match** after movement.

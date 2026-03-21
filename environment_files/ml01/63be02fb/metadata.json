@@ -1,7 +1,7 @@
 {
   "game_id": "ml01-63be02fb",
   "title": "Mirror Laser",
-  "description": "Steer a laser from the orange emitter to the yellow receptor using purple mirrors. Move with ACTION1\u20134; ACTION5 fires the beam; ACTION6 places or cycles a mirror on a cell adjacent to the player.",
+  "description": "Mirror laser: hit the yellow receptor with the beam from the orange emitter (beam starts one grid step in the emitter facing direction, usually east). Place or cycle purple mirrors with ACTION6 using display x,y (64x64, cell centers). Mirrors go on empty floor only; clicking walls, emitter, receptor, player, or off-grid wastes a step. ACTION5 fires once per step. ACTION1\u20134 no-op (free). Lose when the step budget (cyan HUD ticks) hits zero. Blue player tile is static and the beam passes through it.",
   "default_fps": 20,
   "baseline_actions": [
     1,
@@ -26,7 +26,7 @@
     "action_space": 6,
     "physics_rules": [
       "reflection",
-      "movement"
+      "click-placement"
     ],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000

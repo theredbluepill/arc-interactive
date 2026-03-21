@@ -1,4 +1,16 @@
-"""Mirror laser (splitter): fire must illuminate **all** yellow receptors in one shot; beam passes through receptors. Mirrors reflect as in ml01."""
+"""Mirror laser — **ml02** (multi-target, durable mirrors).
+
+**Win:** **ACTION5** fires once; the beam must pass through **every** yellow receptor (order
+free). Receptors do **not** stop the beam.
+
+**Vs ml01:** **ml01** = one receptor, **global** mirror placement clicks. **ml02** = several
+receptors and a **blue technician**: **ACTION1–4** move; **ACTION6** place/cycle mirrors only
+on cells **orthogonally adjacent** to the technician. Mirrors **stay** on the board after
+each shot.
+
+**Vs ml03:** Same movement + adjacency rules as ml02, but in ml03 every mirror the beam
+**reflects from** is **removed** after that shot.
+"""
 
 from __future__ import annotations
 
@@ -142,69 +154,74 @@ def mk(
 
 
 levels = [
+    # L1 — column wall + gap; both receptors on row 12 east of the wall (no mirrors).
     mk(
         (24, 24),
-        [(x, 12) for x in range(5, 20)],
+        [(10, y) for y in range(24) if y != 12],
         [],
-        (2, 11),
-        (2, 12),
+        (4, 11),
+        (4, 12),
         (1, 0),
-        [(20, 12), (22, 12)],
+        [(18, 12), (21, 12)],
         [],
-        10,
-        240,
+        4,
+        200,
         1,
     ),
+    # L2 — split wall on row 12; straight east shot through gap; dual receptors.
     mk(
         (24, 24),
-        [(x, 12) for x in range(6, 18)],
+        [(x, 12) for x in range(5, 12)] + [(x, 12) for x in range(13, 18)],
         [],
-        (3, 12),
+        (3, 11),
         (3, 12),
         (1, 0),
         [(19, 12), (22, 12)],
-        [(18, 10, "\\"), (18, 14, "/")],
-        6,
+        [],
+        4,
         220,
         2,
     ),
+    # L3 — horizontal wall; vertical receptor pair; 3-mirror detour (/, /, \).
     mk(
         (24, 24),
-        [(10, y) for y in range(24) if y != 11],
-        [(15, 15)],
-        (5, 11),
-        (5, 11),
-        (1, 0),
-        [(18, 12), (22, 12)],
+        [(x, 12) for x in range(8, 15)],
         [],
-        8,
-        280,
+        (3, 11),
+        (3, 12),
+        (1, 0),
+        [(19, 12), (19, 7)],
+        [],
+        6,
+        300,
         3,
     ),
+    # L4 — south emitter; vertical receptor pair; presets help aim.
     mk(
         (24, 24),
         [],
         [(8, 8), (16, 16)],
-        (1, 1),
+        (1, 2),
         (1, 1),
         (0, 1),
-        [(20, 1), (22, 1)],
+        [(22, 20), (22, 16)],
         [(12, 6, "/"), (6, 12, "\\")],
         8,
-        300,
+        340,
         4,
     ),
+    # L5 — another split-row gap (different gap position); dual receptors; no mirrors.
     mk(
         (24, 24),
-        [(x, x) for x in range(24) if x % 4 == 0 and x not in (0, 20)],
+        [(x, 12) for x in range(6, 14)] + [(x, 12) for x in range(15, 19)],
         [],
-        (2, 22),
-        (2, 22),
+        (4, 11),
+        (4, 12),
         (1, 0),
-        [(18, 22), (21, 22)],
+        [(20, 12), (22, 12)],
         [],
-        10,
-        350,
+        4,
+        200,
         5,
     ),
 ]
@@ -235,10 +252,14 @@ class Ml02(ARCBaseGame):
         self._receptors = {
             (s.x, s.y) for s in self.current_level.get_sprites_by_tag("receptor")
         }
-        self._edx = int(self.current_level.get_data("emit_dx") or 1)
-        self._edy = int(self.current_level.get_data("emit_dy") or 0)
-        self._inv = int(self.current_level.get_data("mirror_inv") or 6)
-        self._steps = int(self.current_level.get_data("max_steps") or 250)
+        edx_raw = self.current_level.get_data("emit_dx")
+        edy_raw = self.current_level.get_data("emit_dy")
+        self._edx = int(edx_raw) if edx_raw is not None else 1
+        self._edy = int(edy_raw) if edy_raw is not None else 0
+        mi = self.current_level.get_data("mirror_inv")
+        self._inv = int(mi) if mi is not None else 6
+        ms = self.current_level.get_data("max_steps")
+        self._steps = int(ms) if ms is not None else 250
         self._sync_ui()
 
     def _sync_ui(self) -> None:
@@ -265,7 +286,7 @@ class Ml02(ARCBaseGame):
         hit: set[tuple[int, int]] = set()
         for _ in range(gw * gh + 10):
             if not (0 <= x < gw and 0 <= y < gh):
-                return
+                break
             sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
             if sp and "receptor" in sp.tags:
                 hit.add((x, y))
@@ -273,9 +294,9 @@ class Ml02(ARCBaseGame):
                 y += dy
                 continue
             if sp and "wall" in sp.tags:
-                return
+                break
             if sp and "hazard" in sp.tags:
-                return
+                break
             if sp and "mirror" in sp.tags:
                 slash = "slash" in sp.tags
                 dx, dy = _reflect(dx, dy, slash)

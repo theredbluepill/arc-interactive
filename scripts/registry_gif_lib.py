@@ -1784,6 +1784,24 @@ def record_registry_gif(
         return record_sf01_registry_gif(
             game_id, root, overrides=o, verbose=verbose, seed=seed
         )
+    if game_id == "mm04":
+        from registry_mm_fe_gif import record_mm04_registry_gif
+
+        return record_mm04_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "mm05":
+        from registry_mm_fe_gif import record_mm05_registry_gif
+
+        return record_mm05_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "fe02":
+        from registry_mm_fe_gif import record_fe02_registry_gif
+
+        return record_fe02_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
     target_levels = int(o.get("target_levels", 0))  # 0 = min(3, n_levels)
     max_total_steps = int(o.get("max_total_steps", 1400))
     max_idle = int(o.get("max_idle_between", 28))
