@@ -4,20 +4,22 @@ Skill for playing and testing ARC-AGI-3 games using `run_game.py`.
 
 ## Running Games
 
-### Terminal mode (default)
+(`<stem>` is the two-letter+digits id from `GAMES.md`, e.g. `ez01`. **`--version auto`** picks the sole package dir under `environment_files/<stem>/`.)
+
+### Random-agent mode (default)
+Omit **`--mode`** or pass **`--mode random-agent`** — runs **`--steps`** random picks among **ACTION1–ACTION5** (default 100 steps).
+
 ```bash
-uv run python run_game.py --game <stem> --version auto
+uv run python run_game.py --game <stem> --version auto --mode random-agent --steps 50
 ```
 
-(`<stem>` is the two-letter+digits id from `GAMES.md`, e.g. `ez01`. `auto` picks the sole package dir under `environment_files/<stem>/`.)
+### Terminal mode (typed 1–7)
+```bash
+uv run python run_game.py --game <stem> --version auto --mode terminal
+```
 
 ### Hand-play (pygame window)
 Add **`--mode human`** — opens **`scripts/human_play_pygame.py`** (WASD / arrows, click for ACTION6 in display space). There is no separate matplotlib player in this repo.
-
-### Auto Mode (Random Actions)
-```bash
-uv run python run_game.py --game <stem> --version auto --mode auto --steps 50
-```
 
 ### Programmatic Testing
 
@@ -138,6 +140,6 @@ for level_num in range(5):  # Adjust for number of levels
 |------|--------------|
 | List games | `run_game.py --list` |
 | Play game (pygame) | `run_game.py --game <stem> --version auto --mode human` |
-| Auto test | `run_game.py --game <stem> --version auto --mode auto --steps 100` |
+| Random-agent smoke | `run_game.py --game <stem> --version auto --mode random-agent --steps 100` |
 | Check state | `result.state`, `result.levels_completed` |
 | Create GIF | `uv run python scripts/render_arc_game_gif.py --stem <stem>` (see **generate-arc-game-gif** skill) |

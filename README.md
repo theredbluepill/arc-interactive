@@ -74,6 +74,8 @@ uv run python run_game.py \
 
 Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a listing pinned to **local environments**). **`--version auto`** picks the sole package under that stem.
 
+**Headless random smoke:** omit **`--mode`** or pass **`--mode random-agent`**; use **`--steps`** for how many random **ACTION1–ACTION5** steps to take (default 100). Example: `uv run python run_game.py --offline --version auto --mode random-agent --steps 50 --game ez01`.
+
 ### Human play
 
 **`--mode human`** runs [`scripts/human_play_pygame.py`](scripts/human_play_pygame.py) (pygame). Abstract actions and human bindings are the same as in the official ARC Prize doc **[Actions](https://docs.arcprize.org/actions)**; each game still defines what ACTION1–7 mean.

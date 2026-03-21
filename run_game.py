@@ -7,7 +7,7 @@ Based on patterns from redpill/launch.py and redpill/remote_attempt.py
 
 Usage:
     uv run python run_game.py --game co01 --version auto
-    uv run python run_game.py --game co01 --mode auto --steps 50
+    uv run python run_game.py --game co01 --mode random-agent --steps 50
     uv run python run_game.py --game ls20 --mode human
     uv run python run_game.py --game sk01 --mode human
     uv run python run_game.py --game sk01 --mode human-toolkit
@@ -73,7 +73,7 @@ class GameConfig:
     version: str = "auto"
     seed: int = 0
     steps: int = 100
-    mode: str = "terminal"  # terminal, auto, human / human-toolkit (pygame GUI)
+    mode: str = "terminal"  # terminal, random-agent, human / human-toolkit (pygame GUI)
     #: Passed to ``arc.make(..., render_mode=...)`` — terminal / none / terminal-fast (not GUI).
     render_mode: str | None = None
     operation_mode: OperationMode = OperationMode.OFFLINE
@@ -317,9 +317,9 @@ def run_game(config: GameConfig) -> GameResult:
                     print("\n\nGame interrupted")
                     break
 
-        else:
-            # Auto mode with random actions
-            print("Running in auto mode with random actions")
+        elif config.mode == "random-agent":
+            # Random agent: uniform ACTION1–ACTION5 each step
+            print("Running in random-agent mode (random ACTION1–ACTION5)")
             print("-" * 50)
 
             actions = [
@@ -337,7 +337,7 @@ def run_game(config: GameConfig) -> GameResult:
                 result = environment.step(
                     action,
                     reasoning={
-                        "thought": "Auto-play random action",
+                        "thought": "Random-agent action",
                         "step_index": step_index,
                         "planned_steps": config.steps,
                     },
@@ -349,6 +349,9 @@ def run_game(config: GameConfig) -> GameResult:
                     print(f"Step {step_index}/{config.steps}")
 
             print(f"\nCompleted {step_count} steps")
+
+        else:
+            raise ValueError(f"unsupported play mode: {config.mode!r}")
 
     except Exception as e:
         print(f"\nError during game execution: {e}")
@@ -367,7 +370,7 @@ def setup_argparser():
         epilog="""
 Examples:
   uv run python run_game.py --game co01 --version auto
-  uv run python run_game.py --game co01 --mode auto --steps 50
+  uv run python run_game.py --game co01 --mode random-agent --steps 50
   uv run python run_game.py --game ls20 --mode human
   uv run python run_game.py --game sk01 --mode human
   uv run python run_game.py --game sk01 --mode human-toolkit
@@ -424,11 +427,11 @@ Note:
         "--mode",
         "-m",
         type=str,
-        choices=["terminal", "auto", "human", "human-toolkit"],
-        default="auto",
+        choices=["terminal", "random-agent", "human", "human-toolkit"],
+        default="random-agent",
         help=(
-            "Play: terminal (typed 1–6), human (pygame WASD/click), "
-            "human-toolkit (same pygame UI; legacy name), or auto (random)"
+            "Play: terminal (typed 1–7), human (pygame WASD/click), "
+            "human-toolkit (same pygame UI; legacy name), or random-agent (random ACTION1–5)"
         ),
     )
     parser.add_argument(
@@ -446,7 +449,7 @@ Note:
         "-n",
         type=int,
         default=100,
-        help="Steps for auto mode (default: 100)",
+        help="Steps for random-agent mode (default: 100)",
     )
     parser.add_argument(
         "--list",

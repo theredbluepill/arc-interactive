@@ -32,7 +32,7 @@ Controls (actions are abstract - each game defines what they mean):
 
 ### Auto Mode (Random Actions)
 ```bash
-uv run python run_game.py --game ez01 --version auto --mode auto --steps 50
+uv run python run_game.py --game ez01 --version auto --mode random-agent --steps 50
 ```
 
 ## Creating a New Game
