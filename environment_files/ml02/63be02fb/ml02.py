@@ -182,7 +182,7 @@ levels = [
         220,
         2,
     ),
-    # L3 — horizontal wall; vertical receptor pair; 3-mirror detour (/, /, \).
+    # L3 — horizontal wall; vertical receptor pair; 3-mirror detour (7,12)/ (7,6)/ (19,6)\\.
     mk(
         (24, 24),
         [(x, 12) for x in range(8, 15)],
@@ -287,12 +287,14 @@ class Ml02(ARCBaseGame):
         for _ in range(gw * gh + 10):
             if not (0 <= x < gw and 0 <= y < gh):
                 break
-            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
-            if sp and "receptor" in sp.tags:
+            if self.current_level.get_sprite_at(
+                x, y, tag="receptor", ignore_collidable=True
+            ):
                 hit.add((x, y))
                 x += dx
                 y += dy
                 continue
+            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
             if sp and "wall" in sp.tags:
                 break
             if sp and "hazard" in sp.tags:

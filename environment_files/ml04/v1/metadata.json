@@ -1,7 +1,7 @@
 {
   "game_id": "ml04-v1",
   "title": "Fixed Emitter Laser",
-  "description": "Ray from emitter; **ACTION6** cycles mirror type on cell; **ACTION5** advances the bolt until receptor or wall.",
+  "description": "Stepped bolt: **ACTION5** advances one cell; **ACTION6** cycles fixed mirror slots (/ → \\ → empty). Optional **emit_dir** in level data (0–3) sets initial facing.",
   "default_fps": 20,
   "baseline_actions": [5, 6],
   "tags": ["laser", "click"],

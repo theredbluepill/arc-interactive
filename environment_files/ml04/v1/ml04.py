@@ -1,10 +1,11 @@
 """**ml04** — stepped bolt, fixed mirror slots (10×10 grid).
 
-**Vs ml01–ml03:** **ml04** is **16×16 camera** over a **10×10** playfield. **ACTION5** advances
+**Vs ml01–ml03:** **ml04** uses a **10×10** grid (camera matches **G** after level load). **ACTION5** advances
 the laser **one cell** per press (visible **bolt** sprite). **ACTION6** cycles each mirror
-tile through **``/`` → ``\\`` → empty** — no inventory, no free placement. **ml01** is
-global placement + continuous ray; **ml02**/**ml03** add a moving technician and adjacency
-for mirror edits; **ml03** also **consumes** mirrors that reflected the beam.
+tile through **``/`` → ``\\`` → empty** — no inventory, no free placement. Optional
+**``emit_dir``** in level data sets initial bolt facing **0–3** (E/S/W/N); default **0**.
+**ml01** is global placement + continuous ray; **ml02**/**ml03** add a moving technician and
+adjacency for mirror edits; **ml03** also **consumes** mirrors that reflected the beam.
 """
 
 from __future__ import annotations
@@ -13,7 +14,6 @@ from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisp
 
 BG, PAD = 5, 4
 G = 10
-CAM = 16
 DX = (1, 0, -1, 0)
 DY = (0, 1, 0, -1)
 # dir 0=E,1=S,2=W,3=N — / mirror
@@ -33,7 +33,13 @@ MV = Sprite(pixels=[[6]], name="m", visible=True, collidable=False, tags=["mirro
 BT = Sprite(pixels=[[12]], name="b", visible=True, collidable=False, tags=["bolt"])
 
 
-def mk(walls, mirrors, emitter, receptor, d):
+def mk(walls, mirrors, emitter, receptor, d, emit_dir: int | None = None):
+    data: dict = {
+        "mirrors": [[x, y, t] for x, y, t in mirrors],
+        "difficulty": d,
+    }
+    if emit_dir is not None:
+        data["emit_dir"] = int(emit_dir) % 4
     sl = [W.clone().set_position(x, y) for x, y in walls]
     for x, y, _ in mirrors:
         sl.append(MV.clone().set_position(x, y))
@@ -42,7 +48,7 @@ def mk(walls, mirrors, emitter, receptor, d):
     return Level(
         sprites=sl,
         grid_size=(G, G),
-        data={"mirrors": [[x, y, t] for x, y, t in mirrors], "difficulty": d},
+        data=data,
     )
 
 
@@ -59,9 +65,11 @@ levels = [
     mk(bd(), [(3, 5, 0), (5, 5, 1)], (1, 5), (8, 5), 1),
     mk(bd(), [(4, y, y % 3) for y in range(3, 8)], (1, 5), (8, 5), 2),
     mk(bd(), [(x, 5, x % 3) for x in range(2, 8)], (1, 5), (8, 5), 3),
-    mk(bd(), [(5, 4, 1), (5, 6, 2)], (5, 2), (5, 8), 4),
-    mk(bd(), [(3, 3, 0), (6, 6, 1)], (1, 1), (8, 8), 5),
-    mk(bd(), [(x, x, x % 3) for x in range(2, 8)], (1, 2), (8, 7), 6),
+    # L4 — vertical run (needs initial facing south; east-only would miss column mirrors).
+    mk(bd(), [(5, 4, 1), (5, 6, 2)], (5, 2), (5, 8), 4, emit_dir=1),
+    # L5–L6 — east corridor puzzles (prior diagonal layouts were unreachable at dir 0).
+    mk(bd(), [(4, y, y % 3) for y in range(4, 7)], (1, 5), (8, 5), 5),
+    mk(bd(), [(x, 5, (x + 1) % 3) for x in range(3, 7)], (1, 5), (8, 5), 6),
     mk(bd(), [(4, 5, 0), (5, 5, 1), (6, 5, 2)], (2, 5), (8, 5), 7),
 ]
 
@@ -72,7 +80,7 @@ class Ml04(ARCBaseGame):
         super().__init__(
             "ml04",
             levels,
-            Camera(0, 0, CAM, CAM, BG, PAD, [Ml04UI()]),
+            Camera(0, 0, G, G, BG, PAD, [Ml04UI()]),
             False,
             1,
             [5, 6],
@@ -84,7 +92,8 @@ class Ml04(ARCBaseGame):
             self._mir[(int(r[0]), int(r[1]))] = int(r[2]) % 3
         e = self.current_level.get_sprites_by_tag("emitter")[0]
         self._ex, self._ey = e.x, e.y
-        self._dir = 0
+        ed = self.current_level.get_data("emit_dir")
+        self._dir = int(ed) % 4 if ed is not None else 0
         self._bx = self._by = -1
         self._clear_bolt()
 

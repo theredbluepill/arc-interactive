@@ -55,10 +55,12 @@ Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/ast
 uv sync
 ```
 
-Then run a game (example: tutorial **ez01**):
+Then run a game (example: tutorial **ez01**). `--game` is last so you can swap the stem in one place (handy for forks and small git diffs):
 
 ```bash
-uv run python run_game.py --game ez01 --version auto
+uv run python run_game.py \
+  --version auto \
+  --game ez01
 ```
 
 Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
@@ -66,7 +68,10 @@ Use any stem / version folder shown by `uv run python run_game.py --list`, or pa
 ### Play by hand (pygame window)
 
 ```bash
-uv run python run_game.py --game sk01 --version auto --mode human
+uv run python run_game.py \
+  --version auto \
+  --mode human \
+  --game sk01
 ```
 
 `--mode human-toolkit` uses the same pygame UI (legacy name). Requires a working SDL/video backend for pygame (see [pygame Getting Started](https://www.pygame.org/wiki/GettingStarted)).
