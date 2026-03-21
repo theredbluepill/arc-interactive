@@ -138,13 +138,17 @@ uv run python run_game.py --competition \
 
 ### Create a game with AI Agent
 
-Paste into your coding agent (replace `{game_id}` and the bracketed design). Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
+Use the skills under [`.opencode/skills/`](.opencode/skills/) with your coding agent; full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
+
+- **[create-arc-game](.opencode/skills/create-arc-game/SKILL.md)** — Guides end-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
+- **[play-arc-game](.opencode/skills/play-arc-game/SKILL.md)** — Covers running and smoke-testing stems with `run_game.py` (list, random agent, human pygame, offline/online flags).
+- **[generate-arc-game-gif](.opencode/skills/generate-arc-game-gif/SKILL.md)** — Explains GIF-ready `RenderableUserDisplay` and capturing registry previews via `scripts/render_arc_game_gif.py`.
+
+Example prompt (replace `{game_id}` and the bracketed design):
 
 ```
-Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and skills/create-arc-game/SKILL.md (or .opencode/skills/create-arc-game/SKILL.md): static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
+Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and .opencode/skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
 ```
-
-Optional second pass for the preview column: follow **skills/generate-arc-game-gif/SKILL.md** (GIF-ready `RenderableUserDisplay`, then `uv run python scripts/render_arc_game_gif.py --stem {game_id}`).
 
 ## Community Benchmarks
 
