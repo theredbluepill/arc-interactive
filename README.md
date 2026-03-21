@@ -45,6 +45,8 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
+- **Hundreds of interactive ARC-AGI-3 games** in one registry ([`GAMES.md`](GAMES.md))—a broad test bed for agents, smoke tests, and benchmarks.
+- Quickstart with **ARC-AGI-3** interactive play—the [ARC-AGI Toolkit](https://docs.arcprize.org/toolkit/overview), [competition mode](https://docs.arcprize.org/toolkit/competition_mode), actions and observations, and how games load from `environment_files/`.
 - Create or modify games quickly using patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/)): [create-arc-game](.opencode/skills/create-arc-game/SKILL.md), [play-arc-game](.opencode/skills/play-arc-game/SKILL.md).
 - Games land in a community pool through normal repo contributions.
 - Many stems live in one tree, so the catalog grows with `main`.
