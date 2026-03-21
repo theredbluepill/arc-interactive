@@ -55,11 +55,12 @@ Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/ast
 uv sync
 ```
 
-Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit. Local play uses **local environments** (`environment_files/`) by default; add optional **`--offline`** if you want to **force** that (same as omitting **`--online`** / **`--competition`**).
+Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit. Omitting **`--mode`** defaults to **`random-agent`** (random **ACTION1–ACTION5** for **`--steps`**); the examples below set **`--mode random-agent`** explicitly. Local play uses **local environments** (`environment_files/`) by default; add optional **`--offline`** if you want to **force** that (same as omitting **`--online`** / **`--competition`**).
 
 ```bash
 uv run python run_game.py \
   --version auto \
+  --mode random-agent \
   --game ez01
 ```
 
@@ -69,6 +70,7 @@ uv run python run_game.py \
 uv run python run_game.py \
   --offline \
   --version auto \
+  --mode random-agent \
   --game ez01
 ```
 
