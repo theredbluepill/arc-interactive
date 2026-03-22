@@ -14,15 +14,33 @@ def rot_cw(g: int, x: int, y: int) -> tuple[int, int]:
 class Wr01UI(RenderableUserDisplay):
     def __init__(self, brace: int, until: int) -> None:
         self._b, self._u = brace, until
+        self._li = 0
+        self._nlv = 1
 
-    def update(self, brace: int, until: int) -> None:
+    def update(
+        self,
+        brace: int,
+        until: int,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+    ) -> None:
         self._b, self._u = brace, until
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
 
     def render_interface(self, frame):
         import numpy as np
 
         if isinstance(frame, np.ndarray):
             h, w = frame.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                frame[0, cx] = dot
             for i in range(min(self._b, 6)):
                 frame[h - 2, 2 + i] = 11
             frame[h - 2, 10] = min(15, self._u % 16)
@@ -91,6 +109,12 @@ class Wr01(ARCBaseGame):
         self._brace = int(level.get_data("brace_budget") or 2)
         self._sub = 0
         self._skip_next = False
+        self._ui.update(
+            self._brace,
+            self._every - (self._sub % self._every),
+            level_index=self.level_index,
+            num_levels=len(levels),
+        )
 
     def _rotate_world(self) -> None:
         g = self.current_level.grid_size[0]
@@ -103,7 +127,12 @@ class Wr01(ARCBaseGame):
             if self._brace > 0:
                 self._brace -= 1
                 self._skip_next = True
-            self._ui.update(self._brace, self._every - (self._sub % self._every))
+            self._ui.update(
+                self._brace,
+                self._every - (self._sub % self._every),
+                level_index=self.level_index,
+                num_levels=len(levels),
+            )
             self.complete_action()
             return
 
@@ -138,5 +167,10 @@ class Wr01(ARCBaseGame):
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
 
-        self._ui.update(self._brace, self._every - (self._sub % self._every))
+        self._ui.update(
+            self._brace,
+            self._every - (self._sub % self._every),
+            level_index=self.level_index,
+            num_levels=len(levels),
+        )
         self.complete_action()

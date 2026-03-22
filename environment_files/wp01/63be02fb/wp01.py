@@ -10,18 +10,28 @@ from arcengine import (
 
 
 class Wp01UI(RenderableUserDisplay):
-    def __init__(self, ok: bool) -> None:
-        self._ok = ok
+    def __init__(self, n_levels: int) -> None:
+        self._ok = False
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, ok: bool) -> None:
+    def update(self, ok: bool, level_index: int | None = None) -> None:
         self._ok = ok
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         frame[h - 2, 2] = 14 if self._ok else 11
         return frame
 
@@ -130,7 +140,7 @@ PADDING_COLOR = 4
 
 class Wp01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Wp01UI(False)
+        self._ui = Wp01UI(len(levels))
         super().__init__(
             "wp01",
             levels,
@@ -164,7 +174,7 @@ class Wp01(ARCBaseGame):
     def _sync_goal(self) -> None:
         ok = self._weight_on_plate() >= self._need
         self._goal.set_collidable(not ok)
-        self._ui.update(ok)
+        self._ui.update(ok, self.level_index)
 
     def step(self) -> None:
         dx = dy = 0

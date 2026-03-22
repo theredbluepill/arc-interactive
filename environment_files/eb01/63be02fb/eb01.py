@@ -21,9 +21,11 @@ class Eb01UI(RenderableUserDisplay):
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
-        for i in range(min(self._row + 1, 12)):
+        h, w = frame.shape
+        # Bottom orange ticks: **east** escalator row; corner yellow marks eastward auto-slide (vs cy01 top / west).
+        for i in range(min(self._row + 1, min(12, w - 2))):
             frame[h - 2, 1 + i] = 12
+        frame[h - 2, min(w - 2, 15)] = 11
         return frame
 
 
@@ -68,7 +70,7 @@ levels = [
     mk(
         [
             sprites["player"].clone().set_position(1, 5),
-            sprites["goal"].clone().set_position(8, 5),
+            sprites["goal"].clone().set_position(6, 5),
             sprites["wall"].clone().set_position(7, 5),
         ],
         2,
@@ -139,6 +141,8 @@ class Eb01(ARCBaseGame):
             if self._blocked(nx, self._player.y):
                 break
             self._player.set_position(nx, self._player.y)
+            if self._player.x == self._goal.x and self._player.y == self._goal.y:
+                return
 
     def step(self) -> None:
         dx = dy = 0
@@ -167,6 +171,11 @@ class Eb01(ARCBaseGame):
             return
 
         self._player.set_position(nx, ny)
+        if self._player.x == self._goal.x and self._player.y == self._goal.y:
+            self.next_level()
+            self.complete_action()
+            return
+
         self._escalate()
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:

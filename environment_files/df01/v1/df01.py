@@ -8,15 +8,32 @@ BG, PAD = 5, 4
 class Df01UI(RenderableUserDisplay):
     def __init__(self, t: int) -> None:
         self._t = t
+        self._li = 0
+        self._nlv = 1
 
-    def update(self, t: int) -> None:
+    def update(
+        self,
+        t: int,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+    ) -> None:
         self._t = t
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
 
     def render_interface(self, frame):
         import numpy as np
 
         if isinstance(frame, np.ndarray):
             h, w = frame.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                frame[0, cx] = dot
             frame[h - 2, 2] = min(15, max(0, self._t % 16))
         return frame
 
@@ -63,6 +80,7 @@ class Df01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._lo = int(level.get_data("t_lo"))
         self._hi = int(level.get_data("t_hi"))
+        self._ui.update(0, level_index=self.level_index, num_levels=len(levels))
         gw, gh = level.grid_size
         self._temp = [[0 for _ in range(gw)] for _ in range(gh)]
         for y in range(gh):
@@ -99,6 +117,8 @@ class Df01(ARCBaseGame):
                         gw, gh = self.current_level.grid_size
                         if 0 <= nx < gw and 0 <= ny < gh:
                             self._temp[ny][nx] = max(-20, self._temp[ny][nx] - 2)
+            t = self._temp[self._player.y][self._player.x]
+            self._ui.update(t, level_index=self.level_index, num_levels=len(levels))
             self.complete_action()
             return
         dx = dy = 0
@@ -120,7 +140,7 @@ class Df01(ARCBaseGame):
             self._player.set_position(nx, ny)
         self._diffuse()
         t = self._temp[self._player.y][self._player.x]
-        self._ui.update(t)
+        self._ui.update(t, level_index=self.level_index, num_levels=len(levels))
         if self._player.x == self._goal.x and self._player.y == self._goal.y and self._lo <= t <= self._hi:
             self.next_level()
         self.complete_action()

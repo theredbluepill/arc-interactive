@@ -45,10 +45,15 @@ class Fl04UI(RenderableUserDisplay):
 
 
 def mk(sl: list, cap: int, d: int) -> Level:
+    exit_coords: list[tuple[int, int]] = []
+    for s in sl:
+        if "b" in s.tags:
+            exit_coords.append((s.x, s.y))
+            break
     return Level(
         sprites=sl,
         grid_size=(12, 12),
-        data={"difficulty": d, "max_len": cap},
+        data={"difficulty": d, "max_len": cap, "exit_coords": exit_coords},
     )
 
 

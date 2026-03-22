@@ -3,27 +3,73 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Es01UI(RenderableUserDisplay):
-    def __init__(self, d: int) -> None:
-        self._d = d
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, d: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Es01UI(RenderableUserDisplay):
+    def __init__(self, d: int, level_index: int = 0, num_levels: int = 5) -> None:
         self._d = d
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._end: GameState | None = None
+
+    def update(
+        self,
+        d: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        end: GameState | None = None,
+    ) -> None:
+        self._d = d
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if end is not None:
+            self._end = end
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
-        for i in range(min(self._d, 12)):
-            frame[h - 2, 1 + i] = 7
+        h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        for i in range(min(self._d, 8)):
+            frame[h - 2, 20 + i] = 7
+        go = self._end == GameState.GAME_OVER
+        win = self._end == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -126,7 +172,7 @@ PADDING_COLOR = 4
 
 class Es01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Es01UI(1)
+        self._ui = Es01UI(1, 0, len(levels))
         super().__init__(
             "es01",
             levels,
@@ -141,7 +187,12 @@ class Es01(ARCBaseGame):
         self._npc = self.current_level.get_sprites_by_tag("npc")[0]
         self._goal_p = [s for s in self.current_level.get_sprites_by_tag("goal") if "player_goal" in s.tags][0]
         self._goal_n = [s for s in self.current_level.get_sprites_by_tag("goal") if "npc_goal" in s.tags][0]
-        self._ui.update(int(level.get_data("difficulty") or 1))
+        self._ui.update(
+            int(level.get_data("difficulty") or 1),
+            level_index=self.level_index,
+            num_levels=len(self._levels),
+            end=self._state,
+        )
 
     def _blocked(self, x: int, y: int, ignore: Sprite | None = None) -> bool:
         gw, gh = self.current_level.grid_size
@@ -210,6 +261,10 @@ class Es01(ARCBaseGame):
 
         if self._npc.x == self._player.x and self._npc.y == self._player.y:
             self.lose()
+            self._ui.update(
+                int(self.current_level.get_data("difficulty") or 1),
+                end=self._state,
+            )
             self.complete_action()
             return
 
@@ -218,4 +273,8 @@ class Es01(ARCBaseGame):
         if on_p and on_n:
             self.next_level()
 
+        self._ui.update(
+            int(self.current_level.get_data("difficulty") or 1),
+            end=self._state,
+        )
         self.complete_action()

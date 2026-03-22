@@ -12,16 +12,21 @@ from arcengine import (
 class Bi01UI(RenderableUserDisplay):
     def __init__(self, d: int) -> None:
         self._d = d
+        self._level = 1
 
-    def update(self, d: int) -> None:
+    def update(self, d: int, level: int = 1) -> None:
         self._d = d
+        self._level = level
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        frame[1, 2] = 9
+        level_colors = [10, 11, 12, 14, 15, 6, 7]
+        frame[1, 3] = level_colors[(self._level - 1) % len(level_colors)]
         for i in range(min(self._d, 12)):
             frame[h - 2, 1 + i] = 10
         return frame
@@ -68,7 +73,7 @@ levels = [
         [
             sprites["player"].clone().set_position(0, 0),
             sprites["goal"].clone().set_position(9, 9),
-            sprites["wall"].clone().set_position(5, 5),
+            sprites["wall"].clone().set_position(3, 7),
         ],
         2,
     ),
@@ -83,7 +88,7 @@ levels = [
     mk(
         [
             sprites["player"].clone().set_position(1, 5),
-            sprites["goal"].clone().set_position(8, 5),
+            sprites["goal"].clone().set_position(9, 5),
             sprites["wall"].clone().set_position(4, 4),
             sprites["wall"].clone().set_position(5, 5),
             sprites["wall"].clone().set_position(6, 6),
@@ -118,7 +123,10 @@ class Bi01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
-        self._ui.update(int(level.get_data("difficulty") or 1))
+        self._ui.update(
+            int(level.get_data("difficulty") or 1),
+            int(self.level_index) + 1,
+        )
 
     def _blocked(self, x: int, y: int) -> bool:
         gw, gh = self.current_level.grid_size
@@ -143,11 +151,14 @@ class Bi01(ARCBaseGame):
             return
 
         x, y = self._player.x, self._player.y
+        gx, gy = self._goal.x, self._goal.y
         while True:
             nx, ny = x + dx, y + dy
             if self._blocked(nx, ny):
                 break
             x, y = nx, ny
+            if x == gx and y == gy:
+                break
 
         if x != self._player.x or y != self._player.y:
             self._player.set_position(x, y)

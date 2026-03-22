@@ -31,12 +31,15 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._mask = 0
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(self, *, level_index: int | None = None, state=None, mask: int | None = None) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if mask is not None:
+            self._mask = mask
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +50,7 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        f[h - 2, 4] = 11 if self._mask > 0 else 5
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -70,7 +74,7 @@ class Sc01(ARCBaseGame):
         super().__init__("sc01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4,5])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(level_index=self.level_index, state=self._state, mask=0)
 
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._gu = self.current_level.get_sprites_by_tag("guard")[0]
@@ -82,7 +86,7 @@ class Sc01(ARCBaseGame):
     def step(self):
         if self.action.id == GameAction.ACTION5:
             self._mask = 3
-            self._ui.update(level_index=self.level_index, state=self._state)
+            self._ui.update(level_index=self.level_index, state=self._state, mask=self._mask)
             self.complete_action(); return
         dx=dy=0
         v=self.action.id.value
@@ -105,9 +109,9 @@ class Sc01(ARCBaseGame):
             self._mask -= 1
         else:
             if self._cone(self._p.x,self._p.y,self._gu.x,self._gu.y) and self._sc[self._p.y][self._p.x] > 1.5:
-                self._ui.update(level_index=self.level_index, state=self._state)
+                self._ui.update(level_index=self.level_index, state=self._state, mask=self._mask)
                 self.lose(); self.complete_action(); return
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(level_index=self.level_index, state=self._state, mask=self._mask)
         self.complete_action()

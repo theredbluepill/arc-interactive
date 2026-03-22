@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    GameState,
+    Level,
+    RenderableUserDisplay,
+    Sprite,
+)
 
 BG, PAD = 5, 4
 GW = GH = 10
@@ -10,12 +18,54 @@ CAM = 16
 WC = 3
 
 
-class Ab01UI(RenderableUserDisplay):
-    def __init__(self, s: int, p: int, r: int) -> None:
-        self._s, self._p, self._r = s, p, r
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, s: int, p: int, r: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Ab01UI(RenderableUserDisplay):
+    def __init__(self, s: int, p: int, r: int, li: int = 0, nl: int = 7) -> None:
         self._s, self._p, self._r = s, p, r
+        self._li, self._nl = li, nl
+        self._state = None
+
+    def update(
+        self,
+        s: int,
+        p: int,
+        r: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state=None,
+    ) -> None:
+        self._s, self._p, self._r = s, p, r
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nl = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
@@ -23,10 +73,14 @@ class Ab01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._li, self._nl, 0)
         for i in range(min(self._s, 18)):
             frame[h - 2, 1 + i] = 11
         frame[h - 1, 2] = (self._p % 10) + 5
         frame[h - 1, 4] = (self._r % 10) + 5
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -68,7 +122,7 @@ levels = [
 
 class Ab01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ab01UI(0, 5, 0)
+        self._ui = Ab01UI(0, 5, 0, 0, len(levels))
         super().__init__(
             "ab01",
             levels,
@@ -83,7 +137,14 @@ class Ab01(ARCBaseGame):
         self._R = int(level.get_data("mod_r") or 0)
         self._g = [[0 for _ in range(GW)] for _ in range(GH)]
         self._left = int(level.get_data("max_steps") or 200)
-        self._ui.update(self._left, self._P, self._R)
+        self._ui.update(
+            self._left,
+            self._P,
+            self._R,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
         self._ref()
 
     def _wall(self, x: int, y: int) -> bool:
@@ -165,7 +226,14 @@ class Ab01(ARCBaseGame):
         self._top()
         self._ref()
         self._left -= 1
-        self._ui.update(self._left, self._P, self._R)
+        self._ui.update(
+            self._left,
+            self._P,
+            self._R,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
         if self._win():
             self.next_level()
         elif self._left <= 0:

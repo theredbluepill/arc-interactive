@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -127,12 +128,12 @@ class Pt04(ARCBaseGame):
             self._sprite_at[(sp.x, sp.y)] = sp
 
     def _color_at(self, x: int, y: int) -> int:
-        px = self._sprite_at[(x, y)].pixels[0][0]
+        px = self._sprite_at[(x, y)].pixels[0, 0]
         return int(px)
 
     def _set_color(self, x: int, y: int, c: int) -> None:
         sp = self._sprite_at[(x, y)]
-        sp.pixels = [[c]]
+        sp.pixels = np.array([[c]], dtype=np.int8)
 
     def _win(self) -> bool:
         for y in range(GH):

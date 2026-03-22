@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    GameState,
+    Level,
+    RenderableUserDisplay,
+    Sprite,
+)
 
 BG, PAD = 5, 4
 GW, GH = 16, 16
@@ -19,12 +27,54 @@ def rot(dx: int, dy: int, q: int) -> tuple[int, int]:
 BASE_STENCIL = [(0, 0), (1, 0), (0, 1)]
 
 
-class Sf04UI(RenderableUserDisplay):
-    def __init__(self, rotq: int, ok: int, tot: int) -> None:
-        self._q, self._ok, self._tot = rotq, ok, tot
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, rotq: int, ok: int, tot: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Sf04UI(RenderableUserDisplay):
+    def __init__(self, rotq: int, ok: int, tot: int, li: int = 0, nl: int = 7) -> None:
         self._q, self._ok, self._tot = rotq, ok, tot
+        self._li, self._nl = li, nl
+        self._state = None
+
+    def update(
+        self,
+        rotq: int,
+        ok: int,
+        tot: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state=None,
+    ) -> None:
+        self._q, self._ok, self._tot = rotq, ok, tot
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nl = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
@@ -32,9 +82,13 @@ class Sf04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._li, self._nl, 0)
         frame[1, 1] = 10 + (self._q % 4)
         for i in range(min(self._tot, 14)):
             frame[2, 1 + i] = 14 if i < self._ok else 8
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -93,7 +147,7 @@ levels = [
 
 class Sf04(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Sf04UI(0, 0, 0)
+        self._ui = Sf04UI(0, 0, 0, 0, len(levels))
         super().__init__(
             "sf04",
             levels,
@@ -122,7 +176,14 @@ class Sf04(ARCBaseGame):
     def _sync(self) -> None:
         painted = self._painted()
         ok = len(painted & self._goal)
-        self._ui.update(self._rotq, ok, len(self._goal))
+        self._ui.update(
+            self._rotq,
+            ok,
+            len(self._goal),
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION5:

@@ -8,15 +8,32 @@ BG, PAD = 5, 4
 class Dp01UI(RenderableUserDisplay):
     def __init__(self, plane: str) -> None:
         self._p = plane
+        self._li = 0
+        self._nlv = 1
 
-    def update(self, plane: str) -> None:
+    def update(
+        self,
+        plane: str,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+    ) -> None:
         self._p = plane
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
 
     def render_interface(self, frame):
         import numpy as np
 
         if isinstance(frame, np.ndarray):
             h, w = frame.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                frame[0, cx] = dot
             frame[h - 2, 2] = 9 if self._p == "a" else 7
         return frame
 
@@ -80,6 +97,7 @@ class Dp01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._plane_a = True
+        self._ui.update("a", level_index=self.level_index, num_levels=len(levels))
 
     def _wall_blocks(self, sp: Sprite | None) -> bool:
         if sp is None or not sp.is_collidable or "wall" not in sp.tags:
@@ -91,7 +109,11 @@ class Dp01(ARCBaseGame):
     def step(self) -> None:
         if self.action.id == GameAction.ACTION5:
             self._plane_a = not self._plane_a
-            self._ui.update("a" if self._plane_a else "b")
+            self._ui.update(
+                "a" if self._plane_a else "b",
+                level_index=self.level_index,
+                num_levels=len(levels),
+            )
             self.complete_action()
             return
         dx = dy = 0
@@ -115,4 +137,9 @@ class Dp01(ARCBaseGame):
                 self._player.set_position(nx, ny)
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
+        self._ui.update(
+            "a" if self._plane_a else "b",
+            level_index=self.level_index,
+            num_levels=len(levels),
+        )
         self.complete_action()

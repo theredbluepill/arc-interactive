@@ -2,12 +2,26 @@
 from arcengine import ARCBaseGame, Camera, Level, RenderableUserDisplay, Sprite
 BG, PAD = 5, 4
 class U(RenderableUserDisplay):
-    def __init__(self, pain): self.p = pain
-    def update(self, pain): self.p = pain
+    def __init__(self, pain):
+        self.p = pain
+        self._li = 0
+        self._nlv = 1
+    def update(self, pain, level_index=None, num_levels=None):
+        self.p = pain
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
     def render_interface(self, f):
         import numpy as np
         if isinstance(f, np.ndarray):
             h,w=f.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                f[0, cx] = dot
             c = 8 if self.p < 5 else 14
             f[h-2,2]=c
         return f
@@ -32,6 +46,7 @@ class Ep01(ARCBaseGame):
         self._bud = int(level.get_data("budget"))
         self._pain = 0
         self._vc = {}
+        self._ui.update(self._bud - self._pain, level_index=self.level_index, num_levels=len(levels))
     def step(self):
         dx=dy=0
         v=self.action.id.value
@@ -46,10 +61,11 @@ class Ep01(ARCBaseGame):
             c = self._vc.get((nx,ny),0)
             self._pain += c
             if self._pain > self._bud:
+                self._ui.update(self._bud - self._pain, level_index=self.level_index, num_levels=len(levels))
                 self.lose(); self.complete_action(); return
             self._vc[(nx,ny)] = c + 1
             self._p.set_position(nx,ny)
-        self._ui.update(self._bud - self._pain)
+        self._ui.update(self._bud - self._pain, level_index=self.level_index, num_levels=len(levels))
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
         self.complete_action()

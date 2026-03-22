@@ -6,6 +6,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -18,14 +19,56 @@ SELECT_COLOR = 14
 CAM = 16
 
 
-class Cs01UI(RenderableUserDisplay):
-    def __init__(self, sel: int, cap: int) -> None:
-        self._sel = sel
-        self._cap = cap
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, sel: int, cap: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Cs01UI(RenderableUserDisplay):
+    def __init__(self, sel: int, cap: int, level_index: int = 0, num_levels: int = 7) -> None:
         self._sel = sel
         self._cap = cap
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._state = None
+
+    def update(
+        self,
+        sel: int,
+        cap: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state=None,
+    ) -> None:
+        self._sel = sel
+        self._cap = cap
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
@@ -33,9 +76,13 @@ class Cs01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._sel, 12)):
             frame[h - 2, 2 + i] = 14
         frame[h - 2, 30] = 11 if self._cap <= 0 or self._sel <= self._cap else 8
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -91,7 +138,7 @@ levels = [
 
 class Cs01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Cs01UI(0, 99)
+        self._ui = Cs01UI(0, 99, 0, len(levels))
         super().__init__(
             "cs01",
             levels,
@@ -114,14 +161,23 @@ class Cs01(ARCBaseGame):
         self._budget = int(self.current_level.get_data("budget") or 99)
         self._selected: set[tuple[int, int]] = set()
         self._refresh_marks()
-        self._ui.update(len(self._selected), self._budget)
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            len(self._selected),
+            self._budget,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
 
     def _refresh_marks(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("selected_mark")):
             self.current_level.remove_sprite(s)
         for p in self._selected:
             self.current_level.add_sprite(sprites["sel"].clone().set_position(p[0], p[1]))
-        self._ui.update(len(self._selected), self._budget)
+        self._sync_ui()
 
     def _covered(self) -> bool:
         for a, b in self._edges:
@@ -162,4 +218,5 @@ class Cs01(ARCBaseGame):
         if self._covered() and len(self._selected) <= self._budget:
             self.next_level()
 
+        self._sync_ui()
         self.complete_action()

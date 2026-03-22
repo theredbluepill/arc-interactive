@@ -4,14 +4,14 @@
   "description": "**ACTION6** toggles a **+** junction open/closed; route flow source→sink.",
   "default_fps": 20,
   "baseline_actions": [1, 2, 3, 4, 6],
-  "tags": ["plumbing", "click"],
+  "tags": ["plumbing", "click", "pipe-plus-four-way-toggle"],
   "local_dir": "environment_files/pd04/v1",
   "date_created": "2026-03-20",
   "training_metadata": {
     "pcg_type": [],
     "grid_range": [16],
     "action_space": 1,
-    "physics_rules": [],
+    "physics_rules": ["pipe-plus-junction-open-closed"],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000
   },

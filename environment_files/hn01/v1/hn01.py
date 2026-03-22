@@ -1,5 +1,14 @@
 """Plan #15: three-peg Hanoi with three disks."""
-from arcengine import ARCBaseGame, GameState, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    GameState,
+    Level,
+    RenderableUserDisplay,
+    Sprite,
+)
+
 BG, PAD = 5, 4
 def _rp(frame, h, w, x, y, c):
     if 0 <= x < w and 0 <= y < h:
@@ -41,8 +50,6 @@ class U(RenderableUserDisplay):
     def render_interface(self, f):
         import numpy as np
 
-        from arcengine import GameState
-
         if not isinstance(f, np.ndarray):
             return f
         h, w = f.shape
@@ -58,6 +65,10 @@ def spr():
             "d3": Sprite(pixels=[[13]], name="d3", visible=True, collidable=False, tags=["disk","3"]),
             "peg": Sprite(pixels=[[3]], name="peg", visible=True, collidable=True, tags=["peg"])}
 s = spr()
+PEGX = (2, 5, 8)
+BASEY = 9
+
+
 def lvl(d):
     parts = [s["peg"].clone().set_position(x, BASEY) for x in PEGX]
     parts += [s["d3"].clone().set_position(2, BASEY-1), s["d2"].clone().set_position(2, BASEY-2), s["d1"].clone().set_position(2, BASEY-3)]

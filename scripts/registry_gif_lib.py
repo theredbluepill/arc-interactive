@@ -46,9 +46,44 @@ DELTA_TO_ACTION: dict[tuple[int, int], GameAction] = {
     (1, 0): GameAction.ACTION4,
 }
 
+_ACTION_NUM_TO_ENUM: dict[int, GameAction] = {
+    1: GameAction.ACTION1,
+    2: GameAction.ACTION2,
+    3: GameAction.ACTION3,
+    4: GameAction.ACTION4,
+    5: GameAction.ACTION5,
+    6: GameAction.ACTION6,
+    7: GameAction.ACTION7,
+}
+
+
+def _available_action_nums(env: Any) -> list[int]:
+    raw = getattr(env._game, "_available_actions", None)
+    if not raw:
+        return [1, 2, 3, 4, 5, 6]
+    out = [int(x) for x in raw if 1 <= int(x) <= 7]
+    return out if out else [1, 2, 3, 4, 5, 6]
+
 # Classic Sokoban (blocks onto targets). Generic ``goal_positions_set`` BFS walks the
 # player to *target cells* and never pushes crates — registry GIFs looked "stuck" on L1.
 PUSH_SOLVER_STEMS: frozenset[str] = frozenset({"pb01", "pb02", "sk01", "sk02"})
+
+RK_JW_REGISTRY_STEMS: frozenset[str] = frozenset(
+    {
+        "rk01",
+        "sn01",
+        "tr01",
+        "vp01",
+        "bt01",
+        "dg01",
+        "mb01",
+        "op01",
+        "kb01",
+        "eb01",
+        "fg01",
+        "jw01",
+    }
+)
 
 _PUSH_DELTAS: tuple[tuple[int, int, int], ...] = (
     (-1, 0, 1),
@@ -1453,6 +1488,13 @@ def goal_positions_set(level: Level) -> set[tuple[int, int]]:
     return cells
 
 
+def registry_bfs_goals(level: Level, stem: str) -> set[tuple[int, int]]:
+    """BFS target cells for registry capture (escort: only player goal, not NPC goal)."""
+    if stem == "es01":
+        return {(s.x, s.y) for s in level.get_sprites_by_tag("player_goal")}
+    return goal_positions_set(level)
+
+
 def walk_blocked(level: Level, x: int, y: int, goals: set[tuple[int, int]]) -> bool:
     if (x, y) in goals:
         return False
@@ -1607,25 +1649,43 @@ def exploration_burst(
 ) -> Any:
     gw, gh = level.grid_size
     has_player = bool(level.get_sprites_by_tag("player"))
+    avail = _available_action_nums(env)
+    mov_ids = [i for i in avail if 1 <= i <= 4]
+    spec_ids = [i for i in avail if i in (5, 6)]
     for _ in range(n):
-        r = rng.randint(1, 11)
-        if has_player and r <= 8:
-            act = (
-                GameAction.ACTION1,
-                GameAction.ACTION2,
-                GameAction.ACTION3,
-                GameAction.ACTION4,
-            )[rng.randint(0, 3)]
-            data: dict[str, int] = {}
-        elif r <= 10:
-            act = GameAction.ACTION5
-            data = {}
+        data: dict[str, int] = {}
+        if has_player:
+            r = rng.randint(1, 11)
+            if r <= 8 and mov_ids:
+                act = _ACTION_NUM_TO_ENUM[rng.choice(mov_ids)]
+            elif r <= 10 and 5 in avail:
+                act = GameAction.ACTION5
+            elif 6 in avail:
+                act = GameAction.ACTION6
+                gx = rng.randrange(0, gw)
+                gy = rng.randrange(0, gh)
+                cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
+                data = {"x": cx, "y": cy}
+            elif mov_ids:
+                act = _ACTION_NUM_TO_ENUM[rng.choice(mov_ids)]
+            else:
+                pool = [i for i in avail if i <= 6] or avail
+                act = _ACTION_NUM_TO_ENUM[rng.choice(pool)]
         else:
-            act = GameAction.ACTION6
-            gx = rng.randrange(0, gw)
-            gy = rng.randrange(0, gh)
-            cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
-            data = {"x": cx, "y": cy}
+            pool = spec_ids if spec_ids else [i for i in avail if i <= 6]
+            if not pool:
+                act = GameAction.ACTION6
+                gx, gy = 0, 0
+                cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
+                data = {"x": cx, "y": cy}
+            else:
+                pick = rng.choice(pool)
+                act = _ACTION_NUM_TO_ENUM[pick]
+                if pick == 6:
+                    gx = rng.randrange(0, gw)
+                    gy = rng.randrange(0, gh)
+                    cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
+                    data = {"x": cx, "y": cy}
         res = safe_env_step(env, act, reasoning={}, data=data)
         snap_repeats(1)
         if res.state in (GameState.WIN, GameState.GAME_OVER):
@@ -1634,43 +1694,64 @@ def exploration_burst(
 
 
 def run_showcase_fallback(env: Any, res: Any, images: list, snap_repeats) -> Any:
-    """Mixed ACTION1–6 tour (legacy pending-gifs phase 2). Returns last step result."""
+    """Mixed ACTION1–6 tour (legacy pending-gifs phase 2). Returns last step result.
+
+    Appends frames from ``res`` after each step here (not via ``snap_repeats``) so
+    frames match the reset observation; the outer ``snap_repeats`` closure can
+    still reference a stale ``res`` from the main loop.
+    """
+    _ = snap_repeats
     images.clear()
     res = env.reset()
     fr = _frame_layer0(res)
     if not fr:
         raise RuntimeError("showcase: no frame after reset")
-    snap_repeats(8)
+    append_frame_repeats(images, fr[0], 8)
     level = env._game.current_level
     gw, gh = level.grid_size
     has_player = bool(level.get_sprites_by_tag("player"))
-    for i in range(44):
+    avail = _available_action_nums(env)
+    can5 = 5 in avail
+    can6 = 6 in avail
+    max_i = 88 if not has_player else 44
+    seq_ids: list[int] = []
+    if has_player:
+        for aid in (1, 2, 3, 4, 5, 6):
+            if aid in avail:
+                seq_ids.append(aid)
+        if not seq_ids:
+            seq_ids = [1]
+    for i in range(max_i):
         data: dict[str, int] = {}
         if has_player:
-            phase = i % 7
-            if phase < 4:
-                act = (
-                    GameAction.ACTION1,
-                    GameAction.ACTION2,
-                    GameAction.ACTION3,
-                    GameAction.ACTION4,
-                )[phase]
-            elif phase == 4:
-                act = GameAction.ACTION5
-            else:
-                act = GameAction.ACTION6
+            pick = seq_ids[i % len(seq_ids)]
+            act = _ACTION_NUM_TO_ENUM[pick]
+            if pick == 6:
                 gx = (i // 2) % gw
                 gy = ((i // 2) // gw) % gh
                 cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
                 data = {"x": cx, "y": cy}
         else:
-            act = GameAction.ACTION6
-            gx = (i % gw + gw // 2) % gw
-            gy = (i * 3 + gh // 2) % gh
-            cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
-            data = {"x": cx, "y": cy}
+            if can5 and can6:
+                use_step = (i % 4) != 3
+            elif can5:
+                use_step = True
+            else:
+                use_step = False
+            if use_step:
+                act = GameAction.ACTION5
+            else:
+                act = GameAction.ACTION6
+                gx = (i % gw + gw // 2) % gw
+                gy = (i * 3 + gh // 2) % gh
+                cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
+                data = {"x": cx, "y": cy}
         res = safe_env_step(env, act, reasoning={}, data=data)
-        snap_repeats(1)
+        if res.state in (GameState.WIN, GameState.GAME_OVER):
+            res = env.reset()
+        fr = _frame_layer0(res)
+        if fr:
+            append_frame_repeats(images, fr[0], 1)
     return res
 
 
@@ -1802,6 +1883,120 @@ def record_registry_gif(
         return record_fe02_registry_gif(
             game_id, root, overrides=o, verbose=verbose, seed=seed
         )
+    if game_id == "ph03":
+        from registry_ph_bn_bi_gif import record_ph03_registry_gif
+
+        return record_ph03_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "bn03":
+        from registry_ph_bn_bi_gif import record_bn03_registry_gif
+
+        return record_bn03_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "bi01":
+        from registry_ph_bn_bi_gif import record_bi01_registry_gif
+
+        return record_bi01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "pd01":
+        from registry_cs_pd_gif import record_pd01_registry_gif
+
+        return record_pd01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "sq04":
+        from registry_cs_pd_gif import record_sq04_registry_gif
+
+        return record_sq04_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "sq05":
+        from registry_cs_pd_gif import record_sq05_registry_gif
+
+        return record_sq05_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "tw01":
+        from registry_tw_rv_gif import record_tw01_registry_gif
+
+        return record_tw01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "cq01":
+        from registry_tw_rv_gif import record_cq01_registry_gif
+
+        return record_cq01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "dv01":
+        from registry_tw_rv_gif import record_dv01_registry_gif
+
+        return record_dv01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "ox01":
+        from registry_tw_rv_gif import record_ox01_registry_gif
+
+        return record_ox01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "sl01":
+        from registry_tw_rv_gif import record_sl01_registry_gif
+
+        return record_sl01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "lf01":
+        from registry_tw_rv_gif import record_lf01_registry_gif
+
+        return record_lf01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "pm01":
+        from registry_tw_rv_gif import record_pm01_registry_gif
+
+        return record_pm01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "hz01":
+        from registry_tw_rv_gif import record_hz01_registry_gif
+
+        return record_hz01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "sb01":
+        from registry_tw_rv_gif import record_sb01_registry_gif
+
+        return record_sb01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "fc01":
+        from registry_tk_sr_gif import record_fc01_registry_gif
+
+        return record_fc01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id in RK_JW_REGISTRY_STEMS:
+        from registry_rk_jw_gif import record_rk_jw_registry_gif
+
+        return record_rk_jw_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    from registry_pk_ec_gif import PK_EC_RECORDERS
+
+    if game_id in PK_EC_RECORDERS:
+        return PK_EC_RECORDERS[game_id](
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
+    if game_id == "gc01":
+        from registry_tk_sr_gif import record_gc01_registry_gif
+
+        return record_gc01_registry_gif(
+            game_id, root, overrides=o, verbose=verbose, seed=seed
+        )
     target_levels = int(o.get("target_levels", 0))  # 0 = min(3, n_levels)
     max_total_steps = int(o.get("max_total_steps", 1400))
     max_idle = int(o.get("max_idle_between", 28))
@@ -1847,7 +2042,7 @@ def record_registry_gif(
 
             level = env._game.current_level
             li = env._game.level_index
-            goals = goal_positions_set(level)
+            goals = registry_bfs_goals(level, game_id)
             players = level.get_sprites_by_tag("player")
 
             pos_key: tuple[int, int] | None = None

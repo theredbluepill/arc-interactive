@@ -10,18 +10,28 @@ from arcengine import (
 
 
 class Dv01UI(RenderableUserDisplay):
-    def __init__(self, t: int) -> None:
-        self._t = t
+    def __init__(self, n_levels: int) -> None:
+        self._t = 0
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, t: int) -> None:
+    def update(self, t: int, level_index: int | None = None) -> None:
         self._t = t
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         frame[h - 2, 2] = 10 if self._t == 0 else 7
         return frame
 
@@ -116,7 +126,7 @@ PADDING_COLOR = 4
 
 class Dv01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Dv01UI(0)
+        self._ui = Dv01UI(len(levels))
         super().__init__(
             "dv01",
             levels,
@@ -139,7 +149,7 @@ class Dv01(ARCBaseGame):
             w.set_collidable(self._tl == 0)
         for w in self._walls1:
             w.set_collidable(self._tl == 1)
-        self._ui.update(self._tl)
+        self._ui.update(self._tl, self.level_index)
 
     def step(self) -> None:
         if self.action.id.value == 5:

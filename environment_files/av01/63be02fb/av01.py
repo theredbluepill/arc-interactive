@@ -1,4 +1,4 @@
-"""Avalanche: gray rocks fall one cell after each move when the cell below is empty."""
+"""Avalanche: gray rocks fall one cell after each move when the cell below is empty (sb01 uses tan sand + different levels, same fall step)."""
 
 from arcengine import (
     ARCBaseGame,

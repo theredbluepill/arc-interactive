@@ -4,14 +4,14 @@
   "description": "10×10 grid. ACTION6 cycles empty → horizontal → vertical pipe on floor; connect cyan source to yellow sink.",
   "default_fps": 20,
   "baseline_actions": [1, 2, 3, 4, 6],
-  "tags": ["static", "click", "plumbing"],
+  "tags": ["static", "click", "plumbing", "pipe-empty-h-v-cycle"],
   "local_dir": "environment_files/pd01/63be02fb",
   "date_created": "2026-03-20",
   "training_metadata": {
     "pcg_type": [],
     "grid_range": [10],
     "action_space": 6,
-    "physics_rules": ["straight-pipe"],
+    "physics_rules": ["straight-pipe", "pipe-cycle-empty-horizontal-vertical"],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000
   },

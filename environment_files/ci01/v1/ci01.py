@@ -18,11 +18,15 @@ from arcengine import (
 
 
 class Ci01UI(RenderableUserDisplay):
-    def __init__(self, remaining: int) -> None:
-        self._remaining = remaining
+    def __init__(self, n_levels: int) -> None:
+        self._remaining = 0
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, remaining: int) -> None:
+    def update(self, remaining: int, level_index: int | None = None) -> None:
         self._remaining = remaining
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
@@ -30,6 +34,12 @@ class Ci01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         color = 11 if self._remaining == 0 else 14
         for dy in range(4):
             for dx in range(4):
@@ -156,7 +166,7 @@ PADDING_COLOR = 4
 
 class Ci01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ci01UI(0)
+        self._ui = Ci01UI(len(levels))
         super().__init__(
             "ci01",
             levels,
@@ -172,7 +182,10 @@ class Ci01(ARCBaseGame):
         self._targets = self.current_level.get_sprites_by_tag("target")
         self._step_limit = level.get_data("step_limit")
         self._steps = 0
-        self._ui.update(sum(1 for b in self._blocks if "done" not in b.tags))
+        self._ui.update(
+            sum(1 for b in self._blocks if "done" not in b.tags),
+            self.level_index,
+        )
 
     def _block_on_target(self, block: Sprite) -> bool:
         for t in self._targets:
@@ -256,7 +269,7 @@ class Ci01(ARCBaseGame):
 
         self._steps += 1
         remaining = sum(1 for b in self._blocks if "done" not in b.tags)
-        self._ui.update(remaining)
+        self._ui.update(remaining, self.level_index)
 
         if remaining == 0:
             self.next_level()

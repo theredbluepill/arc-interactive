@@ -3,22 +3,73 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Tm01UI(RenderableUserDisplay):
-    def __init__(self, o2: int, ht: int, left: int) -> None:
-        self._o2 = o2
-        self._ht = ht
-        self._left = left
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, o2: int, ht: int, left: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Tm01UI(RenderableUserDisplay):
+    def __init__(
+        self,
+        o2: int,
+        ht: int,
+        left: int,
+        level_index: int = 0,
+        num_levels: int = 5,
+    ) -> None:
         self._o2 = o2
         self._ht = ht
         self._left = left
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._end: GameState | None = None
+
+    def update(
+        self,
+        o2: int,
+        ht: int,
+        left: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        end: GameState | None = None,
+    ) -> None:
+        self._o2 = o2
+        self._ht = ht
+        self._left = left
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if end is not None:
+            self._end = end
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,12 +77,16 @@ class Tm01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(min(self._o2 // 10, 18)):
-            frame[1, 2 + i] = 10
-        for i in range(min(self._ht // 10, 18)):
-            frame[2, 2 + i] = 6
-        for i in range(min(self._left, 18)):
-            frame[3, 2 + i] = 14
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        for i in range(min(self._o2 // 10, 16)):
+            frame[2, 2 + i] = 10
+        for i in range(min(self._ht // 10, 16)):
+            frame[3, 2 + i] = 6
+        for i in range(min(self._left, 16)):
+            frame[4, 2 + i] = 14
+        go = self._end == GameState.GAME_OVER
+        win = self._end == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -118,7 +173,7 @@ PADDING_COLOR = 4
 
 class Tm01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Tm01UI(100, 100, 40)
+        self._ui = Tm01UI(100, 100, 40, 0, len(levels))
         super().__init__(
             "tm01",
             levels,
@@ -134,7 +189,14 @@ class Tm01(ARCBaseGame):
         self._left = self._need
         self._o2 = 100
         self._heat = 100
-        self._ui.update(self._o2, self._heat, self._left)
+        self._ui.update(
+            self._o2,
+            self._heat,
+            self._left,
+            level_index=self.level_index,
+            num_levels=len(self._levels),
+            end=self._state,
+        )
 
     def step(self) -> None:
         dx = dy = 0
@@ -164,10 +226,23 @@ class Tm01(ARCBaseGame):
             self._heat = 100
 
         self._left -= 1
-        self._ui.update(self._o2, self._heat, self._left)
+        self._ui.update(
+            self._o2,
+            self._heat,
+            self._left,
+            level_index=self.level_index,
+            num_levels=len(self._levels),
+            end=self._state,
+        )
 
         if self._o2 <= 0 or self._heat <= 0:
             self.lose()
+            self._ui.update(
+                self._o2,
+                self._heat,
+                self._left,
+                end=self._state,
+            )
             self.complete_action()
             return
 

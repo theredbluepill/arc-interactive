@@ -30,5 +30,338 @@
   },
   "fe02": {
     "gif_duration_ms": 180
+  },
+  "sq04": {
+    "target_levels": 5,
+    "sq04_level_hold_frames": 24,
+    "gif_duration_ms": 180
+  },
+  "sq05": {
+    "target_levels": 5,
+    "sq05_level_hold_frames": 24,
+    "gif_duration_ms": 180
+  },
+  "sf04": {
+    "target_levels": 4,
+    "max_total_steps": 3200,
+    "stagnation_steps": 120,
+    "exploration_burst": 48,
+    "gif_duration_ms": 180
+  },
+  "sy04": {
+    "target_levels": 4,
+    "max_total_steps": 2800,
+    "stagnation_steps": 120,
+    "gif_duration_ms": 180
+  },
+  "sp04": {
+    "target_levels": 4,
+    "max_total_steps": 2600,
+    "gif_duration_ms": 180
+  },
+  "ab01": {
+    "target_levels": 4,
+    "max_total_steps": 3200,
+    "stagnation_steps": 120,
+    "gif_duration_ms": 180
+  },
+  "zm04": {
+    "target_levels": 4,
+    "max_total_steps": 3200,
+    "exploration_burst": 44,
+    "gif_duration_ms": 180
+  },
+  "tc04": {
+    "target_levels": 4,
+    "max_total_steps": 2800,
+    "gif_duration_ms": 180
+  },
+  "df04": {
+    "target_levels": 4,
+    "max_total_steps": 2400,
+    "gif_duration_ms": 180
+  },
+  "ih01": {
+    "target_levels": 4,
+    "max_total_steps": 2400,
+    "gif_duration_ms": 180
+  },
+  "cs01": {
+    "gif_duration_ms": 180
+  },
+  "ct01": {
+    "gif_duration_ms": 180
+  },
+  "tk01": {
+    "max_total_steps": 2600,
+    "exploration_burst": 44,
+    "gif_duration_ms": 180
+  },
+  "hn01": {
+    "gif_duration_ms": 180
+  },
+  "fb01": {
+    "max_total_steps": 2400,
+    "target_levels": 4,
+    "gif_duration_ms": 180
+  },
+  "lp01": {
+    "max_total_steps": 2600,
+    "target_levels": 4,
+    "gif_duration_ms": 180
+  },
+  "rb01": {
+    "max_total_steps": 2200,
+    "target_levels": 4,
+    "gif_duration_ms": 180
+  },
+  "at01": {
+    "gif_duration_ms": 180
+  },
+  "wb01": {
+    "max_total_steps": 2800,
+    "target_levels": 4,
+    "gif_duration_ms": 180
+  },
+  "lk01": {
+    "gif_duration_ms": 180
+  },
+  "dn01": {
+    "gif_duration_ms": 180
+  },
+  "qt01": {
+    "max_total_steps": 2200,
+    "target_levels": 4,
+    "gif_duration_ms": 180
+  },
+  "vt01": {
+    "max_total_steps": 2200,
+    "target_levels": 4,
+    "gif_duration_ms": 180
+  },
+  "fc01": {
+    "gif_duration_ms": 180,
+    "fc01_registry_steps": 400
+  },
+  "pj01": {
+    "gif_duration_ms": 180
+  },
+  "gc01": {
+    "max_total_steps": 360,
+    "target_levels": 4,
+    "stagnation_steps": 14,
+    "exploration_burst": 10,
+    "max_idle_between": 10,
+    "gif_duration_ms": 180
+  },
+  "sr01": {
+    "gif_duration_ms": 180
+  },
+  "pd01": {
+    "target_levels": 3,
+    "pd01_level_hold_frames": 24,
+    "gif_duration_ms": 170
+  },
+  "rh01": {
+    "target_levels": 3,
+    "max_total_steps": 2400,
+    "stagnation_steps": 140,
+    "exploration_burst": 44,
+    "gif_duration_ms": 170
+  },
+  "es01": {
+    "target_levels": 3,
+    "max_total_steps": 2600,
+    "stagnation_steps": 120,
+    "exploration_burst": 42,
+    "gif_duration_ms": 170
+  },
+  "av01": {
+    "target_levels": 3,
+    "gif_duration_ms": 170
+  },
+  "pw01": {
+    "target_levels": 3,
+    "gif_duration_ms": 170
+  },
+  "wg01": {
+    "target_levels": 3,
+    "max_total_steps": 2400,
+    "gif_duration_ms": 170
+  },
+  "hs01": {
+    "target_levels": 3,
+    "max_total_steps": 2400,
+    "gif_duration_ms": 170
+  },
+  "tm01": {
+    "target_levels": 3,
+    "max_total_steps": 2800,
+    "stagnation_steps": 100,
+    "exploration_burst": 40,
+    "gif_duration_ms": 170
+  },
+  "cy01": {
+    "target_levels": 3,
+    "max_total_steps": 2600,
+    "gif_duration_ms": 165
+  },
+  "in01": {
+    "target_levels": 3,
+    "max_total_steps": 2400,
+    "gif_duration_ms": 170
+  },
+  "rc01": {
+    "target_levels": 3,
+    "exploration_burst": 48,
+    "stagnation_steps": 90,
+    "gif_duration_ms": 170
+  },
+  "bl01": {
+    "target_levels": 3,
+    "exploration_burst": 46,
+    "stagnation_steps": 90,
+    "gif_duration_ms": 170
+  },
+  "sw01": {
+    "target_levels": 3,
+    "exploration_burst": 46,
+    "stagnation_steps": 90,
+    "gif_duration_ms": 170
+  },
+  "pk01": {
+    "target_levels": 5,
+    "gif_duration_ms": 180,
+    "pk01_segment_hold_frames": 5,
+    "pk01_level_hold_frames": 16
+  },
+  "kv01": {
+    "target_levels": 5,
+    "gif_duration_ms": 180,
+    "kv01_level_hold_frames": 16
+  },
+  "wr01": {
+    "target_levels": 4,
+    "gif_duration_ms": 180,
+    "wr01_level_hold_frames": 14
+  },
+  "dp01": {
+    "target_levels": 5,
+    "gif_duration_ms": 180,
+    "dp01_level_hold_frames": 14
+  },
+  "df01": {
+    "target_levels": 3,
+    "gif_duration_ms": 180,
+    "df01_level_hold_frames": 12
+  },
+  "rn01": {
+    "target_levels": 4,
+    "gif_duration_ms": 180,
+    "rn01_level_hold_frames": 12
+  },
+  "sc01": {
+    "target_levels": 4,
+    "gif_duration_ms": 180,
+    "sc01_level_hold_frames": 12
+  },
+  "au01": {
+    "gif_duration_ms": 180
+  },
+  "cf01": {
+    "gif_duration_ms": 180
+  },
+  "ep01": {
+    "gif_duration_ms": 180
+  },
+  "tf01": {
+    "target_levels": 5,
+    "gif_duration_ms": 180,
+    "tf01_level_hold_frames": 12
+  },
+  "ec01": {
+    "target_levels": 5,
+    "gif_duration_ms": 180,
+    "ec01_level_hold_frames": 12
+  },
+  "tw01": {
+    "target_levels": 3,
+    "tw_rv_level_hold_frames": 20,
+    "gif_duration_ms": 180
+  },
+  "pm01": {
+    "target_levels": 3,
+    "max_total_steps": 2200,
+    "stagnation_steps": 140,
+    "exploration_burst": 40,
+    "gif_duration_ms": 180
+  },
+  "hz01": {
+    "target_levels": 3,
+    "tw_rv_level_hold_frames": 18,
+    "gif_duration_ms": 180
+  },
+  "cq01": {
+    "target_levels": 3,
+    "gif_duration_ms": 180
+  },
+  "lf01": {
+    "target_levels": 3,
+    "tw_rv_level_hold_frames": 20,
+    "gif_duration_ms": 180
+  },
+  "sb01": {
+    "target_levels": 3,
+    "gif_duration_ms": 180
+  },
+  "wp01": {
+    "target_levels": 3,
+    "max_total_steps": 2800,
+    "stagnation_steps": 120,
+    "exploration_burst": 44,
+    "gif_duration_ms": 180
+  },
+  "dv01": {
+    "target_levels": 3,
+    "gif_duration_ms": 180
+  },
+  "ox01": {
+    "target_levels": 3,
+    "gif_duration_ms": 180
+  },
+  "sl01": {
+    "target_levels": 3,
+    "tw_rv_level_hold_frames": 22,
+    "gif_duration_ms": 180
+  },
+  "ci01": {
+    "target_levels": 3,
+    "max_total_steps": 2600,
+    "stagnation_steps": 120,
+    "gif_duration_ms": 180
+  },
+  "rv01": {
+    "target_levels": 3,
+    "max_total_steps": 2800,
+    "stagnation_steps": 120,
+    "exploration_burst": 48,
+    "gif_duration_ms": 180
+  },
+  "ph03": {
+    "target_levels": 5,
+    "max_gif_frames": 900,
+    "ph_level_hold_frames": 16,
+    "gif_duration_ms": 140
+  },
+  "bn03": {
+    "target_levels": 3,
+    "max_gif_frames": 1200,
+    "bn_level_hold_frames": 16,
+    "gif_duration_ms": 130
+  },
+  "bi01": {
+    "target_levels": 5,
+    "bi_level_hold_frames": 16,
+    "gif_duration_ms": 140
   }
 }

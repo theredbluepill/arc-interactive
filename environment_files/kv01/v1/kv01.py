@@ -39,6 +39,9 @@ class Kv01UI(RenderableUserDisplay):
         self._v1d = v1d
         self._v2n = v2n
         self._v2d = v2d
+        self._bad_check = False
+        self._li = 0
+        self._nlv = 1
 
     def update(
         self,
@@ -49,6 +52,10 @@ class Kv01UI(RenderableUserDisplay):
         v1d: int,
         v2n: int,
         v2d: int,
+        *,
+        bad_check: bool | None = None,
+        level_index: int | None = None,
+        num_levels: int | None = None,
     ) -> None:
         self._r0 = r0
         self._r1 = r1
@@ -57,6 +64,12 @@ class Kv01UI(RenderableUserDisplay):
         self._v1d = v1d
         self._v2n = v2n
         self._v2d = v2d
+        if bad_check is not None:
+            self._bad_check = bad_check
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
 
     def render_interface(self, frame):
         import numpy as np
@@ -69,6 +82,13 @@ class Kv01UI(RenderableUserDisplay):
             frame[h - 4, 2 + i] = c
         frame[h - 3, 2] = min(15, max(0, self._v1n % 16))
         frame[h - 3, 4] = min(15, max(0, self._v2n % 16))
+        frame[h - 2, 0] = 8 if self._bad_check else 5
+        for i in range(min(self._nlv, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            dot = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = dot
         return frame
 
 
@@ -142,6 +162,7 @@ class Kv01(ARCBaseGame):
         self._r2 = int(level.get_data("r2"))
         self._t1 = Fraction(int(level.get_data("t1_num")), int(level.get_data("t1_den")))
         self._t2 = Fraction(int(level.get_data("t2_num")), int(level.get_data("t2_den")))
+        self._bad_check = False
         self._paint_ui()
 
     def _paint_ui(self) -> None:
@@ -154,21 +175,30 @@ class Kv01(ARCBaseGame):
             v1.denominator,
             v2.numerator,
             v2.denominator,
+            bad_check=self._bad_check,
+            level_index=self.level_index,
+            num_levels=len(levels),
         )
 
     def step(self) -> None:
         aid = self.action.id
         if aid == GameAction.ACTION1:
             self._r0 = _cycle_r(self._r0)
+            self._bad_check = False
             self._paint_ui()
         elif aid == GameAction.ACTION2:
             self._r1 = _cycle_r(self._r1)
+            self._bad_check = False
             self._paint_ui()
         elif aid == GameAction.ACTION3:
             self._r2 = _cycle_r(self._r2)
+            self._bad_check = False
             self._paint_ui()
         elif aid == GameAction.ACTION5:
             v1, v2 = _voltages(self._r0, self._r1, self._r2)
             if v1 == self._t1 and v2 == self._t2:
                 self.next_level()
+            else:
+                self._bad_check = True
+                self._paint_ui()
         self.complete_action()

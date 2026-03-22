@@ -10,18 +10,28 @@ from arcengine import (
 
 
 class Lf01UI(RenderableUserDisplay):
-    def __init__(self, on: bool) -> None:
-        self._on = on
+    def __init__(self, n_levels: int) -> None:
+        self._on = False
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, on: bool) -> None:
+    def update(self, on: bool, level_index: int | None = None) -> None:
         self._on = on
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         frame[h - 2, 2] = 8 if self._on else 14
         return frame
 
@@ -110,7 +120,7 @@ PADDING_COLOR = 4
 
 class Lf01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Lf01UI(False)
+        self._ui = Lf01UI(len(levels))
         super().__init__(
             "lf01",
             levels,
@@ -126,7 +136,7 @@ class Lf01(ARCBaseGame):
         self._p = int(level.get_data("period") or 3)
         self._row = int(level.get_data("laser_row") or 5)
         self._tick = 0
-        self._ui.update(self._laser_on())
+        self._ui.update(self._laser_on(), self.level_index)
 
     def _laser_on(self) -> bool:
         return (self._tick // self._p) % 2 == 0
@@ -157,7 +167,7 @@ class Lf01(ARCBaseGame):
             return
 
         self._tick += 1
-        self._ui.update(self._laser_on())
+        self._ui.update(self._laser_on(), self.level_index)
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()

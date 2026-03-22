@@ -18,13 +18,22 @@ from arcengine import (
 
 
 class Rv01UI(RenderableUserDisplay):
-    def __init__(self, remaining: int, wind: int) -> None:
-        self._remaining = remaining
-        self._wind = wind
+    def __init__(self, n_levels: int) -> None:
+        self._remaining = 0
+        self._wind = 0
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, remaining: int, wind: int) -> None:
+    def update(
+        self,
+        remaining: int,
+        wind: int,
+        level_index: int | None = None,
+    ) -> None:
         self._remaining = remaining
         self._wind = wind
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
@@ -32,6 +41,12 @@ class Rv01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         for i in range(4):
             frame[h - 2, 2 + i] = 11 if (self._wind % 4) == i else 2
         return frame
@@ -151,7 +166,7 @@ class Rv01(ARCBaseGame):
     _DIRS = ((0, -1), (1, 0), (0, 1), (-1, 0))
 
     def __init__(self) -> None:
-        self._ui = Rv01UI(0, 0)
+        self._ui = Rv01UI(len(levels))
         super().__init__(
             "rv01",
             levels,
@@ -166,7 +181,7 @@ class Rv01(ARCBaseGame):
         self._targets = self.current_level.get_sprites_by_tag("target")
         self._sparks = [s for s in self.current_level.get_sprites_by_tag("spark")]
         self._wind = 0
-        self._ui.update(len(self._targets), self._wind)
+        self._ui.update(len(self._targets), self._wind, self.level_index)
 
     def _advance_sparks(self) -> None:
         grid_w, grid_h = self.current_level.grid_size
@@ -220,7 +235,7 @@ class Rv01(ARCBaseGame):
                 return
 
         self._advance_sparks()
-        self._ui.update(len(self._targets), self._wind)
+        self._ui.update(len(self._targets), self._wind, self.level_index)
 
         if self._player_on_spark():
             self.lose()

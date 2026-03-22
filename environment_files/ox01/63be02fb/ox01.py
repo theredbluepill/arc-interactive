@@ -10,18 +10,28 @@ from arcengine import (
 
 
 class Ox01UI(RenderableUserDisplay):
-    def __init__(self, a: bool) -> None:
-        self._a = a
+    def __init__(self, n_levels: int) -> None:
+        self._a = True
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, a: bool) -> None:
+    def update(self, a: bool, level_index: int | None = None) -> None:
         self._a = a
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         frame[h - 2, 2] = 8 if self._a else 6
         return frame
 
@@ -116,7 +126,7 @@ PADDING_COLOR = 4
 
 class Ox01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ox01UI(True)
+        self._ui = Ox01UI(len(levels))
         super().__init__(
             "ox01",
             levels,
@@ -139,7 +149,7 @@ class Ox01(ARCBaseGame):
             h.set_collidable(self._active_a)
         for h in self._hb:
             h.set_collidable(not self._active_a)
-        self._ui.update(self._active_a)
+        self._ui.update(self._active_a, self.level_index)
 
     def step(self) -> None:
         dx = dy = 0

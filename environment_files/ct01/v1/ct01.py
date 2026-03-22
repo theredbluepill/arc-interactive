@@ -6,6 +6,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -19,12 +20,53 @@ SEL_C = 14
 WALL_C = 3
 
 
-class Ct01UI(RenderableUserDisplay):
-    def __init__(self, ok: bool) -> None:
-        self._ok = ok
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, ok: bool) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Ct01UI(RenderableUserDisplay):
+    def __init__(self, ok: bool, level_index: int = 0, num_levels: int = 7) -> None:
         self._ok = ok
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._state = None
+
+    def update(
+        self,
+        ok: bool,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state=None,
+    ) -> None:
+        self._ok = ok
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
@@ -32,7 +74,11 @@ class Ct01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        frame[h - 2, 2] = 14 if self._ok else 8
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        frame[h - 2, 28] = 14 if self._ok else 8
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -94,7 +140,7 @@ levels = [
 
 class Ct01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ct01UI(False)
+        self._ui = Ct01UI(False, 0, len(levels))
         super().__init__(
             "ct01",
             levels,
@@ -147,7 +193,12 @@ class Ct01(ARCBaseGame):
         return True
 
     def _sync_ui(self) -> None:
-        self._ui.update(self._independent() and self._dominates())
+        self._ui.update(
+            self._independent() and self._dominates(),
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
 
     def step(self) -> None:
         if self.action.id.value in (1, 2, 3, 4):
@@ -181,8 +232,8 @@ class Ct01(ARCBaseGame):
             self._selected.add(p)
 
         self._refresh()
-        self._sync_ui()
         if self._independent() and self._dominates():
             self.next_level()
 
+        self._sync_ui()
         self.complete_action()

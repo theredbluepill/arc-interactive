@@ -21,9 +21,11 @@ class Cy01UI(RenderableUserDisplay):
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
-        for i in range(min(self._row + 1, 10)):
-            frame[h - 2, 1 + i] = 12
+        h, w = frame.shape
+        # Top-edge ticks (light blue): **west** belt on `cy_row` — distinct from eb01’s bottom orange east belt.
+        for i in range(min(self._row + 1, min(10, w - 2))):
+            frame[1, 1 + i] = 10
+        frame[1, min(w - 2, 14)] = 15
         return frame
 
 

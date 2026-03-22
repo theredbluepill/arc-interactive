@@ -20,13 +20,22 @@ from arcengine import (
 
 
 class Sl01UI(RenderableUserDisplay):
-    def __init__(self, steps: int, limit: int | None) -> None:
-        self._steps = steps
-        self._limit = limit
+    def __init__(self, n_levels: int) -> None:
+        self._steps = 0
+        self._limit: int | None = None
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, steps: int, limit: int | None) -> None:
+    def update(
+        self,
+        steps: int,
+        limit: int | None,
+        level_index: int | None = None,
+    ) -> None:
         self._steps = steps
         self._limit = limit
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
@@ -34,6 +43,12 @@ class Sl01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         c = 14 if self._limit is None or self._steps < self._limit else 8
         for dy in range(3):
             for dx in range(3):
@@ -110,7 +125,7 @@ PADDING_COLOR = 4
 
 class Sl01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Sl01UI(0, None)
+        self._ui = Sl01UI(len(levels))
         super().__init__(
             "sl01",
             levels,
@@ -125,7 +140,7 @@ class Sl01(ARCBaseGame):
         self._goal = level.get_data("goal") or _GOAL3
         self._step_limit = level.get_data("step_limit")
         self._steps = 0
-        self._ui.update(self._steps, self._step_limit)
+        self._ui.update(self._steps, self._step_limit, self.level_index)
 
     def _solved(self) -> bool:
         px, py = self._player.x, self._player.y
@@ -175,7 +190,7 @@ class Sl01(ARCBaseGame):
         tile.set_position(px, py)
         self._player.set_position(tx, ty)
         self._steps += 1
-        self._ui.update(self._steps, self._step_limit)
+        self._ui.update(self._steps, self._step_limit, self.level_index)
 
         if self._solved():
             self.next_level()

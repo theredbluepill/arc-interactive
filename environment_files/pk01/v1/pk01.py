@@ -24,12 +24,26 @@ class Pk01UI(RenderableUserDisplay):
         self._pending = pending
         self._done = done
         self._total = total
+        self._li = 0
+        self._nlv = 1
 
-    def update(self, mode: str, pending: int, done: int, total: int) -> None:
+    def update(
+        self,
+        mode: str,
+        pending: int,
+        done: int,
+        total: int,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+    ) -> None:
         self._mode = mode
         self._pending = pending
         self._done = done
         self._total = total
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
 
     def render_interface(self, frame):
         import numpy as np
@@ -37,6 +51,12 @@ class Pk01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        for i in range(min(self._nlv, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            dot = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = dot
         frame[h - 2, 1] = 7 if self._mode == "tromino" else 10
         frame[h - 2, 2] = 11 if self._pending else 5
         for i in range(min(self._done, 14)):
@@ -136,7 +156,14 @@ class Pk01(ARCBaseGame):
     def _sync_ui(self) -> None:
         mode = "domino" if self._mode_domino else "tromino"
         done = len(self._covered)
-        self._ui.update(mode, len(self._pending), done, self._total_cells)
+        self._ui.update(
+            mode,
+            len(self._pending),
+            done,
+            self._total_cells,
+            level_index=self.level_index,
+            num_levels=len(levels),
+        )
 
     def _add_piece(self, cells: list[tuple[int, int]], kind: str) -> None:
         ax = sum(c[0] for c in cells) / len(cells)

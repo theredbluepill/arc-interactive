@@ -10,18 +10,28 @@ from arcengine import (
 
 
 class Cq01UI(RenderableUserDisplay):
-    def __init__(self, left: int) -> None:
-        self._left = left
+    def __init__(self, n_levels: int) -> None:
+        self._left = 0
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, left: int) -> None:
+    def update(self, left: int, level_index: int | None = None) -> None:
         self._left = left
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         for i in range(min(self._left, 10)):
             frame[h - 2, 1 + i] = 12
         return frame
@@ -120,7 +130,7 @@ PADDING_COLOR = 4
 
 class Cq01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Cq01UI(0)
+        self._ui = Cq01UI(len(levels))
         super().__init__(
             "cq01",
             levels,
@@ -135,7 +145,7 @@ class Cq01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._rings = {(r.x, r.y) for r in self.current_level.get_sprites_by_tag("ring")}
         self._visited: set[tuple[int, int]] = set()
-        self._ui.update(len(self._rings))
+        self._ui.update(len(self._rings), self.level_index)
 
     def step(self) -> None:
         dx = dy = 0
@@ -168,7 +178,7 @@ class Cq01(ARCBaseGame):
         pos = (nx, ny)
         if pos in self._rings:
             self._visited.add(pos)
-        self._ui.update(len(self._rings - self._visited))
+        self._ui.update(len(self._rings - self._visited), self.level_index)
 
         if self._rings <= self._visited and self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()

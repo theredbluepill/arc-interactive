@@ -68,7 +68,7 @@ levels = [
         [
             sprites["player"].clone().set_position(1, 5),
             sprites["key"].clone().set_position(3, 5),
-            sprites["goal"].clone().set_position(8, 5),
+            sprites["goal"].clone().set_position(7, 5),
         ],
         1,
         4,
@@ -77,7 +77,7 @@ levels = [
         [
             sprites["player"].clone().set_position(0, 5),
             sprites["key"].clone().set_position(2, 5),
-            sprites["goal"].clone().set_position(9, 5),
+            sprites["goal"].clone().set_position(8, 5),
         ],
         2,
         3,
@@ -105,7 +105,7 @@ levels = [
         [
             sprites["player"].clone().set_position(0, 0),
             sprites["key"].clone().set_position(1, 0),
-            sprites["goal"].clone().set_position(9, 9),
+            sprites["goal"].clone().set_position(4, 0),
         ],
         5,
         4,

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -171,7 +173,7 @@ class Cv01(ARCBaseGame):
             self._idx[gy][gx] = (self._idx[gy][gx] + 1) % n
             sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
             if sp and "cell" in sp.tags:
-                sp.pixels = [[self._color_at(gx, gy)]]
+                sp.pixels = np.array([[self._color_at(gx, gy)]], dtype=np.int8)
         if self._ok():
             self.next_level()
         self._sync_ui()

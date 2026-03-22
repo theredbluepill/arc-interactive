@@ -13,7 +13,9 @@
   "tags": [
     "static",
     "click",
-    "graph"
+    "graph",
+    "plumbing",
+    "pipe-hv-two-state"
   ],
   "local_dir": "environment_files/pu01/63be02fb",
   "date_created": "2026-03-20",
@@ -24,7 +26,8 @@
     ],
     "action_space": 6,
     "physics_rules": [
-      "connectivity"
+      "connectivity",
+      "pipe-twist-horizontal-vertical-only"
     ],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000

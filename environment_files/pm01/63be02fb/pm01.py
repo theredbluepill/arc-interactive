@@ -10,20 +10,30 @@ from arcengine import (
 
 
 class Pm01UI(RenderableUserDisplay):
-    def __init__(self, s: int) -> None:
-        self._s = s
+    def __init__(self, n_levels: int) -> None:
+        self._s = 0
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, s: int) -> None:
+    def update(self, s: int, level_index: int | None = None) -> None:
         self._s = s
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         for i in range(min(self._s % 20, 18)):
-            frame[1, 2 + i] = 11
+            frame[2, 2 + i] = 11
         return frame
 
 
@@ -56,40 +66,59 @@ def mk(sl: list, d: int) -> Level:
     return Level(sprites=sl, grid_size=(10, 10), data={"difficulty": d})
 
 
+def _h_corridor_walls() -> list:
+    """y=5 lane with solid walls on y=4 and y=6 (full width)."""
+    return [
+        *[sprites["wall"].clone().set_position(x, 4) for x in range(10)],
+        *[sprites["wall"].clone().set_position(x, 6) for x in range(10)],
+    ]
+
+
+# Layouts tuned for **prime-index moves only** (distinct geometry from in01 ink mazes).
 levels = [
     mk(
         [
             sprites["player"].clone().set_position(0, 5),
-            sprites["goal"].clone().set_position(9, 5),
+            sprites["goal"].clone().set_position(4, 5),
+            *_h_corridor_walls(),
         ],
         1,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["goal"].clone().set_position(8, 8),
+            sprites["player"].clone().set_position(5, 0),
+            sprites["goal"].clone().set_position(5, 5),
+            *[sprites["wall"].clone().set_position(4, y) for y in range(10)],
+            *[sprites["wall"].clone().set_position(6, y) for y in range(10)],
         ],
         2,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(0, 0),
-            sprites["goal"].clone().set_position(9, 9),
-            sprites["wall"].clone().set_position(5, 5),
+            sprites["player"].clone().set_position(0, 5),
+            sprites["goal"].clone().set_position(9, 5),
+            *_h_corridor_walls(),
         ],
         3,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(2, 5),
-            sprites["goal"].clone().set_position(7, 5),
+            sprites["player"].clone().set_position(0, 1),
+            sprites["goal"].clone().set_position(3, 1),
+            *[sprites["wall"].clone().set_position(x, 0) for x in range(10)],
+            *[sprites["wall"].clone().set_position(x, 2) for x in range(10)],
         ],
         4,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(0, 9),
-            sprites["goal"].clone().set_position(9, 0),
+            sprites["player"].clone().set_position(8, 8),
+            sprites["goal"].clone().set_position(1, 1),
+            *[sprites["wall"].clone().set_position(x, 0) for x in range(10)],
+            *[sprites["wall"].clone().set_position(x, 9) for x in range(10)],
+            *[sprites["wall"].clone().set_position(0, y) for y in range(10)],
+            *[sprites["wall"].clone().set_position(9, y) for y in range(10)],
+            sprites["wall"].clone().set_position(5, 5),
         ],
         5,
     ),
@@ -116,7 +145,7 @@ def _is_prime(n: int) -> bool:
 
 class Pm01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Pm01UI(0)
+        self._ui = Pm01UI(len(levels))
         super().__init__(
             "pm01",
             levels,
@@ -130,11 +159,11 @@ class Pm01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._si = 0
-        self._ui.update(0)
+        self._ui.update(0, self.level_index)
 
     def step(self) -> None:
         self._si += 1
-        self._ui.update(self._si)
+        self._ui.update(self._si, self.level_index)
         prime = _is_prime(self._si)
 
         dx = dy = 0

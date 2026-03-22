@@ -2,12 +2,26 @@
 from arcengine import ARCBaseGame, Camera, Level, RenderableUserDisplay, Sprite
 BG, PAD = 5, 4
 class U(RenderableUserDisplay):
-    def __init__(self, ph): self.ph = ph
-    def update(self, ph): self.ph = ph
+    def __init__(self, ph):
+        self.ph = ph
+        self._li = 0
+        self._nlv = 1
+    def update(self, ph, level_index=None, num_levels=None):
+        self.ph = ph
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
     def render_interface(self, f):
         import numpy as np
         if isinstance(f, np.ndarray):
             h,w=f.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                f[0, cx] = dot
             f[h-2,2] = 14 if self.ph % 4 < 2 else 8
         return f
 def spr():
@@ -33,6 +47,7 @@ class Tf01(ARCBaseGame):
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._cross = {(s.x,s.y) for s in self.current_level.get_sprites_by_tag("crossing")}
         self._t = 0
+        self._ui.update(self._t, level_index=self.level_index, num_levels=len(levels))
     def step(self):
         dx=dy=0
         v=self.action.id.value
@@ -45,10 +60,11 @@ class Tf01(ARCBaseGame):
         nx, ny = self._p.x+dx, self._p.y+dy
         if 0<=nx<gw and 0<=ny<gh:
             if (nx,ny) in self._cross and (self._t % 4) >= 2:
+                self._ui.update(self._t, level_index=self.level_index, num_levels=len(levels))
                 self.complete_action(); return
             self._p.set_position(nx,ny)
         self._t += 1
-        self._ui.update(self._t)
+        self._ui.update(self._t, level_index=self.level_index, num_levels=len(levels))
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
         self.complete_action()

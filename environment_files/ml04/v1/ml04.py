@@ -144,6 +144,7 @@ levels = [
 class Ml04(ARCBaseGame):
     def __init__(self) -> None:
         self._bolt: Sprite | None = None
+        self._ui = Ml04UI(0, len(levels), 1)
         super().__init__(
             "ml04",
             levels,

@@ -10,18 +10,28 @@ from arcengine import (
 
 
 class Hz01UI(RenderableUserDisplay):
-    def __init__(self, m: int) -> None:
-        self._m = m
+    def __init__(self, n_levels: int) -> None:
+        self._m = 4
+        self._n_levels = n_levels
+        self._li = 0
 
-    def update(self, m: int) -> None:
+    def update(self, m: int, level_index: int | None = None) -> None:
         self._m = m
+        if level_index is not None:
+            self._li = level_index
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._n_levels, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
         for i in range(min(self._m, 10)):
             frame[h - 2, 1 + i] = 8
         return frame
@@ -118,7 +128,7 @@ PADDING_COLOR = 4
 
 class Hz01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Hz01UI(4)
+        self._ui = Hz01UI(len(levels))
         super().__init__(
             "hz01",
             levels,
@@ -133,7 +143,7 @@ class Hz01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._m = int(level.get_data("spread_m") or 4)
         self._ctr = 0
-        self._ui.update(self._m)
+        self._ui.update(self._m, self.level_index)
 
     def _spread(self) -> None:
         haz = list(self.current_level.get_sprites_by_tag("hazard"))

@@ -1,4 +1,4 @@
-"""Manhattan beacon: like beacon sweep but reveal uses L1 (taxicab) radius."""
+"""Manhattan beacon with shrinking radius: each ACTION5 beacon reduces max L1 reveal for all beacons by 1."""
 
 from __future__ import annotations
 
@@ -26,11 +26,32 @@ class Bn03UI(RenderableUserDisplay):
         self._beacons = beacons
         self._found = found
         self._need = need
+        self._radius = 0
+        self._level = 1
+        self._lose = False
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
 
-    def update(self, beacons: int, found: int, need: int) -> None:
+    def update(
+        self,
+        beacons: int,
+        found: int,
+        need: int,
+        *,
+        radius: int = 0,
+        level: int = 1,
+        lose: bool = False,
+    ) -> None:
         self._beacons = beacons
         self._found = found
         self._need = need
+        self._radius = radius
+        self._level = level
+        self._lose = lose
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 10
 
     def render_interface(self, frame):
         import numpy as np
@@ -38,10 +59,33 @@ class Bn03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        frame[1, 2] = 9
+        level_colors = [10, 11, 12, 14, 15, 6, 7]
+        frame[1, 3] = level_colors[(self._level - 1) % len(level_colors)]
         for i in range(min(self._beacons, 12)):
-            frame[1, 1 + i] = 12
+            frame[1, 5 + i] = 12
+        for i in range(min(self._radius, 14)):
+            frame[3, 1 + i] = 10
         for i in range(min(self._need, 20)):
             frame[2, 1 + i] = 14 if i < self._found else 8
+        if self._lose:
+            for px in range(w):
+                frame[0, px] = 8
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -104,34 +148,49 @@ def mk(
 
 
 levels = [
-    mk([], (32, 32), [(40, 40), (50, 20), (20, 50)], 6, 10, 500, 1),
-    mk([(x, 32) for x in range(64) if x % 7 not in (0, 1)], (8, 32), [(55, 10), (55, 55), (10, 55)], 8, 9, 600, 2),
     mk(
-        [(16, y) for y in range(64) if y % 5 != 0]
-        + [(48, y) for y in range(64) if y % 5 != 2],
-        (4, 32),
-        [(30, 30), (34, 34), (38, 30), (34, 26)],
-        10,
+        [],
+        (30, 30),
+        [(33, 33), (34, 34), (35, 33)],
+        12,
         8,
-        700,
+        1200,
+        1,
+    ),
+    mk(
+        [],
+        (12, 12),
+        [(16, 16), (18, 14), (14, 18)],
+        14,
+        7,
+        1400,
+        2,
+    ),
+    mk(
+        [],
+        (22, 48),
+        [(26, 50), (28, 48), (24, 46)],
+        16,
+        6,
+        1600,
         3,
     ),
     mk(
-        [(i, i) for i in range(64) if i % 4 == 0 and 8 < i < 56],
-        (10, 10),
-        [(58, 58), (58, 10), (10, 58), (35, 35), (40, 40)],
-        12,
-        7,
-        800,
+        [],
+        (16, 36),
+        [(20, 38), (22, 36), (18, 34)],
+        18,
+        5,
+        2000,
         4,
     ),
     mk(
         [],
-        (32, 32),
-        [(10 + (i % 8) * 6, 10 + (i // 8) * 6) for i in range(9)],
-        14,
-        6,
-        900,
+        (38, 40),
+        [(42, 42), (44, 40), (40, 38)],
+        20,
+        5,
+        2400,
         5,
     ),
 ]
@@ -158,6 +217,7 @@ class Bn03(ARCBaseGame):
         self._radius = int(self.current_level.get_data("reveal_radius") or 8)
         self._steps = int(self.current_level.get_data("max_steps") or 500)
         self._flagged: set[tuple[int, int]] = set()
+        self._hud_lose = False
         self._sync_ghosts()
         self._sync_ui()
 
@@ -182,12 +242,21 @@ class Bn03(ARCBaseGame):
 
     def _sync_ui(self) -> None:
         ok = len(self._hidden & self._flagged)
-        self._ui.update(self._budget, ok, max(1, len(self._hidden)))
+        self._ui.update(
+            self._budget,
+            ok,
+            max(1, len(self._hidden)),
+            radius=self._radius,
+            level=int(self.level_index) + 1,
+            lose=self._hud_lose,
+        )
 
     def _burn(self) -> bool:
         self._steps -= 1
         self._sync_ui()
         if self._steps <= 0:
+            self._hud_lose = True
+            self._sync_ui()
             self.lose()
             return True
         return False
@@ -230,6 +299,7 @@ class Bn03(ARCBaseGame):
                 return
             self._budget -= 1
             self._beacons.append((self._player.x, self._player.y))
+            self._radius = max(0, self._radius - 1)
             self._sync_ghosts()
             self._sync_ui()
             if self._burn():
@@ -244,6 +314,7 @@ class Bn03(ARCBaseGame):
 
         px = self.action.data.get("x", 0)
         py = self.action.data.get("y", 0)
+        self._ui.set_click(int(px), int(py))
         coords = self.camera.display_to_grid(px, py)
         if coords is None:
             if self._burn():
@@ -291,5 +362,7 @@ class Bn03(ARCBaseGame):
             self.complete_action()
             return
 
+        self._hud_lose = True
+        self._sync_ui()
         self.lose()
         self.complete_action()

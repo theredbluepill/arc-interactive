@@ -6,26 +6,95 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Pd01UI(RenderableUserDisplay):
-    def __init__(self, ok: bool) -> None:
-        self._ok = ok
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, ok: bool) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, win):
+    if not win:
+        return
+    r = h - 3
+    if r < 0:
+        return
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, 14)
+
+
+class Pd01UI(RenderableUserDisplay):
+    def __init__(self, ok: bool, level_index: int = 0, num_levels: int = 5) -> None:
         self._ok = ok
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._end: GameState | None = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
+    def update(
+        self,
+        ok: bool,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        end: GameState | None = None,
+    ) -> None:
+        self._ok = ok
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if end is not None:
+            self._end = end
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (int(x), int(y))
+        self._click_frames = 10
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
-        frame[h - 2, 2] = 14 if self._ok else 8
+        h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        frame[h - 2, 28] = 14 if self._ok else 8
+        go = self._end == GameState.GAME_OVER
+        win = self._end == GameState.WIN
+        if go:
+            for x in range(min(w, 20)):
+                _rp(frame, h, w, x, h - 3, 8)
+        _r_bar(frame, h, w, win)
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -89,7 +158,7 @@ DY = (-1, 0, 1, 0)
 
 class Pd01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Pd01UI(False)
+        self._ui = Pd01UI(False, 0, len(levels))
         super().__init__(
             "pd01",
             levels,
@@ -98,6 +167,18 @@ class Pd01(ARCBaseGame):
             1,
             [1, 2, 3, 4, 6],
         )
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale_x = int(64 / cw)
+        scale_y = int(64 / ch)
+        scale = min(scale_x, scale_y)
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
 
     def on_set_level(self, level: Level) -> None:
         self._source = self.current_level.get_sprites_by_tag("source")[0]
@@ -156,7 +237,12 @@ class Pd01(ARCBaseGame):
 
     def _check(self) -> None:
         ok = self._connected()
-        self._ui.update(ok)
+        self._ui.update(
+            ok,
+            level_index=self.level_index,
+            num_levels=len(self._levels),
+            end=self._state,
+        )
         if ok:
             self.next_level()
 
@@ -166,9 +252,11 @@ class Pd01(ARCBaseGame):
             raw_y = self.action.data.get("y", 0)
             g = self.camera.display_to_grid(int(raw_x), int(raw_y))
             if g is None:
+                self._ui.set_click(int(raw_x), int(raw_y))
                 self.complete_action()
                 return
             gx, gy = g
+            self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
             if self._wall_at(gx, gy):
                 self.complete_action()
                 return

@@ -1,4 +1,4 @@
-"""Phase multiply: ACTION5 sets each non-wall cell to (self × Π max(1, orth neighbor phase)) mod 4."""
+"""XOR neighbor field: ACTION5 sets each non-wall cell to (self XOR orth neighbors) mod 4."""
 
 from __future__ import annotations
 
@@ -21,9 +21,19 @@ MARK_C = 2
 class Ph03UI(RenderableUserDisplay):
     def __init__(self, rounds: int) -> None:
         self._rounds = rounds
+        self._level = 1
+        self._lose = False
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
 
-    def update(self, rounds: int) -> None:
+    def update(self, rounds: int, level: int = 1, *, lose: bool = False) -> None:
         self._rounds = rounds
+        self._level = level
+        self._lose = lose
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 8
 
     def render_interface(self, frame):
         import numpy as np
@@ -31,8 +41,29 @@ class Ph03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        frame[1, 2] = 9
+        level_colors = [10, 11, 12, 14, 15, 6, 7]
+        frame[1, 3] = level_colors[(self._level - 1) % len(level_colors)]
         for i in range(min(self._rounds, 25)):
             frame[h - 2, 1 + i] = 10
+        if self._lose:
+            for px in range(w):
+                frame[0, px] = 8
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -119,6 +150,7 @@ class Ph03(ARCBaseGame):
             x, y, v = int(row[0]), int(row[1]), int(row[2])
             self._target[(x, y)] = v
         self._blur_left = int(self.current_level.get_data("max_blur") or 40)
+        self._hud_lose = False
         self._sync_ui()
         self._refresh_phase_sprites()
 
@@ -146,7 +178,11 @@ class Ph03(ARCBaseGame):
                 )
 
     def _sync_ui(self) -> None:
-        self._ui.update(self._blur_left)
+        self._ui.update(
+            self._blur_left,
+            int(self.level_index) + 1,
+            lose=self._hud_lose,
+        )
 
     def _win(self) -> bool:
         for (x, y), v in self._target.items():
@@ -168,6 +204,8 @@ class Ph03(ARCBaseGame):
 
         if aid == GameAction.ACTION5:
             if self._blur_left <= 0:
+                self._hud_lose = True
+                self._sync_ui()
                 self.lose()
                 self.complete_action()
                 return
@@ -179,14 +217,12 @@ class Ph03(ARCBaseGame):
                     if self._wall_at(x, y):
                         new_g[x][y] = self._g[x][y]
                         continue
-                    p = 1
+                    acc = self._g[x][y]
                     for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
                         nx, ny = x + dx, y + dy
                         if 0 <= nx < gw and 0 <= ny < gh:
-                            p = (p * max(1, self._g[nx][ny])) % 4
-                            if p == 0:
-                                p = 1
-                    new_g[x][y] = (self._g[x][y] * p) % 4
+                            acc ^= self._g[nx][ny]
+                    new_g[x][y] = acc % 4
             self._g = new_g
             self._refresh_phase_sprites()
             self._sync_ui()
@@ -201,6 +237,7 @@ class Ph03(ARCBaseGame):
 
         px = self.action.data.get("x", 0)
         py = self.action.data.get("y", 0)
+        self._ui.set_click(int(px), int(py))
         coords = self.camera.display_to_grid(px, py)
         if coords is None:
             self.complete_action()

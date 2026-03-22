@@ -2,7 +2,16 @@
 
 from __future__ import annotations
 
-from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
+import numpy as np
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    GameState,
+    Level,
+    RenderableUserDisplay,
+    Sprite,
+)
 
 BG, PAD = 5, 4
 
@@ -79,7 +88,6 @@ class Pt05UI(RenderableUserDisplay):
     def render_interface(self, frame):
         import numpy as np
 
-        from arcengine import GameState
 
         if not isinstance(frame, np.ndarray):
             return frame
@@ -286,7 +294,7 @@ class Pt05(ARCBaseGame):
             self._headers[sp.y] = sp
 
     def _row_vals(self, y: int) -> list[int]:
-        return [self._by_pos[(x, y)].pixels[0][0] for x in range(1, W)]
+        return [int(self._by_pos[(x, y)].pixels[0, 0]) for x in range(1, W)]
 
     def _cycle_row(self, y: int) -> None:
         vals = self._row_vals(y)
@@ -294,12 +302,12 @@ class Pt05(ARCBaseGame):
             return
         nv = vals[1:] + [vals[0]]
         for x in range(1, W):
-            self._by_pos[(x, y)].pixels = [[nv[x - 1]]]
+            self._by_pos[(x, y)].pixels = np.array([[nv[x - 1]]], dtype=np.int8)
 
     def _win(self) -> bool:
         for yi, row in enumerate(self._target, start=1):
             for xi in range(1, W):
-                if self._by_pos[(xi, yi)].pixels[0][0] != row[xi - 1]:
+                if int(self._by_pos[(xi, yi)].pixels[0, 0]) != row[xi - 1]:
                     return False
         return True
 

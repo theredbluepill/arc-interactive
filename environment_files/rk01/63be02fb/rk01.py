@@ -75,15 +75,15 @@ levels = [
     mk(
         [
             sprites["player"].clone().set_position(2, 2),
-            sprites["goal"].clone().set_position(7, 7),
+            sprites["goal"].clone().set_position(9, 2),
         ]
-        + [sprites["wall"].clone().set_position(5, y) for y in range(10) if y != 5],
+        + [sprites["wall"].clone().set_position(5, y) for y in range(10) if y not in (2, 5)],
         3,
     ),
     mk(
         [
             sprites["player"].clone().set_position(1, 1),
-            sprites["goal"].clone().set_position(8, 8),
+            sprites["goal"].clone().set_position(9, 9),
         ]
         + [sprites["wall"].clone().set_position(x, 4) for x in range(3, 7)],
         4,
@@ -146,6 +146,11 @@ class Rk01(ARCBaseGame):
             if self._blocked(nx, ny):
                 break
             x, y = nx, ny
+            if x == self._goal.x and y == self._goal.y:
+                self._player.set_position(x, y)
+                self.next_level()
+                self.complete_action()
+                return
 
         if x != self._player.x or y != self._player.y:
             self._player.set_position(x, y)

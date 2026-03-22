@@ -2,12 +2,26 @@
 from arcengine import ARCBaseGame, Camera, Level, RenderableUserDisplay, Sprite
 BG, PAD = 5, 4
 class U(RenderableUserDisplay):
-    def __init__(self, s, b): self.s, self.b = s, b
-    def update(self, s, b): self.s, self.b = s, b
+    def __init__(self, s, b):
+        self.s, self.b = s, b
+        self._li = 0
+        self._nlv = 1
+    def update(self, s, b, level_index=None, num_levels=None):
+        self.s, self.b = s, b
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
     def render_interface(self, f):
         import numpy as np
         if isinstance(f, np.ndarray):
             h, w = f.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                f[0, cx] = dot
             for i in range(min(self.b, 8)): f[h-2,2+i]=11
         return f
 def spr():
@@ -34,6 +48,7 @@ class Au01(ARCBaseGame):
         self._lim = int(level.get_data("limit"))
         self._bonus = int(level.get_data("bonus"))
         self._steps = 0
+        self._ui.update(self._steps, self._lim, level_index=self.level_index, num_levels=len(levels))
     def step(self):
         dx=dy=0
         v=self.action.id.value
@@ -52,7 +67,7 @@ class Au01(ARCBaseGame):
                     self.current_level.remove_sprite(h)
                     self._lim += self._bonus
         self._steps += 1
-        self._ui.update(self._steps, self._lim)
+        self._ui.update(self._steps, self._lim, level_index=self.level_index, num_levels=len(levels))
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
         elif self._steps >= self._lim:

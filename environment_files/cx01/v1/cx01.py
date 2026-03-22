@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import deque
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -217,7 +219,9 @@ class Cx01(ARCBaseGame):
                     self._open.add((gx, gy))
                 sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
                 if sp and "gate" in sp.tags:
-                    sp.pixels = [[OPEN if (gx, gy) in self._open else SHUT]]
+                    sp.pixels = np.array(
+                        [[OPEN if (gx, gy) in self._open else SHUT]], dtype=np.int8
+                    )
         if not self._connected():
             self.next_level()
         self._sync_ui()

@@ -3,27 +3,73 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Rh01UI(RenderableUserDisplay):
-    def __init__(self, row: int) -> None:
-        self._row = row
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, row: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Rh01UI(RenderableUserDisplay):
+    def __init__(self, row: int, level_index: int = 0, num_levels: int = 5) -> None:
         self._row = row
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._state: GameState | None = None
+
+    def update(
+        self,
+        row: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state: GameState | None = None,
+    ) -> None:
+        self._row = row
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._row + 1, 12)):
-            frame[h - 2, 1 + i] = 8
+            frame[h - 2, 18 + i] = 8
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -106,7 +152,7 @@ PADDING_COLOR = 4
 
 class Rh01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Rh01UI(0)
+        self._ui = Rh01UI(0, 0, len(levels))
         super().__init__(
             "rh01",
             levels,
@@ -123,7 +169,12 @@ class Rh01(ARCBaseGame):
         self._ticks = 0
         self._danger_y = 9
         gw, _gh = self.current_level.grid_size
-        self._ui.update(self._danger_y % max(gw, 1))
+        self._ui.update(
+            self._danger_y % max(gw, 1),
+            level_index=self.level_index,
+            num_levels=len(self._levels),
+            state=self._state,
+        )
 
     def _tick_hazard(self) -> None:
         self._ticks += 1
@@ -131,7 +182,7 @@ class Rh01(ARCBaseGame):
             self._ticks = 0
             _gw, gh = self.current_level.grid_size
             self._danger_y = (self._danger_y + 1) % gh
-            self._ui.update(self._danger_y)
+            self._ui.update(self._danger_y, state=self._state)
 
     def step(self) -> None:
         dx = dy = 0
@@ -157,12 +208,17 @@ class Rh01(ARCBaseGame):
 
         self._tick_hazard()
 
+        if self._player.x == self._goal.x and self._player.y == self._goal.y:
+            self.next_level()
+            self._ui.update(self._danger_y, state=self._state)
+            self.complete_action()
+            return
+
         if self._player.y == self._danger_y:
+            self._ui.update(self._danger_y, state=self._state)
             self.lose()
             self.complete_action()
             return
 
-        if self._player.x == self._goal.x and self._player.y == self._goal.y:
-            self.next_level()
-
+        self._ui.update(self._danger_y, state=self._state)
         self.complete_action()

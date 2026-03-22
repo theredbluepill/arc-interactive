@@ -63,40 +63,63 @@ def mk(sl: list, d: int) -> Level:
     return Level(sprites=sl, grid_size=(10, 10), data={"difficulty": d})
 
 
+def _row_walls(y: int, xs: range) -> list:
+    return [sprites["wall"].clone().set_position(x, y) for x in xs]
+
+
+# Layouts stress **ink blocks re-entry** (narrow channels, detours)—distinct from pm01 prime-cadence levels.
 levels = [
     mk(
         [
             sprites["player"].clone().set_position(0, 5),
             sprites["goal"].clone().set_position(9, 5),
+            *_row_walls(4, range(10)),
+            *_row_walls(6, range(10)),
         ],
         1,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["goal"].clone().set_position(8, 8),
+            sprites["player"].clone().set_position(1, 3),
+            sprites["goal"].clone().set_position(8, 3),
+            # Force north detour; ink can trap if you paint the return lane.
+            *[sprites["wall"].clone().set_position(x, 3) for x in (3, 4, 5, 6)],
+            *[sprites["wall"].clone().set_position(x, 1) for x in range(10)],
+            *[sprites["wall"].clone().set_position(x, 5) for x in range(10)],
         ],
         2,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(0, 0),
-            sprites["goal"].clone().set_position(9, 9),
+            sprites["player"].clone().set_position(1, 7),
+            sprites["goal"].clone().set_position(8, 2),
+            *[sprites["wall"].clone().set_position(0, y) for y in range(10)],
+            *[sprites["wall"].clone().set_position(9, y) for y in range(10)],
+            *[sprites["wall"].clone().set_position(x, 0) for x in range(10)],
+            *[sprites["wall"].clone().set_position(x, 9) for x in range(10)],
+            sprites["wall"].clone().set_position(5, 4),
             sprites["wall"].clone().set_position(5, 5),
+            sprites["wall"].clone().set_position(5, 6),
         ],
         3,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(2, 5),
-            sprites["goal"].clone().set_position(7, 5),
+            sprites["player"].clone().set_position(1, 4),
+            sprites["goal"].clone().set_position(8, 4),
+            # Two-lane detour: row-3 barrier with gaps at x=2,7; row-5 solid; ink can block the upper bypass.
+            *[sprites["wall"].clone().set_position(x, 3) for x in range(10) if x not in (2, 7)],
+            *_row_walls(5, range(10)),
+            *[sprites["wall"].clone().set_position(x, 4) for x in (4, 5)],
         ],
         4,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(0, 9),
-            sprites["goal"].clone().set_position(9, 0),
+            sprites["player"].clone().set_position(0, 0),
+            sprites["goal"].clone().set_position(9, 9),
+            *[sprites["wall"].clone().set_position(x, 2) for x in (3, 4, 5, 6, 7)],
+            *[sprites["wall"].clone().set_position(2, y) for y in (5, 6, 7)],
         ],
         5,
     ),

@@ -6,12 +6,24 @@ BG, PAD = 5, 4
 class Rn01UI(RenderableUserDisplay):
     def __init__(self, p: bool) -> None:
         self._p = p
-    def update(self, p: bool) -> None:
+        self._li = 0
+        self._nlv = 1
+    def update(self, p: bool, level_index: int | None = None, num_levels: int | None = None) -> None:
         self._p = p
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nlv = num_levels
     def render_interface(self, frame):
         import numpy as np
         if isinstance(frame, np.ndarray):
             h, w = frame.shape
+            for i in range(min(self._nlv, 14)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                dot = 14 if i < self._li else (11 if i == self._li else 3)
+                frame[0, cx] = dot
             frame[h-2,2] = 11 if self._p else 5
         return frame
 
@@ -49,6 +61,7 @@ class Rn01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._pend = None
+        self._ui.update(False, level_index=self.level_index, num_levels=len(levels))
     def _walk(self, nx, ny):
         gw, gh = self.current_level.grid_size
         if not (0 <= nx < gw and 0 <= ny < gh):
@@ -76,7 +89,11 @@ class Rn01(ARCBaseGame):
                             if mid and "water" in mid.tags:
                                 self.current_level.remove_sprite(mid)
                                 self.current_level.add_sprite(spr()["r"].clone().set_position(mx, my))
-                    self._ui.update(self._pend is not None)
+                    self._ui.update(
+                        self._pend is not None,
+                        level_index=self.level_index,
+                        num_levels=len(levels),
+                    )
             self.complete_action()
             return
         dx = dy = 0
@@ -88,6 +105,7 @@ class Rn01(ARCBaseGame):
         else:
             self.complete_action(); return
         self._walk(self._player.x+dx, self._player.y+dy)
+        self._ui.update(self._pend is not None, level_index=self.level_index, num_levels=len(levels))
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
         self.complete_action()

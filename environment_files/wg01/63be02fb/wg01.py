@@ -21,9 +21,11 @@ class Wg01UI(RenderableUserDisplay):
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
-        for i in range(min(self._k, 8)):
+        h, w = frame.shape
+        # Bottom ticks = gust period **K** (not every-step row belts like cy01/eb01).
+        for i in range(min(self._k, min(8, w - 2))):
             frame[h - 2, 1 + i] = 10
+        frame[2, 1] = 8
         return frame
 
 
