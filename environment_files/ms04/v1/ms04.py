@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -98,7 +100,7 @@ def mk(mines: list[tuple[int, int]], d: int) -> Level:
             c = min(15, 5 + n)
             sl.append(
                 Sprite(
-                    pixels=[[c]],
+                    pixels=np.array([[c]], dtype=np.uint8),
                     name="c",
                     visible=True,
                     collidable=False,
@@ -161,7 +163,7 @@ class Ms04(ARCBaseGame):
             self._flags.add((gx, gy))
             sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
             if sp and "clue" in sp.tags:
-                sp.pixels = [[FLAG_COLOR]]
+                sp.pixels = np.array([[FLAG_COLOR]], dtype=np.uint8)
             elif (gx, gy) in self._mines:
                 existing = self.current_level.get_sprite_at(
                     gx, gy, ignore_collidable=True
@@ -169,7 +171,7 @@ class Ms04(ARCBaseGame):
                 if not existing or "flag_mark" not in existing.tags:
                     self.current_level.add_sprite(
                         Sprite(
-                            pixels=[[FLAG_COLOR]],
+                            pixels=np.array([[FLAG_COLOR]], dtype=np.uint8),
                             name="f",
                             visible=True,
                             collidable=False,

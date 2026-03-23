@@ -51,7 +51,7 @@ ll01,wl_ll,no,yes,• 1–4: No-op • 5: Step CA • 6: Toggle cell
 wl01,wl_ll,no,yes,• 1–4: Move • 6: Place/remove my wall
 dd01,generic,no,no,• 1–4: Move • 5: Pickup / deliver / ping
 ph01,generic,no,yes,• 1–4: No-op • 5: Blur step • 6: Increment phase
-bn01,generic,no,yes,• 1–4: Move • 5: Beacon • 6: Flag
+bn01,generic,yes,yes,• 1–4: Move • 5: Beacon • 6: Flag
 dl01,generic,no,no,• 1-4: Enqueue move • 5: Clear queue
 fw01,generic,no,yes,• 1-4: Move • 6: Splash
 gp02,generic,no,yes,• 1-4: No-op • 6: Click erase
@@ -66,15 +66,15 @@ qr01,generic,no,yes,• 1-4: No-op • 6: Rotate 2×2
 rs02,generic,no,no,• 1-4: Move
 sk02,push_solver,no,no,• 1-4: Move
 sp01,generic,no,yes,• 1-4: No-op • 6: Add grain
-sq02,generic,no,yes,• 6: Click block
+sq02,sq02,yes,yes,• 6: Click block
 sv02,generic,no,no,• 1-4: Move • 5: Idle
-tb02,generic,no,yes,• 1-4: Move • 6: Toggle bridge
+tb02,generic,yes,yes,• 1-4: Move • 6: Toggle bridge
 tc01,generic,no,no,• 1-4: Move
 tt02,generic,no,no,• 1-4: Move
 zm01,generic,no,yes,• 5: Switch color • 6: Expand
 as01,generic,no,no,• 1-4: Move • 5: Pickup/drop
 bp01,generic,no,no,• 1-4: Move • 5: Power tower
-bn02,generic,no,yes,• 1-4: Move • 5: Beacon • 6: Flag
+bn02,bn02,yes,yes,• 1-4: Move • 5: Beacon • 6: Flag
 ck02,generic,no,yes,• 5: Test wire • 6: Toggle wire
 cr01,generic,no,yes,• 1-4: Move • 6: Place plank
 dm01,generic,no,yes,• 6: Toggle domino
@@ -91,12 +91,12 @@ nw02,generic,no,no,• 1-4: Move
 ph02,generic,no,yes,• 1-4: No-op • 5: Step • 6: Inc
 pt02,generic,no,yes,• 6: Click band
 rp02,rp02,yes,yes,• 1–4: No-op • 5: Fire • 6: Toggle relay
-rz01,generic,no,no,• 1-4: Move
+rz01,generic,yes,no,• 1-4: Move
 sg01,generic,no,no,• 1-4: No-op • 5: Commit
 sk03,generic,no,no,• 1-4: Move
-st01,generic,no,no,• 1-4: Move • 5: Whistle
+st01,generic,yes,no,• 1-4: Move • 5: Whistle
 sy02,generic,no,yes,• 6: Place/remove block
-tb03,generic,no,yes,• 1-4: Move • 6: Toggle bridge
+tb03,generic,yes,yes,• 1-4: Move • 6: Toggle bridge
 tg01,generic,no,no,• 1-4: Move
 tt03,generic,no,no,• 1-4: Move
 ul02,generic,no,no,• 1-4: Move
@@ -105,7 +105,7 @@ zq02,generic,no,no,• 1-4: Move
 ju01,generic,no,no,• 1-4: Move
 co01,generic,no,no,• 1-4: Move
 em01,generic,no,no,• 1-4: Move
-nu01,generic,no,no,• 1-4: Move
+nu01,generic,yes,no,• 1-4: Move
 gl01,generic,no,no,• 1-4: Move
 or01,generic,no,no,• 1-4: Move
 ex03,generic,no,no,• 1-4: Move • 5: Hold
@@ -113,11 +113,11 @@ zq03,generic,no,no,• 1-4: Move
 nw03,generic,no,no,• 1-4: Move
 rs03,generic,no,no,• 1-4: Move
 sv03,generic,no,no,• 1-4: Move • 5: Idle
-sq03,generic,no,yes,• 6: Click block
+sq03,sq03,yes,yes,• 6: Click block
 dr01,generic,no,no,• 1-4: Move • 5: Drill
 vi01,generic,no,no,• 1-4: Move
 wa01,generic,no,no,• 1-4: Move
-fi01,generic,no,no,• 1-4: Move • 5: Place break
+fi01,generic,yes,no,• 1-4: Move • 5: Place break
 ul03,generic,no,no,• 1-4: Move
 wm03,generic,no,yes,• 6: Click
 ms03,generic,no,yes,• 1-4: Move • 6: Flag
@@ -127,7 +127,7 @@ sy03,generic,no,yes,• 6: Place/remove
 mm03,generic,no,yes,• 6: Click
 ff03,generic,no,yes,• 1-4: No-op • 6: Click
 lw03,generic,no,yes,• 1–2 • 5 undo • 6: Extend
-rp03,generic,no,yes,• 1–4: No-op • 5: Fire • 6: Toggle
+rp03,generic,yes,yes,• 1–4: No-op • 5: Fire • 6: Toggle
 ml03,generic,no,yes,• 1-4: Move • 5: Fire • 6: Mirror
 ck03,generic,no,yes,• 1-4: No-op • 5: Test • 6: Toggle
 ph03,ph03,yes,yes,• 1-4: No-op • 5: Step • 6: Inc

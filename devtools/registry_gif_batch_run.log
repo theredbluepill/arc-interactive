@@ -1,428 +1,201 @@
-2026-03-24 02:20:08 | INFO | Created new scorecard: 8b5ba885-1bb0-4c75-a278-fc1169a66750
-2026-03-24 02:20:08 | INFO | Successfully loaded game class Ll01 from /Users/poonszesen/arc-interactive/environment_files/ll01/63be02fb/ll01.py
-  ll01: ll01 registry GIF, 144 frames
-  wrote /Users/poonszesen/arc-interactive/assets/ll01.gif (144 frames)
-2026-03-24 02:20:14 | INFO | Created new scorecard: 4a2a5ae4-202c-4205-8d7b-27064d381b97
-2026-03-24 02:20:14 | INFO | Successfully loaded game class Wl01 from /Users/poonszesen/arc-interactive/environment_files/wl01/63be02fb/wl01.py
-  wl01: wl01 registry GIF, 302 frames
-  wrote /Users/poonszesen/arc-interactive/assets/wl01.gif (302 frames)
-2026-03-24 02:20:14 | INFO | Created new scorecard: afd514dc-2483-4b5b-bf76-491a93cd1632
-2026-03-24 02:20:14 | INFO | Successfully loaded game class Dd01 from /Users/poonszesen/arc-interactive/environment_files/dd01/63be02fb/dd01.py
-  wrote /Users/poonszesen/arc-interactive/assets/dd01.gif (334 frames)
-2026-03-24 02:20:14 | INFO | Created new scorecard: 4f5eda17-01e0-45dd-bebe-81c1526f3367
-2026-03-24 02:20:14 | INFO | Successfully loaded game class Ph01 from /Users/poonszesen/arc-interactive/environment_files/ph01/63be02fb/ph01.py
-  wrote /Users/poonszesen/arc-interactive/assets/ph01.gif (126 frames)
-2026-03-24 02:20:19 | INFO | Created new scorecard: b956f97e-de6d-4304-a7ef-35bfa55cad33
-2026-03-24 02:20:19 | INFO | Successfully loaded game class Bn01 from /Users/poonszesen/arc-interactive/environment_files/bn01/63be02fb/bn01.py
-  bn01: showcase fallback (16 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/bn01.gif (64 frames)
-2026-03-24 02:20:19 | INFO | Created new scorecard: ca3ea0d2-fb7a-4fa6-871d-9a265b52e0d2
-2026-03-24 02:20:19 | INFO | Successfully loaded game class Dl01 from /Users/poonszesen/arc-interactive/environment_files/dl01/63be02fb/dl01.py
-  wrote /Users/poonszesen/arc-interactive/assets/dl01.gif (471 frames)
-2026-03-24 02:20:20 | INFO | Created new scorecard: 749acae7-4b45-480f-b9c2-877a91b8f90e
-2026-03-24 02:20:20 | INFO | Successfully loaded game class Fw01 from /Users/poonszesen/arc-interactive/environment_files/fw01/63be02fb/fw01.py
-  wrote /Users/poonszesen/arc-interactive/assets/fw01.gif (114 frames)
-2026-03-24 02:20:20 | INFO | Created new scorecard: dc9787d5-cf51-4a49-964e-db5b767f4ff0
-2026-03-24 02:20:20 | INFO | Successfully loaded game class Gp02 from /Users/poonszesen/arc-interactive/environment_files/gp02/63be02fb/gp02.py
-  wrote /Users/poonszesen/arc-interactive/assets/gp02.gif (504 frames)
-2026-03-24 02:20:20 | INFO | Created new scorecard: 9f665b33-9e16-4e01-8b8c-1c36dfaf749b
-2026-03-24 02:20:20 | INFO | Successfully loaded game class Hd01 from /Users/poonszesen/arc-interactive/environment_files/hd01/63be02fb/hd01.py
-  wrote /Users/poonszesen/arc-interactive/assets/hd01.gif (71 frames)
-2026-03-24 02:20:20 | INFO | Created new scorecard: a6a6ed2f-0d59-4fea-beb6-7f4259980a8b
-2026-03-24 02:20:20 | INFO | Successfully loaded game class Kn01 from /Users/poonszesen/arc-interactive/environment_files/kn01/63be02fb/kn01.py
-  wrote /Users/poonszesen/arc-interactive/assets/kn01.gif (471 frames)
-2026-03-24 02:20:21 | INFO | Created new scorecard: b313364a-af00-4a74-80c0-6fc32a2b0163
-2026-03-24 02:20:21 | INFO | Successfully loaded game class Lo02 from /Users/poonszesen/arc-interactive/environment_files/lo02/63be02fb/lo02.py
-  wrote /Users/poonszesen/arc-interactive/assets/lo02.gif (504 frames)
-2026-03-24 02:20:22 | INFO | Created new scorecard: 05faef95-1158-4634-b742-26e3ac5675ee
-2026-03-24 02:20:22 | INFO | Successfully loaded game class Mc01 from /Users/poonszesen/arc-interactive/environment_files/mc01/63be02fb/mc01.py
-  wrote /Users/poonszesen/arc-interactive/assets/mc01.gif (473 frames)
-2026-03-24 02:20:23 | INFO | Created new scorecard: 54c38cfb-7b8c-4987-be9d-c7620fc2f5fb
-2026-03-24 02:20:23 | INFO | Successfully loaded game class Ng01 from /Users/poonszesen/arc-interactive/environment_files/ng01/63be02fb/ng01.py
-  wrote /Users/poonszesen/arc-interactive/assets/ng01.gif (504 frames)
-2026-03-24 02:20:24 | INFO | Created new scorecard: 8d8075a6-28af-4ad1-9f1c-c6e8243fc2f6
-2026-03-24 02:20:24 | INFO | Successfully loaded game class Ob01 from /Users/poonszesen/arc-interactive/environment_files/ob01/63be02fb/ob01.py
-  wrote /Users/poonszesen/arc-interactive/assets/ob01.gif (496 frames)
-2026-03-24 02:20:25 | INFO | Created new scorecard: 1df299a2-15d9-4a71-a4cb-0fb8be76702d
-2026-03-24 02:20:25 | INFO | Successfully loaded game class Pu01 from /Users/poonszesen/arc-interactive/environment_files/pu01/63be02fb/pu01.py
-  wrote /Users/poonszesen/arc-interactive/assets/pu01.gif (504 frames)
-2026-03-24 02:20:26 | INFO | Created new scorecard: 52825457-2722-4f06-b69d-061ff946db6e
-2026-03-24 02:20:26 | INFO | Successfully loaded game class Qr01 from /Users/poonszesen/arc-interactive/environment_files/qr01/63be02fb/qr01.py
-  wrote /Users/poonszesen/arc-interactive/assets/qr01.gif (174 frames)
-2026-03-24 02:20:26 | INFO | Created new scorecard: 84f0b846-fa30-4416-b08c-0426f04d83cd
-2026-03-24 02:20:26 | INFO | Successfully loaded game class Rs02 from /Users/poonszesen/arc-interactive/environment_files/rs02/63be02fb/rs02.py
-  wrote /Users/poonszesen/arc-interactive/assets/rs02.gif (44 frames)
-2026-03-24 02:20:29 | INFO | Created new scorecard: e3c0aec9-a278-4dd3-b737-d6f7a9aeb887
-2026-03-24 02:20:29 | INFO | Successfully loaded game class Sk02 from /Users/poonszesen/arc-interactive/environment_files/sk02/63be02fb/sk02.py
-  sk02: push-puzzle GIF, 5 levels, 153 moves, 208 frames
-  wrote /Users/poonszesen/arc-interactive/assets/sk02.gif (208 frames)
-2026-03-24 02:20:29 | INFO | Created new scorecard: 25ac8d13-2666-4b65-a30d-cd679c4c65b8
-2026-03-24 02:20:29 | INFO | Successfully loaded game class Sp01 from /Users/poonszesen/arc-interactive/environment_files/sp01/63be02fb/sp01.py
-  wrote /Users/poonszesen/arc-interactive/assets/sp01.gif (164 frames)
-2026-03-24 02:20:29 | INFO | Created new scorecard: ea601fdc-36d1-433a-8e71-8b43368a6778
-2026-03-24 02:20:29 | INFO | Successfully loaded game class Sq02 from /Users/poonszesen/arc-interactive/environment_files/sq02/63be02fb/sq02.py
-  sq02: showcase fallback (30 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/sq02.gif (108 frames)
-2026-03-24 02:20:29 | INFO | Created new scorecard: e31ce408-5992-4904-ace8-432d7984376f
-2026-03-24 02:20:29 | INFO | Successfully loaded game class Sv02 from /Users/poonszesen/arc-interactive/environment_files/sv02/63be02fb/sv02.py
-  wrote /Users/poonszesen/arc-interactive/assets/sv02.gif (69 frames)
-2026-03-24 02:20:29 | INFO | Created new scorecard: 346a6b98-823d-491e-a790-71c702b4e683
-2026-03-24 02:20:29 | INFO | Successfully loaded game class Tb02 from /Users/poonszesen/arc-interactive/environment_files/tb02/63be02fb/tb02.py
-  tb02: showcase fallback (20 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/tb02.gif (64 frames)
-2026-03-24 02:20:29 | INFO | Created new scorecard: b3c4d2a5-9f29-4759-bf10-13bf35e88505
-2026-03-24 02:20:29 | INFO | Successfully loaded game class Tc01 from /Users/poonszesen/arc-interactive/environment_files/tc01/63be02fb/tc01.py
-  wrote /Users/poonszesen/arc-interactive/assets/tc01.gif (64 frames)
-2026-03-24 02:20:30 | INFO | Created new scorecard: 361b8a3b-3117-432f-8b3c-0e393cf36909
-2026-03-24 02:20:30 | INFO | Successfully loaded game class Tt02 from /Users/poonszesen/arc-interactive/environment_files/tt02/63be02fb/tt02.py
-  wrote /Users/poonszesen/arc-interactive/assets/tt02.gif (174 frames)
-2026-03-24 02:20:30 | INFO | Created new scorecard: 506c2200-e9a0-4016-a5a5-ad3e1484c618
-2026-03-24 02:20:30 | INFO | Successfully loaded game class Zm01 from /Users/poonszesen/arc-interactive/environment_files/zm01/63be02fb/zm01.py
-  wrote /Users/poonszesen/arc-interactive/assets/zm01.gif (504 frames)
-2026-03-24 02:20:33 | INFO | Created new scorecard: 31f99dea-dcb4-4d0d-a0e6-52f60171bf82
-2026-03-24 02:20:33 | INFO | Successfully loaded game class As01 from /Users/poonszesen/arc-interactive/environment_files/as01/63be02fb/as01.py
-  wrote /Users/poonszesen/arc-interactive/assets/as01.gif (502 frames)
-2026-03-24 02:20:33 | INFO | Created new scorecard: 69aaee77-e8bb-44d5-884b-defc020d6c41
-2026-03-24 02:20:33 | INFO | Successfully loaded game class Bp01 from /Users/poonszesen/arc-interactive/environment_files/bp01/63be02fb/bp01.py
-  wrote /Users/poonszesen/arc-interactive/assets/bp01.gif (505 frames)
-2026-03-24 02:20:34 | INFO | Created new scorecard: 07dbeaa3-b8b0-4f96-9024-9ce936447ade
-2026-03-24 02:20:34 | INFO | Successfully loaded game class Bn02 from /Users/poonszesen/arc-interactive/environment_files/bn02/63be02fb/bn02.py
-  wrote /Users/poonszesen/arc-interactive/assets/bn02.gif (514 frames)
-2026-03-24 02:20:34 | INFO | Created new scorecard: eb5a9268-767a-49f9-bab5-f17b06fc0391
-2026-03-24 02:20:34 | INFO | Successfully loaded game class Ck02 from /Users/poonszesen/arc-interactive/environment_files/ck02/63be02fb/ck02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ck02.gif (97 frames)
-2026-03-24 02:20:34 | INFO | Created new scorecard: c5c4ad0c-302f-4b40-ad68-6d53d2e8b329
-2026-03-24 02:20:34 | INFO | Successfully loaded game class Cr01 from /Users/poonszesen/arc-interactive/environment_files/cr01/63be02fb/cr01.py
-  wrote /Users/poonszesen/arc-interactive/assets/cr01.gif (63 frames)
-2026-03-24 02:20:34 | INFO | Created new scorecard: ce67544d-c3cf-4bb6-9dd6-d7ddee1a4018
-2026-03-24 02:20:34 | INFO | Successfully loaded game class Dm01 from /Users/poonszesen/arc-interactive/environment_files/dm01/63be02fb/dm01.py
-  wrote /Users/poonszesen/arc-interactive/assets/dm01.gif (504 frames)
-2026-03-24 02:20:34 | INFO | Created new scorecard: f6baef0a-b374-41c2-badb-520ac153df06
-2026-03-24 02:20:34 | INFO | Successfully loaded game class Ex02 from /Users/poonszesen/arc-interactive/environment_files/ex02/63be02fb/ex02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ex02.gif (502 frames)
-2026-03-24 02:20:35 | INFO | Created new scorecard: b4b7e8ee-0041-44ad-a954-f5e6b422bee2
-2026-03-24 02:20:35 | INFO | Successfully loaded game class Fl01 from /Users/poonszesen/arc-interactive/environment_files/fl01/63be02fb/fl01.py
-  wrote /Users/poonszesen/arc-interactive/assets/fl01.gif (502 frames)
-2026-03-24 02:20:35 | INFO | Created new scorecard: 45f5e684-a6f8-4238-83e1-2520b6152b2c
-2026-03-24 02:20:35 | INFO | Successfully loaded game class Ff02 from /Users/poonszesen/arc-interactive/environment_files/ff02/63be02fb/ff02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ff02.gif (114 frames)
-2026-03-24 02:20:35 | INFO | Created new scorecard: b6718820-dc6f-45e5-8ccc-9dad7256c0e5
-2026-03-24 02:20:35 | INFO | Successfully loaded game class Gp03 from /Users/poonszesen/arc-interactive/environment_files/gp03/63be02fb/gp03.py
-  wrote /Users/poonszesen/arc-interactive/assets/gp03.gif (504 frames)
-2026-03-24 02:20:35 | INFO | Created new scorecard: 66799cd8-8e35-4b0e-bb83-bd4e1cb3f5a3
-2026-03-24 02:20:35 | INFO | Successfully loaded game class Lw02 from /Users/poonszesen/arc-interactive/environment_files/lw02/63be02fb/lw02.py
-  wrote /Users/poonszesen/arc-interactive/assets/lw02.gif (223 frames)
-2026-03-24 02:20:35 | INFO | Created new scorecard: eeba0f05-7d85-47eb-a95e-2c3c61f83085
-2026-03-24 02:20:35 | INFO | Successfully loaded game class Ml02 from /Users/poonszesen/arc-interactive/environment_files/ml02/63be02fb/ml02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ml02.gif (359 frames)
-2026-03-24 02:20:36 | INFO | Created new scorecard: 5f9c4c22-203d-494c-9dad-4f435bbb1a8e
-2026-03-24 02:20:36 | INFO | Successfully loaded game class Mm02 from /Users/poonszesen/arc-interactive/environment_files/mm02/63be02fb/mm02.py
-  wrote /Users/poonszesen/arc-interactive/assets/mm02.gif (177 frames)
-2026-03-24 02:20:36 | INFO | Created new scorecard: 2efaa30c-145e-4750-a847-5a6bd9f7d6bc
-2026-03-24 02:20:36 | INFO | Successfully loaded game class Ms02 from /Users/poonszesen/arc-interactive/environment_files/ms02/63be02fb/ms02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ms02.gif (69 frames)
-2026-03-24 02:20:36 | INFO | Created new scorecard: 27cd855c-2faa-4a29-abbd-85eb782ec91f
-2026-03-24 02:20:36 | INFO | Successfully loaded game class Mx01 from /Users/poonszesen/arc-interactive/environment_files/mx01/63be02fb/mx01.py
-  wrote /Users/poonszesen/arc-interactive/assets/mx01.gif (60 frames)
-2026-03-24 02:20:36 | INFO | Created new scorecard: 73b52157-78a7-478f-bdeb-eccdb3c7aa4e
-2026-03-24 02:20:36 | INFO | Successfully loaded game class Nw02 from /Users/poonszesen/arc-interactive/environment_files/nw02/63be02fb/nw02.py
-  wrote /Users/poonszesen/arc-interactive/assets/nw02.gif (47 frames)
-2026-03-24 02:20:36 | INFO | Created new scorecard: edcf9963-79f5-499f-a282-09e3fc38b403
-2026-03-24 02:20:36 | INFO | Successfully loaded game class Ph02 from /Users/poonszesen/arc-interactive/environment_files/ph02/63be02fb/ph02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ph02.gif (72 frames)
-2026-03-24 02:20:38 | INFO | Created new scorecard: 17007ef0-9af9-4719-b41b-2b603405954f
-2026-03-24 02:20:38 | INFO | Successfully loaded game class Pt02 from /Users/poonszesen/arc-interactive/environment_files/pt02/63be02fb/pt02.py
-  wrote /Users/poonszesen/arc-interactive/assets/pt02.gif (37 frames)
-2026-03-24 02:20:38 | INFO | Created new scorecard: 6bd8c323-db5e-45cd-9212-af336ca082e9
-2026-03-24 02:20:38 | INFO | Successfully loaded game class Rp02 from /Users/poonszesen/arc-interactive/environment_files/rp02/63be02fb/rp02.py
-  rp02: relay GIF, 57 frames
-  wrote /Users/poonszesen/arc-interactive/assets/rp02.gif (57 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: 1028fbe3-53ef-4154-a5b6-ee00f6c49e3f
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Rz01 from /Users/poonszesen/arc-interactive/environment_files/rz01/63be02fb/rz01.py
-  rz01: showcase fallback (21 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/rz01.gif (64 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: 51a6a085-67f2-4a32-9501-6bd9d8eb8de5
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Sg01 from /Users/poonszesen/arc-interactive/environment_files/sg01/63be02fb/sg01.py
-  wrote /Users/poonszesen/arc-interactive/assets/sg01.gif (314 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: 5570aa08-2a71-46a9-953d-5f51cfe586c4
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Sk03 from /Users/poonszesen/arc-interactive/environment_files/sk03/63be02fb/sk03.py
-  wrote /Users/poonszesen/arc-interactive/assets/sk03.gif (162 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: aacd292d-1c0c-4ebc-a504-e6126c3410bc
-2026-03-24 02:20:39 | INFO | Successfully loaded game class St01 from /Users/poonszesen/arc-interactive/environment_files/st01/63be02fb/st01.py
-  st01: showcase fallback (16 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/st01.gif (64 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: 427d8e5a-c0b7-422c-a8b1-93d2d58e8b6d
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Sy02 from /Users/poonszesen/arc-interactive/environment_files/sy02/63be02fb/sy02.py
-  wrote /Users/poonszesen/arc-interactive/assets/sy02.gif (76 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: 782785b3-a898-47e1-9e9b-b934dfb9aed4
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Tb03 from /Users/poonszesen/arc-interactive/environment_files/tb03/63be02fb/tb03.py
-  tb03: showcase fallback (20 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/tb03.gif (64 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: cbf2b19f-6ace-42de-80d8-a3a816bb9384
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Tg01 from /Users/poonszesen/arc-interactive/environment_files/tg01/63be02fb/tg01.py
-  wrote /Users/poonszesen/arc-interactive/assets/tg01.gif (40 frames)
-2026-03-24 02:20:39 | INFO | Created new scorecard: e3b20960-3e28-4ae3-b84b-878f59b5d65b
-2026-03-24 02:20:39 | INFO | Successfully loaded game class Tt03 from /Users/poonszesen/arc-interactive/environment_files/tt03/63be02fb/tt03.py
-  wrote /Users/poonszesen/arc-interactive/assets/tt03.gif (425 frames)
-2026-03-24 02:20:40 | INFO | Created new scorecard: 8e8f6707-062e-42a3-ac24-9c2a866ab8c9
-2026-03-24 02:20:40 | INFO | Successfully loaded game class Ul02 from /Users/poonszesen/arc-interactive/environment_files/ul02/63be02fb/ul02.py
-  wrote /Users/poonszesen/arc-interactive/assets/ul02.gif (52 frames)
-2026-03-24 02:20:40 | INFO | Created new scorecard: 68f1d893-a7c1-460f-9140-c90ba42d01b3
-2026-03-24 02:20:40 | INFO | Successfully loaded game class Wm02 from /Users/poonszesen/arc-interactive/environment_files/wm02/63be02fb/wm02.py
-  wrote /Users/poonszesen/arc-interactive/assets/wm02.gif (504 frames)
-2026-03-24 02:20:40 | INFO | Created new scorecard: b998d724-c55c-4b51-8d68-8d5d6ab168e7
-2026-03-24 02:20:40 | INFO | Successfully loaded game class Zq02 from /Users/poonszesen/arc-interactive/environment_files/zq02/63be02fb/zq02.py
-  wrote /Users/poonszesen/arc-interactive/assets/zq02.gif (55 frames)
-2026-03-24 02:20:40 | INFO | Created new scorecard: 369b7d17-ff96-4495-96dc-163d1a665335
-2026-03-24 02:20:40 | INFO | Successfully loaded game class Ju01 from /Users/poonszesen/arc-interactive/environment_files/ju01/63be02fb/ju01.py
-  wrote /Users/poonszesen/arc-interactive/assets/ju01.gif (49 frames)
-2026-03-24 02:20:40 | INFO | Created new scorecard: 1cebacc0-d155-4514-9c63-3714d547157c
-2026-03-24 02:20:40 | INFO | Successfully loaded game class Co01 from /Users/poonszesen/arc-interactive/environment_files/co01/63be02fb/co01.py
-  wrote /Users/poonszesen/arc-interactive/assets/co01.gif (47 frames)
-2026-03-24 02:20:40 | INFO | Created new scorecard: 0cc23399-4a19-41d8-9746-20c00366e84f
-2026-03-24 02:20:40 | INFO | Successfully loaded game class Em01 from /Users/poonszesen/arc-interactive/environment_files/em01/63be02fb/em01.py
-  wrote /Users/poonszesen/arc-interactive/assets/em01.gif (471 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 6cd6b274-bdf3-411f-a711-7c741fc12323
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Nu01 from /Users/poonszesen/arc-interactive/environment_files/nu01/63be02fb/nu01.py
-  nu01: showcase fallback (24 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/nu01.gif (64 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 65d4cf46-10a2-4b88-b663-cecf85af2225
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Gl01 from /Users/poonszesen/arc-interactive/environment_files/gl01/63be02fb/gl01.py
-  wrote /Users/poonszesen/arc-interactive/assets/gl01.gif (44 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 1cc39ac6-eeed-4834-bfd5-48c665bcebb0
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Or01 from /Users/poonszesen/arc-interactive/environment_files/or01/63be02fb/or01.py
-  wrote /Users/poonszesen/arc-interactive/assets/or01.gif (377 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: de8ea981-c2bb-419f-9d3e-ecceba9f3fc9
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Ex03 from /Users/poonszesen/arc-interactive/environment_files/ex03/63be02fb/ex03.py
-  wrote /Users/poonszesen/arc-interactive/assets/ex03.gif (502 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 12c333bc-2698-4c41-9ca5-b326e3212101
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Zq03 from /Users/poonszesen/arc-interactive/environment_files/zq03/63be02fb/zq03.py
-  wrote /Users/poonszesen/arc-interactive/assets/zq03.gif (57 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: bfed8e79-bf42-4bf5-a163-ee23da78ca2e
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Nw03 from /Users/poonszesen/arc-interactive/environment_files/nw03/63be02fb/nw03.py
-  wrote /Users/poonszesen/arc-interactive/assets/nw03.gif (47 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 67ee526d-428d-4306-b3cb-f87d0e3d0d28
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Rs03 from /Users/poonszesen/arc-interactive/environment_files/rs03/63be02fb/rs03.py
-  wrote /Users/poonszesen/arc-interactive/assets/rs03.gif (49 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 0573b467-714b-41f7-bb94-60418cb4d305
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Sv03 from /Users/poonszesen/arc-interactive/environment_files/sv03/63be02fb/sv03.py
-  wrote /Users/poonszesen/arc-interactive/assets/sv03.gif (46 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 5c252b24-b4c5-4267-bfbc-497134c74fd2
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Sq03 from /Users/poonszesen/arc-interactive/environment_files/sq03/63be02fb/sq03.py
-  sq03: showcase fallback (30 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/sq03.gif (108 frames)
-2026-03-24 02:20:41 | INFO | Created new scorecard: 5b37b671-6327-46db-995d-b75ed34fd865
-2026-03-24 02:20:41 | INFO | Successfully loaded game class Dr01 from /Users/poonszesen/arc-interactive/environment_files/dr01/63be02fb/dr01.py
-  wrote /Users/poonszesen/arc-interactive/assets/dr01.gif (60 frames)
-2026-03-24 02:20:42 | INFO | Created new scorecard: 82f85953-37ed-48f6-9584-565261bae711
-2026-03-24 02:20:42 | INFO | Successfully loaded game class Vi01 from /Users/poonszesen/arc-interactive/environment_files/vi01/63be02fb/vi01.py
-  wrote /Users/poonszesen/arc-interactive/assets/vi01.gif (312 frames)
-2026-03-24 02:20:42 | INFO | Created new scorecard: 95b5d758-6adc-4e75-97ee-e13a238b4797
-2026-03-24 02:20:42 | INFO | Successfully loaded game class Wa01 from /Users/poonszesen/arc-interactive/environment_files/wa01/63be02fb/wa01.py
-  wrote /Users/poonszesen/arc-interactive/assets/wa01.gif (58 frames)
-2026-03-24 02:20:42 | INFO | Created new scorecard: 2990e27f-bc44-4810-b245-e618a5cf1d72
-2026-03-24 02:20:42 | INFO | Successfully loaded game class Fi01 from /Users/poonszesen/arc-interactive/environment_files/fi01/63be02fb/fi01.py
-  fi01: showcase fallback (21 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/fi01.gif (64 frames)
-2026-03-24 02:20:42 | INFO | Created new scorecard: 75d56138-9361-4c74-8634-699dbbaa6fe9
-2026-03-24 02:20:42 | INFO | Successfully loaded game class Ul03 from /Users/poonszesen/arc-interactive/environment_files/ul03/63be02fb/ul03.py
-  wrote /Users/poonszesen/arc-interactive/assets/ul03.gif (52 frames)
-2026-03-24 02:20:42 | INFO | Created new scorecard: 8acfbbae-0d84-4750-b5c9-e310a4cc9f1b
-2026-03-24 02:20:42 | INFO | Successfully loaded game class Wm03 from /Users/poonszesen/arc-interactive/environment_files/wm03/63be02fb/wm03.py
-  wrote /Users/poonszesen/arc-interactive/assets/wm03.gif (504 frames)
-2026-03-24 02:20:43 | INFO | Created new scorecard: 42bc8031-58f3-4043-9fab-852b4fab6fe7
-2026-03-24 02:20:43 | INFO | Successfully loaded game class Ms03 from /Users/poonszesen/arc-interactive/environment_files/ms03/63be02fb/ms03.py
-  wrote /Users/poonszesen/arc-interactive/assets/ms03.gif (69 frames)
-2026-03-24 02:20:43 | INFO | Created new scorecard: ed7f7fbe-bb32-4fb8-93c5-a66546bb3a03
-2026-03-24 02:20:43 | INFO | Successfully loaded game class Lo03 from /Users/poonszesen/arc-interactive/environment_files/lo03/63be02fb/lo03.py
-  wrote /Users/poonszesen/arc-interactive/assets/lo03.gif (504 frames)
-2026-03-24 02:20:43 | INFO | Created new scorecard: 5ffc569f-2d04-49da-84e9-021e1eb1853a
-2026-03-24 02:20:43 | INFO | Successfully loaded game class Pt03 from /Users/poonszesen/arc-interactive/environment_files/pt03/63be02fb/pt03.py
-  wrote /Users/poonszesen/arc-interactive/assets/pt03.gif (37 frames)
-2026-03-24 02:20:43 | INFO | Created new scorecard: 5f277ed2-80ba-4d7c-89df-4a5a8b194e48
-2026-03-24 02:20:43 | INFO | Successfully loaded game class Sy03 from /Users/poonszesen/arc-interactive/environment_files/sy03/63be02fb/sy03.py
-  wrote /Users/poonszesen/arc-interactive/assets/sy03.gif (138 frames)
-2026-03-24 02:20:43 | INFO | Created new scorecard: 327b2c1b-4d6e-44fc-aea5-9a8085c1e606
-2026-03-24 02:20:43 | INFO | Successfully loaded game class Mm03 from /Users/poonszesen/arc-interactive/environment_files/mm03/63be02fb/mm03.py
-  wrote /Users/poonszesen/arc-interactive/assets/mm03.gif (235 frames)
-2026-03-24 02:20:43 | INFO | Created new scorecard: 16ddbe82-69af-4f4a-9772-0abfd7df5f89
-2026-03-24 02:20:43 | INFO | Successfully loaded game class Ff03 from /Users/poonszesen/arc-interactive/environment_files/ff03/63be02fb/ff03.py
-  wrote /Users/poonszesen/arc-interactive/assets/ff03.gif (164 frames)
-2026-03-24 02:20:44 | INFO | Created new scorecard: b0f04068-3691-47d5-814f-d781442de16a
-2026-03-24 02:20:44 | INFO | Successfully loaded game class Lw03 from /Users/poonszesen/arc-interactive/environment_files/lw03/63be02fb/lw03.py
-  wrote /Users/poonszesen/arc-interactive/assets/lw03.gif (139 frames)
-2026-03-24 02:20:44 | INFO | Created new scorecard: 68963f17-2565-45d8-ba0f-4c4c8aa3485c
-2026-03-24 02:20:44 | INFO | Successfully loaded game class Rp03 from /Users/poonszesen/arc-interactive/environment_files/rp03/63be02fb/rp03.py
-  rp03: showcase fallback (30 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/rp03.gif (108 frames)
-2026-03-24 02:20:44 | INFO | Created new scorecard: b41cb55b-8695-4039-bcf4-5925275ae877
-2026-03-24 02:20:44 | INFO | Successfully loaded game class Ml03 from /Users/poonszesen/arc-interactive/environment_files/ml03/63be02fb/ml03.py
-  wrote /Users/poonszesen/arc-interactive/assets/ml03.gif (365 frames)
-2026-03-24 02:20:44 | INFO | Created new scorecard: da08c7af-85ea-4e86-9ab5-ccae5df7d9b9
-2026-03-24 02:20:44 | INFO | Successfully loaded game class Ck03 from /Users/poonszesen/arc-interactive/environment_files/ck03/63be02fb/ck03.py
-  wrote /Users/poonszesen/arc-interactive/assets/ck03.gif (86 frames)
-2026-03-24 02:20:44 | INFO | Created new scorecard: f81bb04a-307c-455b-a263-865cbd608387
-2026-03-24 02:20:44 | INFO | Successfully loaded game class Ph03 from /Users/poonszesen/arc-interactive/environment_files/ph03/63be02fb/ph03.py
-  ph03: ph03 registry GIF, 5 levels, 252 frames
-  wrote /Users/poonszesen/arc-interactive/assets/ph03.gif (252 frames)
-2026-03-24 02:20:53 | INFO | Created new scorecard: 1cdc10b5-a2d1-4507-998a-a08337a21464
-2026-03-24 02:20:53 | INFO | Successfully loaded game class Bn03 from /Users/poonszesen/arc-interactive/environment_files/bn03/63be02fb/bn03.py
-  bn03: bn03 registry GIF, 3 levels, 112 frames
-  wrote /Users/poonszesen/arc-interactive/assets/bn03.gif (112 frames)
-2026-03-24 02:20:53 | INFO | Created new scorecard: ff558444-4ad5-4e8f-b05a-9a64a0804565
-2026-03-24 02:20:53 | INFO | Successfully loaded game class Bi01 from /Users/poonszesen/arc-interactive/environment_files/bi01/63be02fb/bi01.py
-  bi01: bi01 registry GIF, 5 levels, 8 moves, 106 frames
-  wrote /Users/poonszesen/arc-interactive/assets/bi01.gif (106 frames)
-2026-03-24 02:20:53 | INFO | Created new scorecard: 2d2ec1c8-b878-4be3-ae6a-aaf2b9631a52
-2026-03-24 02:20:53 | INFO | Successfully loaded game class Rk01 from /Users/poonszesen/arc-interactive/environment_files/rk01/63be02fb/rk01.py
-  rk01: rk-jw planned GIF, 5 levels, 8 steps, 116 frames
-  wrote /Users/poonszesen/arc-interactive/assets/rk01.gif (116 frames)
-2026-03-24 02:20:53 | INFO | Created new scorecard: 196dab3c-a135-4283-8796-456492b24bb0
-2026-03-24 02:20:53 | INFO | Successfully loaded game class Sn01 from /Users/poonszesen/arc-interactive/environment_files/sn01/63be02fb/sn01.py
-  sn01: rk-jw planned GIF, 4 levels, 63 steps, 145 frames
-  wrote /Users/poonszesen/arc-interactive/assets/sn01.gif (145 frames)
-2026-03-24 02:20:55 | INFO | Created new scorecard: f3e1c9b8-a538-4301-bd88-cd81e8f34429
-2026-03-24 02:20:55 | INFO | Successfully loaded game class Tr01 from /Users/poonszesen/arc-interactive/environment_files/tr01/63be02fb/tr01.py
-  tr01: rk-jw planned GIF, 5 levels, 64 steps, 162 frames
-  wrote /Users/poonszesen/arc-interactive/assets/tr01.gif (162 frames)
-2026-03-24 02:23:22 | INFO | Created new scorecard: 57ecfefa-d478-4eed-9f25-b05c5a9df5d1
-2026-03-24 02:23:22 | INFO | Successfully loaded game class Vp01 from /Users/poonszesen/arc-interactive/environment_files/vp01/63be02fb/vp01.py
-  vp01: rk-jw planned GIF, 5 levels, 70 steps, 168 frames
-  wrote /Users/poonszesen/arc-interactive/assets/vp01.gif (168 frames)
-2026-03-24 02:23:22 | INFO | Created new scorecard: ffdbe49f-9dca-4fbf-a53f-6e04129ae18b
-2026-03-24 02:23:22 | INFO | Successfully loaded game class Bt01 from /Users/poonszesen/arc-interactive/environment_files/bt01/63be02fb/bt01.py
-  bt01: rk-jw planned GIF, 5 levels, 63 steps, 161 frames
-  wrote /Users/poonszesen/arc-interactive/assets/bt01.gif (161 frames)
-2026-03-24 02:23:22 | INFO | Created new scorecard: e44ba36d-024f-4cd1-9aa9-cae6fd66b000
-2026-03-24 02:23:22 | INFO | Successfully loaded game class Dg01 from /Users/poonszesen/arc-interactive/environment_files/dg01/63be02fb/dg01.py
-  dg01: rk-jw planned GIF, 5 levels, 61 steps, 159 frames
-  wrote /Users/poonszesen/arc-interactive/assets/dg01.gif (159 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 4a812626-c65a-4de1-bc07-7408498d9bc3
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Mb01 from /Users/poonszesen/arc-interactive/environment_files/mb01/63be02fb/mb01.py
-  mb01: rk-jw planned GIF, 5 levels, 53 steps, 151 frames
-  wrote /Users/poonszesen/arc-interactive/assets/mb01.gif (151 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 586de779-8663-4cec-8591-960b6d5a763c
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Op01 from /Users/poonszesen/arc-interactive/environment_files/op01/63be02fb/op01.py
-  op01: rk-jw planned GIF, 5 levels, 23 steps, 131 frames
-  wrote /Users/poonszesen/arc-interactive/assets/op01.gif (131 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 35727e71-3372-47c8-916f-4e7c8015f05d
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Kb01 from /Users/poonszesen/arc-interactive/environment_files/kb01/63be02fb/kb01.py
-  kb01: rk-jw planned GIF, 5 levels, 27 steps, 168 frames
-  wrote /Users/poonszesen/arc-interactive/assets/kb01.gif (168 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: f35d9582-ea9e-4d41-9c54-dfae6ded3dc4
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Eb01 from /Users/poonszesen/arc-interactive/environment_files/eb01/63be02fb/eb01.py
-  eb01: rk-jw planned GIF, 5 levels, 12 steps, 120 frames
-  wrote /Users/poonszesen/arc-interactive/assets/eb01.gif (120 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: cbc74031-37c8-4c31-9e5a-e97f3aea7478
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Fg01 from /Users/poonszesen/arc-interactive/environment_files/fg01/63be02fb/fg01.py
-  fg01: rk-jw planned GIF, 5 levels, 63 steps, 161 frames
-  wrote /Users/poonszesen/arc-interactive/assets/fg01.gif (161 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: d9a66dab-a9c7-4369-ba0e-e2866b1e6ad1
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Jw01 from /Users/poonszesen/arc-interactive/environment_files/jw01/63be02fb/jw01.py
-  jw01: rk-jw planned GIF, 5 levels, 57 steps, 165 frames
-  wrote /Users/poonszesen/arc-interactive/assets/jw01.gif (165 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: dd2d8eaa-129f-40d1-a951-6d2c88416da0
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Pd01 from /Users/poonszesen/arc-interactive/environment_files/pd01/63be02fb/pd01.py
-  pd01: pd01 registry GIF, 276 frames
-  wrote /Users/poonszesen/arc-interactive/assets/pd01.gif (276 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 3762dc0d-2b42-4cc9-8ed4-68adf7b8a96d
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Rh01 from /Users/poonszesen/arc-interactive/environment_files/rh01/63be02fb/rh01.py
-  rh01: showcase fallback (19 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/rh01.gif (64 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: df177cfd-52e9-4c76-ab93-ac2b92f23433
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Av01 from /Users/poonszesen/arc-interactive/environment_files/av01/63be02fb/av01.py
-  wrote /Users/poonszesen/arc-interactive/assets/av01.gif (56 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 03d53311-b422-42de-b615-b7606172f0e2
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Pw01 from /Users/poonszesen/arc-interactive/environment_files/pw01/63be02fb/pw01.py
-  wrote /Users/poonszesen/arc-interactive/assets/pw01.gif (505 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 7c14a4e4-da50-4dbe-afb5-dbabbf0ab56b
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Es01 from /Users/poonszesen/arc-interactive/environment_files/es01/63be02fb/es01.py
-  es01: showcase fallback (25 frames)
-  wrote /Users/poonszesen/arc-interactive/assets/es01.gif (64 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 824a915f-279d-4656-b2a2-8ad11d18b496
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Wg01 from /Users/poonszesen/arc-interactive/environment_files/wg01/63be02fb/wg01.py
-  wrote /Users/poonszesen/arc-interactive/assets/wg01.gif (61 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 73b0c8ef-8e11-4cf4-bc41-79e958e6e6c2
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Hs01 from /Users/poonszesen/arc-interactive/environment_files/hs01/63be02fb/hs01.py
-  wrote /Users/poonszesen/arc-interactive/assets/hs01.gif (42 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: 50ef013a-02a5-4759-b599-28f4cafa889c
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Tm01 from /Users/poonszesen/arc-interactive/environment_files/tm01/63be02fb/tm01.py
-  wrote /Users/poonszesen/arc-interactive/assets/tm01.gif (47 frames)
-2026-03-24 02:23:23 | INFO | Created new scorecard: b2798d8a-1bd9-4d38-aea4-d749980b4abf
-2026-03-24 02:23:23 | INFO | Successfully loaded game class Cy01 from /Users/poonszesen/arc-interactive/environment_files/cy01/63be02fb/cy01.py
-  wrote /Users/poonszesen/arc-interactive/assets/cy01.gif (494 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: f73a33d3-deed-434e-a5f9-1cb43f88173b
-2026-03-24 02:23:24 | INFO | Successfully loaded game class In01 from /Users/poonszesen/arc-interactive/environment_files/in01/63be02fb/in01.py
-  wrote /Users/poonszesen/arc-interactive/assets/in01.gif (52 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: 36a308fa-fae5-4299-8531-8d8513bbbaee
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Rc01 from /Users/poonszesen/arc-interactive/environment_files/rc01/63be02fb/rc01.py
-  wrote /Users/poonszesen/arc-interactive/assets/rc01.gif (63 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: d0fcdcd0-c1d5-4305-b788-ff0bd8b68eaf
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Bl01 from /Users/poonszesen/arc-interactive/environment_files/bl01/63be02fb/bl01.py
-  wrote /Users/poonszesen/arc-interactive/assets/bl01.gif (50 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: c2f84f6b-4c55-43ec-9d22-8bf909468ffc
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Sw01 from /Users/poonszesen/arc-interactive/environment_files/sw01/63be02fb/sw01.py
-  wrote /Users/poonszesen/arc-interactive/assets/sw01.gif (60 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: d8735cfa-4c44-4551-8114-5f841fbb8341
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Tw01 from /Users/poonszesen/arc-interactive/environment_files/tw01/63be02fb/tw01.py
-  tw01: tw_rv planned GIF, 3 level(s), 40 moves, 126 frames
-  wrote /Users/poonszesen/arc-interactive/assets/tw01.gif (126 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: c12b4b71-669c-4c17-9516-4ac292b19c28
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Pm01 from /Users/poonszesen/arc-interactive/environment_files/pm01/63be02fb/pm01.py
-  pm01: tw_rv planned GIF, 3 level(s), 41 moves, 125 frames
-  wrote /Users/poonszesen/arc-interactive/assets/pm01.gif (125 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: 221e6156-43f1-49e7-8222-aabb09793dc4
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Hz01 from /Users/poonszesen/arc-interactive/environment_files/hz01/63be02fb/hz01.py
-  hz01: tw_rv planned GIF, 3 level(s), 45 moves, 129 frames
-  wrote /Users/poonszesen/arc-interactive/assets/hz01.gif (129 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: ff30d6fa-ab60-40cc-82a3-800f3a63ac08
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Cq01 from /Users/poonszesen/arc-interactive/environment_files/cq01/63be02fb/cq01.py
-  cq01: tw_rv planned GIF, 3 level(s), 47 moves, 127 frames
-  wrote /Users/poonszesen/arc-interactive/assets/cq01.gif (127 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: d5935a6f-a1eb-4776-9a10-1a6a70abd6ee
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Lf01 from /Users/poonszesen/arc-interactive/environment_files/lf01/63be02fb/lf01.py
-  lf01: tw_rv planned GIF, 3 level(s), 40 moves, 139 frames
-  wrote /Users/poonszesen/arc-interactive/assets/lf01.gif (139 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: b8b51a5f-f3e6-4b01-8140-f9822fb88931
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Sb01 from /Users/poonszesen/arc-interactive/environment_files/sb01/63be02fb/sb01.py
-  sb01: tw_rv planned GIF, 3 level(s), 33 moves, 105 frames
-  wrote /Users/poonszesen/arc-interactive/assets/sb01.gif (105 frames)
-2026-03-24 02:23:24 | INFO | Created new scorecard: 39ddbc82-c93c-4055-9254-cad1c081255a
-2026-03-24 02:23:24 | INFO | Successfully loaded game class Wp01 from /Users/poonszesen/arc-interactive/environment_files/wp01/63be02fb/wp01.py
-  wrote /Users/poonszesen/arc-interactive/assets/wp01.gif (470 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: e9dddd3d-0b06-4175-88f0-eb1788401fb7
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Dv01 from /Users/poonszesen/arc-interactive/environment_files/dv01/63be02fb/dv01.py
-  dv01: tw_rv planned GIF, 3 level(s), 43 moves, 123 frames
-  wrote /Users/poonszesen/arc-interactive/assets/dv01.gif (123 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: ac3a7fb8-1981-4fa9-bae4-d0a0baf686a7
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Ox01 from /Users/poonszesen/arc-interactive/environment_files/ox01/63be02fb/ox01.py
-  ox01: tw_rv planned GIF, 3 level(s), 43 moves, 123 frames
-  wrote /Users/poonszesen/arc-interactive/assets/ox01.gif (123 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: 3b2ca20f-037f-4a97-a978-96a6fab08524
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Sl01 from /Users/poonszesen/arc-interactive/environment_files/sl01/v1/sl01.py
-  sl01: tw_rv planned GIF, 3 level(s), 7 moves, 103 frames
-  wrote /Users/poonszesen/arc-interactive/assets/sl01.gif (103 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: bfb2a68a-b919-4749-97ab-cae89dda4450
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Ci01 from /Users/poonszesen/arc-interactive/environment_files/ci01/v1/ci01.py
-  wrote /Users/poonszesen/arc-interactive/assets/ci01.gif (160 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: cba176aa-de30-416b-9f5c-3940ef46e0e0
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Rv01 from /Users/poonszesen/arc-interactive/environment_files/rv01/v1/rv01.py
-  wrote /Users/poonszesen/arc-interactive/assets/rv01.gif (78 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: fb980118-7b98-4c1d-94cb-ad62c83e3bfe
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Pk01 from /Users/poonszesen/arc-interactive/environment_files/pk01/v1/pk01.py
-  pk01: pk01 registry GIF, 325 frames
-  wrote /Users/poonszesen/arc-interactive/assets/pk01.gif (325 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: 119916b5-efb6-48c2-8e37-cf4abf3d3662
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Kv01 from /Users/poonszesen/arc-interactive/environment_files/kv01/v1/kv01.py
-  kv01: kv01 registry GIF, 190 frames
-  wrote /Users/poonszesen/arc-interactive/assets/kv01.gif (190 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: a129075b-87e0-448d-98ef-eba836ff3cff
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Wr01 from /Users/poonszesen/arc-interactive/environment_files/wr01/v1/wr01.py
-  wr01: wr01 registry GIF, 265 frames
-  wrote /Users/poonszesen/arc-interactive/assets/wr01.gif (265 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: a9334dfc-01f2-40ff-88b9-50c3fe0957d9
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Dp01 from /Users/poonszesen/arc-interactive/environment_files/dp01/v1/dp01.py
-  dp01: dp01 registry GIF, 327 frames
-  wrote /Users/poonszesen/arc-interactive/assets/dp01.gif (327 frames)
-2026-03-24 02:23:25 | INFO | Created new scorecard: 545447ce-57b1-4c70-9c11-9e6e04b170e9
-2026-03-24 02:23:25 | INFO | Successfully loaded game class Df01 from /Users/poonszesen/arc-interactive/environment_files/df01/v1/df01.py
+ll01 ok 144 frames
+wl01 ok 302 frames
+dd01 ok 334 frames
+ph01 ok 126 frames
+bn01 ok 16 frames
+dl01 ok 443 frames
+fw01 ok 147 frames
+gp02 ok 504 frames
+hd01 ok 93 frames
+kn01 ok 443 frames
+lo02 ok 504 frames
+mc01 ok 444 frames
+ng01 ok 504 frames
+ob01 ok 467 frames
+pu01 ok 504 frames
+qr01 ok 174 frames
+rs02 ok 44 frames
+sk02 ok 208 frames
+sp01 ok 214 frames
+sq02 ok 104 frames
+sv02 ok 69 frames
+tb02 ok 20 frames
+tc01 ok 79 frames
+tt02 ok 174 frames
+zm01 ok 504 frames
+as01 ok 502 frames
+bp01 ok 505 frames
+bn02 ok 69 frames
+ck02 ok 97 frames
+cr01 ok 91 frames
+dm01 ok 504 frames
+ex02 ok 502 frames
+fl01 ok 502 frames
+ff02 ok 214 frames
+gp03 ok 504 frames
+lw02 ok 223 frames
+ml02 ok 359 frames
+mm02 ok 177 frames
+ms02 ok 83 frames
+mx01 ok 73 frames
+nw02 ok 52 frames
+ph02 ok 72 frames
+pt02 ok 37 frames
+rp02 ok 57 frames
+rz01 ok 21 frames
+sg01 ok 439 frames
+sk03 ok 162 frames
+st01 ok 16 frames
+sy02 ok 76 frames
+tb03 ok 20 frames
+tg01 ok 51 frames
+tt03 ok 398 frames
+ul02 ok 74 frames
+wm02 ok 504 frames
+zq02 ok 148 frames
+ju01 ok 63 frames
+co01 ok 59 frames
+em01 ok 443 frames
+nu01 ok 24 frames
+gl01 ok 58 frames
+or01 ok 397 frames
+ex03 ok 502 frames
+zq03 ok 70 frames
+nw03 ok 52 frames
+rs03 ok 49 frames
+sv03 ok 46 frames
+sq03 ok 124 frames
+dr01 ok 73 frames
+vi01 ok 313 frames
+wa01 ok 68 frames
+fi01 ok 21 frames
+ul03 ok 74 frames
+wm03 ok 504 frames
+ms03 ok 83 frames
+lo03 ok 504 frames
+pt03 ok 37 frames
+sy03 ok 138 frames
+mm03 ok 235 frames
+ff03 ok 254 frames
+lw03 ok 139 frames
+rp03 ok 30 frames
+ml03 ok 365 frames
+ck03 ok 86 frames
+ph03 ok 252 frames
+bn03 ok 112 frames
+bi01 ok 106 frames
+rk01 ok 116 frames
+sn01 ok 145 frames
+tr01 ok 162 frames
+vp01 ok 168 frames
+bt01 ok 161 frames
+dg01 ok 159 frames
+mb01 ok 151 frames
+op01 ok 131 frames
+kb01 ok 168 frames
+eb01 ok 120 frames
+fg01 ok 161 frames
+jw01 ok 165 frames
+pd01 ok 276 frames
+rh01 ok 19 frames
+av01 ok 56 frames
+pw01 ok 505 frames
+es01 ok 25 frames
+wg01 ok 61 frames
+hs01 ok 42 frames
+tm01 ok 47 frames
+cy01 ok 494 frames
+in01 ok 52 frames
+rc01 ok 63 frames
+bl01 ok 50 frames
+sw01 ok 60 frames
+tw01 ok 126 frames
+pm01 ok 125 frames
+hz01 ok 129 frames
+cq01 ok 127 frames
+lf01 ok 139 frames
+sb01 ok 105 frames
+wp01 ok 470 frames
+dv01 ok 123 frames
+ox01 ok 123 frames
+sl01 ok 103 frames
+ci01 ok 160 frames
+rv01 ok 78 frames
+pk01 ok 325 frames
+kv01 ok 190 frames
+wr01 ok 265 frames
+dp01 ok 327 frames
+df01 ok 475 frames
+rn01 ok 188 frames
+sc01 ok 356 frames
+au01 ok 98 frames
+cf01 ok 72 frames
+ep01 ok 57 frames
+tf01 ok 320 frames
+ec01 ok 197 frames
+tk01 ok 503 frames
+hn01 ok 504 frames
+fb01 ok 79 frames
+lp01 ok 39 frames
+rb01 ok 110 frames
+at01 ok 502 frames
+wb01 ok 69 frames
+lk01 ok 420 frames
+dn01 ok 399 frames
+qt01 ok 56 frames
+vt01 ok 74 frames
+fc01 ok 351 frames
+pj01 ok 75 frames
+gc01 ok 64 frames
+sr01 ok 74 frames
+cs01 ok 439 frames
+ct01 ok 289 frames
+cz01 ok 50 frames
+eg01 ok 504 frames
+ff04 ok 504 frames
+gp04 ok 504 frames
+lo04 ok 504 frames
+lo05 ok 504 frames
+qr04 ok 258 frames
+sq04 ok 305 frames
+sq05 ok 365 frames
+pt04 ok 502 frames
+pt05 ok 504 frames
+sy04 ok 76 frames
+dm04 ok 504 frames
+pk02 ok 504 frames
+fl04 ok 503 frames
+lw04 ok 503 frames
+sf04 ok 56 frames
+sp04 ok 139 frames
+ll04 ok 504 frames
+ab01 ok 38 frames
+df04 ok 98 frames
+ih01 ok 77 frames
+tc04 ok 56 frames
+zm04 ok 39 frames
+pu04 ok 504 frames
+pd04 ok 504 frames
+ck04 ok 504 frames
+rp04 ok 39 frames
+ph04 ok 68 frames
+ml04 ok 504 frames
+pj04 ok 504 frames
+wm04 ok 510 frames
+sg04 ok 64 frames
+ng04 ok 504 frames
+bn04 ok 114 frames
+sk04 ok 503 frames
+pb04 ok 504 frames
+rr01 ok 504 frames
+hn04 ok 504 frames
+kv04 ok 504 frames
+rs04 ok 456 frames
+ms04 ok 289 frames
+cw01 ok 64 frames
+cx01 ok 320 frames
+cu01 ok 504 frames
+cv01 ok 504 frames
+mm04 ok 86 frames
+mm05 ok 52 frames
+fe02 ok 126 frames

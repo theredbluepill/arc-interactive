@@ -170,14 +170,16 @@
     "max_total_steps": 2400,
     "stagnation_steps": 140,
     "exploration_burst": 44,
-    "gif_duration_ms": 170
+    "gif_duration_ms": 170,
+    "min_frames": 19
   },
   "es01": {
     "target_levels": 3,
     "max_total_steps": 2600,
     "stagnation_steps": 120,
     "exploration_burst": 42,
-    "gif_duration_ms": 170
+    "gif_duration_ms": 170,
+    "min_frames": 25
   },
   "av01": {
     "target_levels": 3,
@@ -362,6 +364,12 @@
     "bn_level_hold_frames": 16,
     "gif_duration_ms": 130
   },
+  "bn02": {
+    "target_levels": 1,
+    "max_gif_frames": 900,
+    "bn_level_hold_frames": 16,
+    "gif_duration_ms": 130
+  },
   "bi01": {
     "target_levels": 5,
     "bi_level_hold_frames": 16,
@@ -415,5 +423,39 @@
   "jw01": {
     "rk_jw_level_hold_frames": 18,
     "gif_duration_ms": 175
+  },
+  "bn01": {
+    "min_frames": 16
+  },
+  "tb02": {
+    "min_frames": 20
+  },
+  "rz01": {
+    "min_frames": 21
+  },
+  "st01": {
+    "min_frames": 16
+  },
+  "tb03": {
+    "min_frames": 20
+  },
+  "nu01": {
+    "min_frames": 24
+  },
+  "fi01": {
+    "min_frames": 21
+  },
+  "rp03": {
+    "min_frames": 30
+  },
+  "sq02": {
+    "target_levels": 4,
+    "sq02_level_hold_frames": 22,
+    "gif_duration_ms": 180
+  },
+  "sq03": {
+    "target_levels": 4,
+    "sq03_level_hold_frames": 22,
+    "gif_duration_ms": 180
   }
 }

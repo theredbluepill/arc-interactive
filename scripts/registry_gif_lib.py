@@ -1938,9 +1938,15 @@ def record_registry_gif(
 
     snap_repeats(8)
 
-    if len(images) < min_frames or step_abort:
+    # Do not wipe a long partial capture: step_abort (e.g. "too many frames") can occur
+    # after we already have enough HUD frames; showcase fallback would replace good content.
+    if step_abort and len(images) >= min_frames and verbose:
+        print(f"  {game_id}: step abort after {len(images)} frames; keeping capture (no showcase)")
+
+    if len(images) < min_frames:
         if verbose:
-            print(f"  {game_id}: showcase fallback ({len(images)} frames)")
+            extra = f", step_abort={step_abort}" if step_abort else ""
+            print(f"  {game_id}: showcase fallback ({len(images)} frames{extra})")
         try:
             res = run_showcase_fallback(env, res, images, snap_repeats)
         except _StepAbort:

@@ -523,7 +523,7 @@ def _record_bn_beacon_registry_gif(
     return res, images
 
 
-def record_bn01_registry_gif(
+def record_bn02_registry_gif(
     game_id: str,
     root: Path,
     *,
@@ -682,7 +682,7 @@ def record_bi01_registry_gif(
 
 REGISTRY_RECORDERS = {
     "ph03": record_ph03_registry_gif,
-    "bn01": record_bn01_registry_gif,
+    "bn02": record_bn02_registry_gif,
     "bn03": record_bn03_registry_gif,
     "bi01": record_bi01_registry_gif,
 }
