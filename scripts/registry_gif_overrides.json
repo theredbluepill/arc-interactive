@@ -31,6 +31,9 @@
   "fe02": {
     "gif_duration_ms": 180
   },
+  "rp02": {
+    "gif_duration_ms": 180
+  },
   "sq04": {
     "target_levels": 5,
     "sq04_level_hold_frames": 24,

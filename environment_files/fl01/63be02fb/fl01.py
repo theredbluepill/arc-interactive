@@ -4,20 +4,60 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Fl01UI(RenderableUserDisplay):
-    def __init__(self, cur: int, need: int) -> None:
-        self._cur = cur
-        self._need = need
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, cur: int, need: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Fl01UI(RenderableUserDisplay):
+    def __init__(self, cur: int, need: int, num_levels: int) -> None:
         self._cur = cur
         self._need = need
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._gs: GameState | None = None
+
+    def update(
+        self,
+        cur: int,
+        need: int,
+        *,
+        level_index: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
+        self._cur = cur
+        self._need = need
+        if level_index is not None:
+            self._level_index = level_index
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -25,9 +65,13 @@ class Fl01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._cur, 15)):
             frame[h - 2, 1 + i] = 10
         frame[h - 2, w - 3] = 3 + (self._need % 5)
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -130,10 +174,12 @@ levels = [
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
+_NUM_LEVELS = len(levels)
+
 
 class Fl01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Fl01UI(0, 1)
+        self._ui = Fl01UI(0, 1, _NUM_LEVELS)
         super().__init__(
             "fl01",
             levels,
@@ -148,7 +194,7 @@ class Fl01(ARCBaseGame):
         self._need = int(self.current_level.get_data("path_length") or 6)
         self._path: list[tuple[int, int]] = []
         self._clear_path_sprites()
-        self._ui.update(0, self._need)
+        self._ui.update(0, self._need, level_index=self.level_index, gs=self._state)
 
     def _clear_path_sprites(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("path_px")):
@@ -165,7 +211,12 @@ class Fl01(ARCBaseGame):
             if (x, y) in (self._endpoints()):
                 continue
             self.current_level.add_sprite(sprites["path"].clone().set_position(x, y))
-        self._ui.update(len(self._path), self._need)
+        self._ui.update(
+            len(self._path),
+            self._need,
+            level_index=self.level_index,
+            gs=self._state,
+        )
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:

@@ -4,7 +4,15 @@ from __future__ import annotations
 
 from collections import deque
 
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    GameState,
+    Level,
+    RenderableUserDisplay,
+    Sprite,
+)
 
 BG, PAD = 5, 4
 G = 14
@@ -14,12 +22,50 @@ DY = (-1, 0, 1, 0)
 OPP = (2, 3, 0, 1)
 
 
-class Ck04UI(RenderableUserDisplay):
-    def __init__(self, ok: bool) -> None:
-        self._ok = ok
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, ok: bool) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Ck04UI(RenderableUserDisplay):
+    def __init__(self, ok: bool, num_levels: int) -> None:
         self._ok = ok
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._gs: GameState | None = None
+
+    def update(
+        self,
+        ok: bool,
+        *,
+        level_index: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
+        self._ok = ok
+        if level_index is not None:
+            self._level_index = level_index
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -27,7 +73,11 @@ class Ck04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         frame[h - 2, 2] = 14 if self._ok else 8
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -78,10 +128,12 @@ levels = [
     ),
 ]
 
+_NUM_LEVELS = len(levels)
+
 
 class Ck04(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ck04UI(False)
+        self._ui = Ck04UI(False, _NUM_LEVELS)
         super().__init__(
             "ck04",
             levels,
@@ -100,7 +152,11 @@ class Ck04(ARCBaseGame):
         o = self.current_level.get_sprites_by_tag("out_port")[0]
         self._inp = (i.x, i.y)
         self._out = (o.x, o.y)
-        self._ui.update(self._reach())
+        self._ui.update(
+            self._reach(),
+            level_index=self.level_index,
+            gs=self._state,
+        )
 
     def _nei(self, x: int, y: int) -> list[tuple[int, int]]:
         out: list[tuple[int, int]] = []
@@ -152,7 +208,16 @@ class Ck04(ARCBaseGame):
         if (gx, gy) in self._w:
             self._w[(gx, gy)] = (self._w[(gx, gy)] + 1) % 4
             ok = self._reach()
-            self._ui.update(ok)
+            self._ui.update(
+                ok,
+                level_index=self.level_index,
+                gs=self._state,
+            )
             if ok:
                 self.next_level()
+                self._ui.update(
+                    ok,
+                    level_index=self.level_index,
+                    gs=self._state,
+                )
         self.complete_action()

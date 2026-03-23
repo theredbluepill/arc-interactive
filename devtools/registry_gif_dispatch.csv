@@ -47,8 +47,8 @@ lw01,lw01,no,yes,• 1–2: Prev/next color • 3–4: No-op • 5: Undo segment
 rp01,rp01,no,yes,• 1–4: No-op • 5: Fire pulse • 6: Toggle relay
 ml01,ml01,yes,yes,• 1–4: No-op • 5: Fire • 6: Mirror (click) • 7: Undo last 5/6
 sf01,sf01,yes,no,• 1–4: Move stencil • 5: Paint
-ll01,generic,no,yes,• 1–4: No-op • 5: Step CA • 6: Toggle cell
-wl01,generic,no,yes,• 1–4: Move • 6: Place/remove my wall
+ll01,wl_ll,no,yes,• 1–4: No-op • 5: Step CA • 6: Toggle cell
+wl01,wl_ll,no,yes,• 1–4: Move • 6: Place/remove my wall
 dd01,generic,no,no,• 1–4: Move • 5: Pickup / deliver / ping
 ck01,generic,no,yes,• 1–4: No-op • 5: Test wire • 6: Toggle wire
 ph01,generic,no,yes,• 1–4: No-op • 5: Blur step • 6: Increment phase
@@ -91,7 +91,7 @@ mx01,generic,no,no,• 1-4: Move • 5: Melt
 nw02,generic,no,no,• 1-4: Move
 ph02,generic,no,yes,• 1-4: No-op • 5: Step • 6: Inc
 pt02,generic,no,yes,• 6: Click band
-rp02,generic,no,yes,• 1–4: No-op • 5: Fire • 6: Toggle relay
+rp02,rp02,yes,yes,• 1–4: No-op • 5: Fire • 6: Toggle relay
 rz01,generic,no,no,• 1-4: Move
 sg01,generic,no,no,• 1-4: No-op • 5: Commit
 sk03,generic,no,no,• 1-4: Move

@@ -4,18 +4,57 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Ju01UI(RenderableUserDisplay):
-    def __init__(self, d: int) -> None:
-        self._d = d
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, d: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Ju01UI(RenderableUserDisplay):
+    def __init__(self, d: int, num_levels: int) -> None:
         self._d = d
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._gs: GameState | None = None
+
+    def update(
+        self,
+        d: int,
+        *,
+        level_index: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
+        self._d = d
+        if level_index is not None:
+            self._level_index = level_index
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -23,8 +62,12 @@ class Ju01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._d, 12)):
             frame[h - 2, 1 + i] = 12
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -116,10 +159,12 @@ levels = [
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
+_NUM_LEVELS = len(levels)
+
 
 class Ju01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ju01UI(1)
+        self._ui = Ju01UI(1, _NUM_LEVELS)
         super().__init__(
             "ju01",
             levels,
@@ -132,7 +177,11 @@ class Ju01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
-        self._ui.update(int(level.get_data("difficulty") or 1))
+        self._ui.update(
+            int(level.get_data("difficulty") or 1),
+            level_index=self.level_index,
+            gs=self._state,
+        )
 
     def _blocked(self, x: int, y: int) -> bool:
         gw, gh = self.current_level.grid_size
@@ -174,5 +223,10 @@ class Ju01(ARCBaseGame):
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
+            self._ui.update(
+                int(self.current_level.get_data("difficulty") or 1),
+                level_index=self.level_index,
+                gs=self._state,
+            )
 
         self.complete_action()

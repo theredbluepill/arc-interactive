@@ -172,10 +172,12 @@ levels = [
     mk((8, 0), (8, 15), [], [(4, 8), (12, 8)], 6, 5),
 ]
 
+_NUM_LEVELS = len(levels)
+
 
 class Hd01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Hd01UI(0, 0, num_levels=len(levels))
+        self._ui = Hd01UI(0, 0, num_levels=_NUM_LEVELS)
         super().__init__(
             "hd01",
             levels,
@@ -195,7 +197,7 @@ class Hd01(ARCBaseGame):
             self._heat_row,
             self._immune,
             level_index=self.level_index,
-            num_levels=len(self.levels),
+            num_levels=_NUM_LEVELS,
             steps_mod=self._steps,
             interval=self._interval,
             gs=self._state,
@@ -244,7 +246,7 @@ class Hd01(ARCBaseGame):
                 self._heat_row,
                 self._immune,
                 level_index=self.level_index,
-                num_levels=len(self.levels),
+                num_levels=_NUM_LEVELS,
                 steps_mod=self._steps,
                 interval=self._interval,
                 gs=self._state,
@@ -260,7 +262,7 @@ class Hd01(ARCBaseGame):
             self._heat_row,
             self._immune,
             level_index=self.level_index,
-            num_levels=len(self.levels),
+            num_levels=_NUM_LEVELS,
             steps_mod=self._steps,
             interval=self._interval,
             gs=self._state,

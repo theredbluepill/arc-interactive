@@ -6,20 +6,64 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
 
-class Vi01UI(RenderableUserDisplay):
-    def __init__(self, vac: bool, k: int) -> None:
-        self._vac = vac
-        self._k = k
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, vac: bool, k: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Vi01UI(RenderableUserDisplay):
+    def __init__(self, vac: bool, k: int, num_levels: int) -> None:
         self._vac = vac
         self._k = k
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._tick = 0
+        self._gs: GameState | None = None
+
+    def update(
+        self,
+        vac: bool,
+        k: int,
+        *,
+        level_index: int | None = None,
+        tick: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
+        self._vac = vac
+        self._k = k
+        if level_index is not None:
+            self._level_index = level_index
+        if tick is not None:
+            self._tick = tick
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -27,8 +71,18 @@ class Vi01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         frame[h - 2, 2] = 10 if self._vac else 5
-        frame[h - 2, 3] = 8 if self._k <= 1 else 11
+        km = max(1, self._k)
+        rem = (km - (self._tick % km)) % km
+        if rem == 0:
+            rem = km
+        frame[h - 2, 3] = 8 if rem <= 1 else 11
+        for i in range(min(rem, 6)):
+            _rp(frame, h, w, 5 + i, h - 2, 12)
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -137,10 +191,12 @@ levels = [
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
+_NUM_LEVELS = len(levels)
+
 
 class Vi01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Vi01UI(False, 99)
+        self._ui = Vi01UI(False, 99, _NUM_LEVELS)
         self._tick = 0
         super().__init__(
             "vi01",
@@ -157,7 +213,13 @@ class Vi01(ARCBaseGame):
         self._vaccinated = False
         self._tick = 0
         k = int(self.current_level.get_data("spread_every") or 3)
-        self._ui.update(self._vaccinated, k)
+        self._ui.update(
+            self._vaccinated,
+            k,
+            level_index=self.level_index,
+            tick=self._tick,
+            gs=self._state,
+        )
 
     def _spread_plague(self) -> None:
         pl = [s for s in self.current_level.get_sprites_by_tag("plague")]
@@ -214,6 +276,13 @@ class Vi01(ARCBaseGame):
         if sp and "plague" in sp.tags:
             if not self._vaccinated:
                 self.lose()
+                self._ui.update(
+                    self._vaccinated,
+                    k,
+                    level_index=self.level_index,
+                    tick=self._tick,
+                    gs=self._state,
+                )
                 self.complete_action()
                 return
 
@@ -224,7 +293,13 @@ class Vi01(ARCBaseGame):
         if sp2 and "vaccine" in sp2.tags:
             self.current_level.remove_sprite(sp2)
             self._vaccinated = True
-            self._ui.update(True, k)
+            self._ui.update(
+                True,
+                k,
+                level_index=self.level_index,
+                tick=self._tick,
+                gs=self._state,
+            )
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             if not self._vaccinated:
@@ -232,5 +307,11 @@ class Vi01(ARCBaseGame):
                 return
             self.next_level()
 
-        self._ui.update(self._vaccinated, k)
+        self._ui.update(
+            self._vaccinated,
+            k,
+            level_index=self.level_index,
+            tick=self._tick,
+            gs=self._state,
+        )
         self.complete_action()

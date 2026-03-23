@@ -31,12 +31,15 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._split = False
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(self, *, level_index: int | None = None, state=None, split: bool | None = None) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if split is not None:
+            self._split = split
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +50,7 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        _rp(f, h, w, w - 2, h - 2, 6 if self._split else 5)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -74,11 +78,10 @@ class Qt01(ARCBaseGame):
         super().__init__("qt01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
-
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._split = False
         self._gx = self._gy = None
+        self._ui.update(level_index=self.level_index, state=self._state, split=False)
     def _blocked(self, x, y):
         gw, gh = self.current_level.grid_size
         if not (0<=x<gw and 0<=y<gh):
@@ -110,8 +113,10 @@ class Qt01(ARCBaseGame):
             gx, gy = self._gx+dx, self._gy+dy
             b1, b2 = self._blocked(nx,ny), self._blocked(gx,gy)
             if b1 and b2:
-                self._ui.update(level_index=self.level_index, state=self._state)
-                self.lose(); self.complete_action(); return
+                self.lose()
+                self._ui.update(level_index=self.level_index, state=self._state, split=self._split)
+                self.complete_action()
+                return
             if not b1:
                 self._p.set_position(nx,ny)
             if not b2:
@@ -120,7 +125,7 @@ class Qt01(ARCBaseGame):
             if hit and "observe" in hit.tags:
                 self._split = False
                 self._gx = self._gy = None
-        if self._p.x==self._g.x and self._p.y==self._g.y and not self._split:
+        if self._p.x == self._g.x and self._p.y == self._g.y and not self._split:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(level_index=self.level_index, state=self._state, split=self._split)
         self.complete_action()

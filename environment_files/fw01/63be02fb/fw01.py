@@ -8,6 +8,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -22,12 +23,70 @@ PLAYER_C = 9
 WALL_C = 3
 
 
-class Fw01UI(RenderableUserDisplay):
-    def __init__(self, tick: int) -> None:
-        self._tick = tick
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, tick: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Fw01UI(RenderableUserDisplay):
+    def __init__(
+        self,
+        tick: int,
+        *,
+        level_index: int = 0,
+        num_levels: int = 5,
+        every: int = 4,
+        fire_count: int = 0,
+        gs: GameState | None = None,
+    ) -> None:
         self._tick = tick
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._every = max(1, every)
+        self._fire_count = fire_count
+        self._gs = gs
+
+    def update(
+        self,
+        tick: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        every: int | None = None,
+        fire_count: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
+        self._tick = tick
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if every is not None:
+            self._every = max(1, every)
+        if fire_count is not None:
+            self._fire_count = fire_count
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -35,8 +94,18 @@ class Fw01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(min(self._tick % 5, 4)):
-            frame[h - 2, 1 + i] = 12
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        ev = self._every
+        rem = (ev - (self._tick % ev)) % ev
+        if rem == 0:
+            rem = ev
+        for i in range(min(rem, 8)):
+            _rp(frame, h, w, 1 + i, h - 2, 12)
+        for i in range(min(self._fire_count, 10)):
+            _rp(frame, h, w, w - 2 - i, h - 2, 8)
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -103,10 +172,12 @@ levels = [
     mk((12, 2), (12, 22), [], [(12, 10), (12, 14), (8, 12), (16, 12)], 3, 5),
 ]
 
+_NUM_LEVELS = len(levels)
+
 
 class Fw01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Fw01UI(0)
+        self._ui = Fw01UI(0, num_levels=_NUM_LEVELS)
         super().__init__(
             "fw01",
             levels,
@@ -121,7 +192,18 @@ class Fw01(ARCBaseGame):
         self._tick = 0
         self._every = int(self.current_level.get_data("spread_every") or 4)
         self._rng = random.Random(42 + hash(self.current_level.grid_size))
-        self._ui.update(0)
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        n_fire = len(self.current_level.get_sprites_by_tag("fire"))
+        self._ui.update(
+            self._tick,
+            level_index=self.level_index,
+            num_levels=_NUM_LEVELS,
+            every=self._every,
+            fire_count=n_fire,
+            gs=self._state,
+        )
 
     def _fire_cells(self) -> set[tuple[int, int]]:
         return {(s.x, s.y) for s in self.current_level.get_sprites_by_tag("fire")}
@@ -166,7 +248,7 @@ class Fw01(ARCBaseGame):
             self._tick += 1
             if self._tick % self._every == 0:
                 self._spread()
-            self._ui.update(self._tick)
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -202,6 +284,7 @@ class Fw01(ARCBaseGame):
         here = self.current_level.get_sprite_at(px, py, ignore_collidable=True)
         if here and "fire" in here.tags:
             self.lose()
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -209,5 +292,5 @@ class Fw01(ARCBaseGame):
         if self._player.x == gl.x and self._player.y == gl.y:
             self.next_level()
 
-        self._ui.update(self._tick)
+        self._sync_ui()
         self.complete_action()

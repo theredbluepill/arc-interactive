@@ -1,70 +1,141 @@
 """Plan #11: light phase gate."""
-from arcengine import ARCBaseGame, Camera, Level, RenderableUserDisplay, Sprite
+from arcengine import ARCBaseGame, Camera, GameState, Level, RenderableUserDisplay, Sprite
+
 BG, PAD = 5, 4
+
+
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
 class U(RenderableUserDisplay):
-    def __init__(self, ph):
+    def __init__(self, ph) -> None:
         self.ph = ph
         self._li = 0
         self._nlv = 1
-    def update(self, ph, level_index=None, num_levels=None):
+        self._gs: GameState | None = None
+
+    def update(self, ph, level_index=None, num_levels=None, gs=None):
         self.ph = ph
         if level_index is not None:
             self._li = level_index
         if num_levels is not None:
             self._nlv = num_levels
+        if gs is not None:
+            self._gs = gs
+
     def render_interface(self, f):
         import numpy as np
+
         if isinstance(f, np.ndarray):
-            h,w=f.shape
+            h, w = f.shape
             for i in range(min(self._nlv, 14)):
                 cx = 1 + i * 2
                 if cx >= w:
                     break
                 dot = 14 if i < self._li else (11 if i == self._li else 3)
                 f[0, cx] = dot
-            f[h-2,2] = 14 if self.ph % 4 < 2 else 8
+            for q in range(4):
+                c = 14 if (self.ph % 4) == q else 3
+                _rp(f, h, w, 2 + q, h - 4, c)
+            f[h - 2, 2] = 14 if self.ph % 4 < 2 else 8
+            go = self._gs == GameState.GAME_OVER
+            win = self._gs == GameState.WIN
+            _r_bar(f, h, w, go, win)
         return f
+
+
 def spr():
-    return {"p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),
-            "g": Sprite(pixels=[[14]], name="g", visible=True, collidable=False, tags=["goal"]),
-            "c": Sprite(pixels=[[12]], name="c", visible=True, collidable=False, tags=["crossing"])}
+    return {
+        "p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),
+        "g": Sprite(pixels=[[14]], name="g", visible=True, collidable=False, tags=["goal"]),
+        "c": Sprite(pixels=[[12]], name="c", visible=True, collidable=False, tags=["crossing"]),
+    }
+
+
 s = spr()
-def lvl(d,parts):
-    return Level(sprites=parts, grid_size=(14,14), data={"difficulty":d})
+
+
+def lvl(d, parts):
+    return Level(sprites=parts, grid_size=(14, 14), data={"difficulty": d})
+
+
 levels = [
-    lvl(1,[s["p"].clone().set_position(1,7), s["g"].clone().set_position(12,7), s["c"].clone().set_position(7,7)]),
-    lvl(2,[s["p"].clone().set_position(2,2), s["g"].clone().set_position(11,11), s["c"].clone().set_position(6,6)]),
-    lvl(3,[s["p"].clone().set_position(0,7), s["g"].clone().set_position(13,7), s["c"].clone().set_position(8,7)]),
-    lvl(4,[s["p"].clone().set_position(3,3), s["g"].clone().set_position(10,10), s["c"].clone().set_position(5,8)]),
-    lvl(5,[s["p"].clone().set_position(1,12), s["g"].clone().set_position(12,1), s["c"].clone().set_position(7,6)]),
+    lvl(1, [s["p"].clone().set_position(1, 7), s["g"].clone().set_position(12, 7), s["c"].clone().set_position(7, 7)]),
+    lvl(2, [s["p"].clone().set_position(2, 2), s["g"].clone().set_position(11, 11), s["c"].clone().set_position(6, 6)]),
+    lvl(3, [s["p"].clone().set_position(0, 7), s["g"].clone().set_position(13, 7), s["c"].clone().set_position(8, 7)]),
+    lvl(4, [s["p"].clone().set_position(3, 3), s["g"].clone().set_position(10, 10), s["c"].clone().set_position(5, 8)]),
+    lvl(5, [s["p"].clone().set_position(1, 12), s["g"].clone().set_position(12, 1), s["c"].clone().set_position(7, 6)]),
 ]
+
+_NUM_LEVELS = len(levels)
+
+
 class Tf01(ARCBaseGame):
     def __init__(self):
         self._ui = U(0)
-        super().__init__("tf01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
+        super().__init__(
+            "tf01", levels, Camera(0, 0, 16, 16, BG, PAD, [self._ui]), False, 1, [1, 2, 3, 4]
+        )
+
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
-        self._cross = {(s.x,s.y) for s in self.current_level.get_sprites_by_tag("crossing")}
+        self._cross = {(s.x, s.y) for s in self.current_level.get_sprites_by_tag("crossing")}
         self._t = 0
-        self._ui.update(self._t, level_index=self.level_index, num_levels=len(levels))
+        self._ui.update(
+            self._t,
+            level_index=self.level_index,
+            num_levels=_NUM_LEVELS,
+            gs=self._state,
+        )
+
     def step(self):
-        dx=dy=0
-        v=self.action.id.value
-        if v==1: dy=-1
-        elif v==2: dy=1
-        elif v==3: dx=-1
-        elif v==4: dx=1
-        else: self.complete_action(); return
+        dx = dy = 0
+        v = self.action.id.value
+        if v == 1:
+            dy = -1
+        elif v == 2:
+            dy = 1
+        elif v == 3:
+            dx = -1
+        elif v == 4:
+            dx = 1
+        else:
+            self.complete_action()
+            return
         gw, gh = self.current_level.grid_size
-        nx, ny = self._p.x+dx, self._p.y+dy
-        if 0<=nx<gw and 0<=ny<gh:
-            if (nx,ny) in self._cross and (self._t % 4) >= 2:
-                self._ui.update(self._t, level_index=self.level_index, num_levels=len(levels))
-                self.complete_action(); return
-            self._p.set_position(nx,ny)
+        nx, ny = self._p.x + dx, self._p.y + dy
+        if 0 <= nx < gw and 0 <= ny < gh:
+            if (nx, ny) in self._cross and (self._t % 4) >= 2:
+                self._ui.update(
+                    self._t,
+                    level_index=self.level_index,
+                    num_levels=_NUM_LEVELS,
+                    gs=self._state,
+                )
+                self.complete_action()
+                return
+            self._p.set_position(nx, ny)
         self._t += 1
-        self._ui.update(self._t, level_index=self.level_index, num_levels=len(levels))
-        if self._p.x==self._g.x and self._p.y==self._g.y:
+        self._ui.update(
+            self._t,
+            level_index=self.level_index,
+            num_levels=_NUM_LEVELS,
+            gs=self._state,
+        )
+        if self._p.x == self._g.x and self._p.y == self._g.y:
             self.next_level()
         self.complete_action()

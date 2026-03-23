@@ -8,6 +8,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -23,12 +24,61 @@ IN_C = 10
 OUT_C = 11
 
 
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
 class Ck01UI(RenderableUserDisplay):
     def __init__(self, ok: bool) -> None:
         self._ok = ok
+        self._checks_left = 0
+        self._check_cap = 1
+        self._level_index = 0
+        self._num_levels = 5
+        self._gs: GameState | None = None
 
-    def update(self, ok: bool) -> None:
+    def update(
+        self,
+        ok: bool,
+        *,
+        checks_left: int | None = None,
+        check_cap: int | None = None,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
         self._ok = ok
+        if checks_left is not None:
+            self._checks_left = checks_left
+        if check_cap is not None:
+            self._check_cap = max(1, check_cap)
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -36,7 +86,15 @@ class Ck01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         frame[h - 2, 2] = 14 if self._ok else 8
+        cap = min(self._check_cap, 12)
+        for i in range(cap):
+            col = 11 if i < self._checks_left else 3
+            _rp(frame, h, w, 4 + i, h - 2, col)
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -106,6 +164,8 @@ levels = [
     ),
 ]
 
+_NUM_LEVELS = len(levels)
+
 
 class Ck01(ARCBaseGame):
     def __init__(self) -> None:
@@ -124,8 +184,17 @@ class Ck01(ARCBaseGame):
         op = self.current_level.get_sprites_by_tag("out_port")[0]
         self._inp = (ip.x, ip.y)
         self._out = (op.x, op.y)
-        self._checks = int(self.current_level.get_data("max_checks") or 50)
-        self._ui.update(False)
+        cap = int(self.current_level.get_data("max_checks") or 50)
+        self._check_cap = cap
+        self._checks = cap
+        self._ui.update(
+            False,
+            checks_left=self._checks,
+            check_cap=self._check_cap,
+            level_index=self.level_index,
+            num_levels=_NUM_LEVELS,
+            gs=self._state,
+        )
 
     def _reachable(self) -> bool:
         sx, sy = self._inp
@@ -173,11 +242,26 @@ class Ck01(ARCBaseGame):
         if aid == GameAction.ACTION5:
             if self._checks <= 0:
                 self.lose()
+                self._ui.update(
+                    False,
+                    checks_left=self._checks,
+                    check_cap=self._check_cap,
+                    level_index=self.level_index,
+                    num_levels=_NUM_LEVELS,
+                    gs=self._state,
+                )
                 self.complete_action()
                 return
             self._checks -= 1
             ok = self._reachable()
-            self._ui.update(ok)
+            self._ui.update(
+                ok,
+                checks_left=self._checks,
+                check_cap=self._check_cap,
+                level_index=self.level_index,
+                num_levels=_NUM_LEVELS,
+                gs=self._state,
+            )
             if ok:
                 self.next_level()
             self.complete_action()
