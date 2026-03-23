@@ -20,13 +20,15 @@ BASE = [2, 6, 9, 11]
 
 
 class Qr04UI(RenderableUserDisplay):
-    def __init__(self, steps: int) -> None:
+    def __init__(self, steps: int, target: list[list[int]]) -> None:
         self._steps = steps
+        self._target = target
         self._reject_frames = 0
         self._click: tuple[int, int] | None = None
 
-    def update(self, steps: int) -> None:
+    def update(self, steps: int, target: list[list[int]]) -> None:
         self._steps = steps
+        self._target = target
 
     def set_click(self, fx: int, fy: int) -> None:
         self._click = (fx, fy)
@@ -40,6 +42,11 @@ class Qr04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        for yy in range(GH):
+            for xx in range(GW):
+                px, py = 1 + xx, h - 10 + yy
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = int(BASE[self._target[yy][xx] % 4])
         for i in range(min(self._steps, 15)):
             frame[h - 2, 1 + i] = 10
         if self._reject_frames > 0:
@@ -116,7 +123,8 @@ levels = [
 
 class Qr04(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Qr04UI(0)
+        z = [[0] * GW for _ in range(GH)]
+        self._ui = Qr04UI(0, z)
         super().__init__(
             "qr04",
             levels,
@@ -140,6 +148,7 @@ class Qr04(ARCBaseGame):
         self._g = [row[:] for row in self.current_level.get_data("init")]
         self._target = self.current_level.get_data("target")
         self._steps_left = int(self.current_level.get_data("max_steps") or 150)
+        self._ui.update(self._steps_left, self._target)
         self._paint()
 
     def _paint(self) -> None:
@@ -208,7 +217,7 @@ class Qr04(ARCBaseGame):
 
         self._paint()
         self._steps_left -= 1
-        self._ui.update(self._steps_left)
+        self._ui.update(self._steps_left, self._target)
         if self._win():
             self.next_level()
 
