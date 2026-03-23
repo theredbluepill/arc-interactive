@@ -66,9 +66,12 @@ class Fl01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
-        for i in range(min(self._cur, 15)):
+        # Target path length (exact cells, including endpoints): one tick per required cell.
+        for i in range(min(self._need, 20)):
+            frame[h - 3, 1 + i] = 13
+        # Current drawn path length (same units).
+        for i in range(min(self._cur, 20)):
             frame[h - 2, 1 + i] = 10
-        frame[h - 2, w - 3] = 3 + (self._need % 5)
         go = self._gs == GameState.GAME_OVER
         win = self._gs == GameState.WIN
         _r_bar(frame, h, w, go, win)

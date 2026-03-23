@@ -26,8 +26,10 @@ from arcengine import (
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 CAM_W = CAM_H = 24
+BEAM_FRAMES = 14
 
 WALL_C = 3
+BEAM_C = 1
 PLAYER_C = 9
 HAZ_C = 8
 EMIT_C = 12
@@ -40,10 +42,44 @@ class Ml02UI(RenderableUserDisplay):
     def __init__(self, inv: int, steps: int) -> None:
         self._inv = inv
         self._steps = steps
+        self._beam_path: list[tuple[int, int]] = []
+        self._beam_frames = 0
+        self._beam_hit: set[tuple[int, int]] = set()
 
     def update(self, inv: int, steps: int) -> None:
         self._inv = inv
         self._steps = steps
+
+    def start_beam(
+        self,
+        path: list[tuple[int, int]],
+        hit: set[tuple[int, int]],
+    ) -> None:
+        self._beam_path = list(path)
+        self._beam_hit = set(hit)
+        self._beam_frames = BEAM_FRAMES
+
+    def tick_beam(self) -> None:
+        if self._beam_frames > 0:
+            self._beam_frames -= 1
+            if self._beam_frames == 0:
+                self._beam_path = []
+                self._beam_hit = set()
+
+    def clear_beam(self) -> None:
+        self._beam_path = []
+        self._beam_hit = set()
+        self._beam_frames = 0
+
+    @staticmethod
+    def _grid_to_frame_pixel(gx: int, gy: int) -> tuple[int, int]:
+        cw, ch = CAM_W, CAM_H
+        scale = min(64 // cw, 64 // ch)
+        x_pad = (64 - cw * scale) // 2
+        y_pad = (64 - ch * scale) // 2
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
 
     def render_interface(self, frame):
         import numpy as np
@@ -55,6 +91,14 @@ class Ml02UI(RenderableUserDisplay):
             frame[h - 2, 1 + i] = 15
         for i in range(min(self._steps, 30)):
             frame[h - 1, 1 + i] = 10
+        if self._beam_frames > 0 and self._beam_path:
+            for gx, gy in self._beam_path:
+                px, py = self._grid_to_frame_pixel(gx, gy)
+                col = GOAL_C if (gx, gy) in self._beam_hit else BEAM_C
+                for ox, oy in ((0, 0), (0, -1), (0, 1), (-1, 0), (1, 0)):
+                    qx, qy = px + ox, py + oy
+                    if 0 <= qx < w and 0 <= qy < h:
+                        frame[qy, qx] = col
         return frame
 
 
@@ -260,6 +304,7 @@ class Ml02(ARCBaseGame):
         self._inv = int(mi) if mi is not None else 6
         ms = self.current_level.get_data("max_steps")
         self._steps = int(ms) if ms is not None else 250
+        self._ui.clear_beam()
         self._sync_ui()
 
     def _sync_ui(self) -> None:
@@ -279,14 +324,16 @@ class Ml02(ARCBaseGame):
             return sp
         return None
 
-    def _fire_laser(self) -> None:
+    def _simulate_laser(self) -> tuple[list[tuple[int, int]], set[tuple[int, int]]]:
         x, y = self._emit[0] + self._edx, self._emit[1] + self._edy
         dx, dy = self._edx, self._edy
         gw, gh = self.current_level.grid_size
         hit: set[tuple[int, int]] = set()
+        path: list[tuple[int, int]] = []
         for _ in range(gw * gh + 10):
             if not (0 <= x < gw and 0 <= y < gh):
                 break
+            path.append((x, y))
             if self.current_level.get_sprite_at(
                 x, y, tag="receptor", ignore_collidable=True
             ):
@@ -315,10 +362,16 @@ class Ml02(ARCBaseGame):
                 continue
             x += dx
             y += dy
+        return path, hit
+
+    def _fire_laser(self) -> None:
+        path, hit = self._simulate_laser()
+        self._ui.start_beam(path, hit)
         if self._receptors and hit >= self._receptors:
             self.next_level()
 
     def step(self) -> None:
+        self._ui.tick_beam()
         aid = self.action.id
 
         if aid in (GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3, GameAction.ACTION4):

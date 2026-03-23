@@ -25,6 +25,11 @@ class Kn01UI(RenderableUserDisplay):
     def update(self, bank: int) -> None:
         self._bank = bank
 
+    @staticmethod
+    def _rp(frame, hh: int, ww: int, x: int, y: int, c: int) -> None:
+        if 0 <= x < ww and 0 <= y < hh:
+            frame[y, x] = c
+
     def render_interface(self, frame):
         import numpy as np
 
@@ -32,6 +37,15 @@ class Kn01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         frame[h - 2, 2] = 10 if self._bank == 0 else 6
+        bank = BANK_A if self._bank == 0 else BANK_B
+        for i in range(4):
+            dx, dy = bank[i]
+            ox = 4 + i * 7
+            oy = h - 6
+            for yy in range(5):
+                for xx in range(5):
+                    self._rp(frame, h, w, ox + xx, oy + yy, 5)
+            self._rp(frame, h, w, ox + 2 + dx, oy + 2 + dy, 10)
         return frame
 
 
@@ -76,7 +90,7 @@ def mk(
 
 
 levels = [
-    mk((2, 8), (12, 8), [], 1),
+    mk((2, 8), (12, 8), [(x, 7) for x in range(16) if 4 < x < 12], 1),
     mk((1, 1), (14, 14), [(8, y) for y in range(16) if y != 7 and y != 8], 2),
     mk((0, 0), (15, 15), [(x, x) for x in range(16) if 4 < x < 12], 3),
     mk((8, 1), (8, 14), [(5, y) for y in range(16)] + [(11, y) for y in range(16)], 4),

@@ -21,10 +21,28 @@ class Gp03UI(RenderableUserDisplay):
     def __init__(self, ok: int, tot: int) -> None:
         self._ok = ok
         self._tot = tot
+        self._goal_cells: list[tuple[int, int]] = []
+        self._grid_w = self._grid_h = 8
+        self._salience = 0
 
     def update(self, ok: int, tot: int) -> None:
         self._ok = ok
         self._tot = tot
+
+    def begin_goal_salience(
+        self,
+        goal_cells: list[tuple[int, int]],
+        grid_w: int,
+        grid_h: int,
+    ) -> None:
+        self._goal_cells = list(goal_cells)
+        self._grid_w = grid_w
+        self._grid_h = grid_h
+        self._salience = 22
+
+    def tick_salience(self) -> None:
+        if self._salience > 0:
+            self._salience -= 1
 
     def render_interface(self, frame):
         import numpy as np
@@ -34,6 +52,27 @@ class Gp03UI(RenderableUserDisplay):
         h, w = frame.shape
         for i in range(min(self._tot, 10)):
             frame[1, 1 + i] = 14 if i < self._ok else 8
+        if self._salience > 0 and self._goal_cells:
+            cw, ch = CAM, CAM
+            scale = min(64 // cw, 64 // ch)
+            x_pad = (64 - cw * scale) // 2
+            y_pad = (64 - ch * scale) // 2
+            outline = 14
+            for gx, gy in self._goal_cells:
+                if not (0 <= gx < self._grid_w and 0 <= gy < self._grid_h):
+                    continue
+                x0 = gx * scale + x_pad
+                y0 = gy * scale + y_pad
+                for d in range(scale):
+                    if 0 <= x0 + d < w and 0 <= y0 < h:
+                        frame[y0, x0 + d] = outline
+                    if 0 <= x0 + d < w and 0 <= y0 + scale - 1 < h:
+                        frame[y0 + scale - 1, x0 + d] = outline
+                for d in range(scale):
+                    if 0 <= x0 < w and 0 <= y0 + d < h:
+                        frame[y0 + d, x0] = outline
+                    if 0 <= x0 + scale - 1 < w and 0 <= y0 + d < h:
+                        frame[y0 + d, x0 + scale - 1] = outline
         return frame
 
 
@@ -105,6 +144,8 @@ class Gp03(ARCBaseGame):
         self._paint: dict[tuple[int, int], int] = {p: 0 for p in self._goal}
         for s in list(self.current_level.get_sprites_by_tag("paint")):
             self.current_level.remove_sprite(s)
+        gw, gh = self.current_level.grid_size
+        self._ui.begin_goal_salience(list(self._goal.keys()), gw, gh)
         self._sync_ui()
 
     def _sprite_at_cell(self, gx: int, gy: int) -> Sprite | None:
@@ -125,6 +166,7 @@ class Gp03(ARCBaseGame):
         return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
 
     def step(self) -> None:
+        self._ui.tick_salience()
         if self.action.id.value in (1, 2, 3, 4):
             self.complete_action()
             return

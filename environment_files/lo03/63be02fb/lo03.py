@@ -141,7 +141,7 @@ class Lo03(ARCBaseGame):
             Camera(0, 0, CAM_W, CAM_H, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [6],
         )
 
     def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:

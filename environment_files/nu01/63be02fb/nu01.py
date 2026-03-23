@@ -10,6 +10,10 @@ from arcengine import (
 )
 
 
+# Distinct token colors (match token_sprite) so HUD dots map to board tokens.
+TOKEN_COLOR = {3: 11, 2: 12, 1: 10}
+
+
 class Nu01UI(RenderableUserDisplay):
     def __init__(self, need: int) -> None:
         self._need = need
@@ -24,7 +28,15 @@ class Nu01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         for i in range(3):
-            c = 11 if 3 - i == self._need or (self._need == 0 and i == 2) else 3
+            val = 3 - i
+            if self._need == 0:
+                c = 14
+            elif val == self._need:
+                c = TOKEN_COLOR[val]
+            elif val > self._need:
+                c = 3
+            else:
+                c = 2
             frame[h - 2, 2 + i] = c
         return frame
 
@@ -55,8 +67,9 @@ sprites = {
 
 
 def token_sprite(n: int) -> Sprite:
+    c = TOKEN_COLOR.get(n, 10)
     return Sprite(
-        pixels=[[10]],
+        pixels=[[c]],
         name=f"tok{n}",
         visible=True,
         collidable=False,

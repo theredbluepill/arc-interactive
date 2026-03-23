@@ -21,6 +21,8 @@ class Wm02UI(RenderableUserDisplay):
         self._click_frames = 0
         self._level = 1
         self._mole_appeared = 0
+        self._lane_hint = 0
+        self._mole_visible = False
 
     def update(
         self,
@@ -29,12 +31,19 @@ class Wm02UI(RenderableUserDisplay):
         checkpoint_score: int,
         checkpoint_total: int,
         level: int = 1,
+        *,
+        lane_hint: int | None = None,
+        mole_visible: bool | None = None,
     ) -> None:
         self._lives = lives
         self._score = score
         self._checkpoint_score = checkpoint_score
         self._checkpoint_total = checkpoint_total
         self._level = level
+        if lane_hint is not None:
+            self._lane_hint = max(0, min(3, lane_hint))
+        if mole_visible is not None:
+            self._mole_visible = mole_visible
 
     def set_click(self, x: int, y: int) -> None:
         """Record a click position to display in UI."""
@@ -98,6 +107,17 @@ class Wm02UI(RenderableUserDisplay):
                     frame[h - 3, 2 + i] = 8  # Red = waiting/missed
                 else:
                     frame[h - 3, 2 + i] = 3  # Gray = not yet
+
+        # Lane strip (0–3): bright = whack this lane while mole up; dim = next spawn lane
+        base_x = max(6, w // 2 - 8)
+        for lane in range(4):
+            cx = base_x + lane * 5
+            if lane == self._lane_hint:
+                c = 14 if self._mole_visible else 10
+            else:
+                c = 3
+            if 0 <= cx < w:
+                frame[h - 1, cx] = c
 
         return frame
 
@@ -284,14 +304,22 @@ class Wm02(ARCBaseGame):
             self._checkpoint_score = 0
         return False
 
+    def _lane_hint_for_ui(self) -> tuple[int, bool]:
+        if self._current_mole is not None:
+            return (self._lane_of_hole(self._current_mole), True)
+        return (self._lane_cursor % self._n_lanes, False)
+
     def _update_ui(self):
         level_num = self._checkpoint_count + 1
+        lh, vis = self._lane_hint_for_ui()
         self._ui.update(
             self._lives,
             self._score,
             self._checkpoint_score,
             self._moles_per_checkpoint,
             level_num,
+            lane_hint=lh,
+            mole_visible=vis,
         )
         # Also update mole_appeared for checkpoint display
         self._ui._mole_appeared = self._mole_appeared
@@ -319,9 +347,12 @@ class Wm02(ARCBaseGame):
             # Show click cursor in UI
             self._ui.set_click(x, y)
 
-            # Convert display coords to grid coords
-            grid_x = x // 2
-            grid_y = y // 2
+            coords = self.camera.display_to_grid(x, y)
+            if coords is None:
+                self._update_ui()
+                self.complete_action()
+                return
+            grid_x, grid_y = int(coords[0]), int(coords[1])
             click_lane = min(3, max(0, grid_x // 8))
 
             # Find mole AT or NEAR the clicked position (radius 2 tolerance)

@@ -26,11 +26,21 @@ class Bn02UI(RenderableUserDisplay):
         self._beacons = beacons
         self._found = found
         self._need = need
+        self._reject_ttl = 0
 
-    def update(self, beacons: int, found: int, need: int) -> None:
+    def update(
+        self,
+        beacons: int,
+        found: int,
+        need: int,
+        *,
+        reject_ttl: int | None = None,
+    ) -> None:
         self._beacons = beacons
         self._found = found
         self._need = need
+        if reject_ttl is not None:
+            self._reject_ttl = reject_ttl
 
     def render_interface(self, frame):
         import numpy as np
@@ -42,6 +52,9 @@ class Bn02UI(RenderableUserDisplay):
             frame[1, 1 + i] = 12
         for i in range(min(self._need, 20)):
             frame[2, 1 + i] = 14 if i < self._found else 8
+        if self._reject_ttl > 0:
+            for x in range(min(w, 10)):
+                frame[h - 1, x] = 8
         return frame
 
 
@@ -104,7 +117,8 @@ def mk(
 
 
 levels = [
-    mk([], (32, 32), [(40, 40), (50, 20), (20, 50)], 6, 10, 500, 1),
+    # Level 1: ghosts within Manhattan radius of spawn so first beacon at (32,32) reveals them.
+    mk([], (32, 32), [(38, 32), (32, 40), (26, 30)], 6, 10, 500, 1),
     mk([(x, 32) for x in range(64) if x % 7 not in (0, 1)], (8, 32), [(55, 10), (55, 55), (10, 55)], 8, 9, 600, 2),
     mk(
         [(16, y) for y in range(64) if y % 5 != 0]
@@ -158,6 +172,7 @@ class Bn02(ARCBaseGame):
         self._radius = int(self.current_level.get_data("reveal_radius") or 8)
         self._steps = int(self.current_level.get_data("max_steps") or 500)
         self._flagged: set[tuple[int, int]] = set()
+        self._reject_ttl = 0
         self._sync_ghosts()
         self._sync_ui()
 
@@ -182,7 +197,12 @@ class Bn02(ARCBaseGame):
 
     def _sync_ui(self) -> None:
         ok = len(self._hidden & self._flagged)
-        self._ui.update(self._budget, ok, max(1, len(self._hidden)))
+        self._ui.update(
+            self._budget,
+            ok,
+            max(1, len(self._hidden)),
+            reject_ttl=self._reject_ttl,
+        )
 
     def _burn(self) -> bool:
         self._steps -= 1
@@ -193,6 +213,10 @@ class Bn02(ARCBaseGame):
         return False
 
     def step(self) -> None:
+        if self._reject_ttl > 0:
+            self._reject_ttl -= 1
+            self._sync_ui()
+
         aid = self.action.id
 
         if aid in (GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3, GameAction.ACTION4):
@@ -213,8 +237,10 @@ class Bn02(ARCBaseGame):
                     pass
                 elif not sp or not sp.is_collidable:
                     self._player.set_position(nx, ny)
+                    self._reject_ttl = 0
                 elif "ghost" in sp.tags or "flag" in sp.tags:
                     self._player.set_position(nx, ny)
+                    self._reject_ttl = 0
             if self._burn():
                 self.complete_action()
                 return
@@ -230,6 +256,7 @@ class Bn02(ARCBaseGame):
                 return
             self._budget -= 1
             self._beacons.append((self._player.x, self._player.y))
+            self._reject_ttl = 0
             self._sync_ghosts()
             self._sync_ui()
             if self._burn():
@@ -272,6 +299,7 @@ class Bn02(ARCBaseGame):
             if hit:
                 self.current_level.remove_sprite(hit)
             self._flagged.discard((gx, gy))
+            self._reject_ttl = 0
             self._sync_ui()
             if self._burn():
                 self.complete_action()
@@ -281,6 +309,7 @@ class Bn02(ARCBaseGame):
 
         if (gx, gy) in self._hidden:
             self._flagged.add((gx, gy))
+            self._reject_ttl = 0
             self.current_level.add_sprite(sprites["flag"].clone().set_position(gx, gy))
             self._sync_ui()
             if self._flagged == self._hidden:
@@ -291,5 +320,9 @@ class Bn02(ARCBaseGame):
             self.complete_action()
             return
 
-        self.lose()
+        self._reject_ttl = 3
+        self._sync_ui()
+        if self._burn():
+            self.complete_action()
+            return
         self.complete_action()

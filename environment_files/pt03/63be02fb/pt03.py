@@ -396,6 +396,7 @@ class Pt03UI(RenderableUserDisplay):
         self._checkpoints = checkpoints
         self._target_checkpoints = target_checkpoints
         self._rotatable_count = rotatable_count
+        self._actions_left = 0
         self._click_pos = None
         self._click_frames = 0
         self._matched_count = 0
@@ -411,12 +412,15 @@ class Pt03UI(RenderableUserDisplay):
         target_checkpoints: int,
         rotatable_count: int,
         matched_count: int = 0,
+        *,
+        actions_left: int = 0,
     ) -> None:
         self._level = level
         self._checkpoints = checkpoints
         self._target_checkpoints = target_checkpoints
         self._rotatable_count = rotatable_count
         self._matched_count = matched_count
+        self._actions_left = max(0, actions_left)
 
     def set_target_pattern(self, pattern_type: str, colors: list) -> None:
         self._colors = colors
@@ -491,10 +495,10 @@ class Pt03UI(RenderableUserDisplay):
             for y in range(h):
                 frame[y, separator_x] = 2
 
+        bar_x = 2
         if self._rotatable_count > 0:
             progress = self._matched_count
             bar_y = h - 3
-            bar_x = 2
             bar_width = min(self._rotatable_count, 20)
             filled = (
                 int((progress / self._rotatable_count) * bar_width)
@@ -505,6 +509,12 @@ class Pt03UI(RenderableUserDisplay):
             for i in range(bar_width):
                 color = 11 if i < filled else 4
                 frame[bar_y, bar_x + i] = color
+
+        cap = min(self._actions_left, 24)
+        for i in range(cap):
+            c = 8 if self._actions_left <= 5 else (11 if self._actions_left <= 15 else 14)
+            if bar_x + i < w:
+                frame[h - 1, bar_x + i] = c
 
         return frame
 
@@ -566,12 +576,14 @@ class Pt03(ARCBaseGame):
         self._ui.set_rotatables(self._rotatables)
 
     def _update_ui(self) -> None:
+        left = self._max_actions - self._action_count
         self._ui.update(
             self._level_num,
             0,
             1,
             self._rotatable_count,
             self._matched_count,
+            actions_left=left,
         )
 
     def step(self) -> None:

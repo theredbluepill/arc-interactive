@@ -1,7 +1,7 @@
 {
   "game_id": "ng01-63be02fb",
   "title": "Nonogram Lite",
-  "description": "8\u00d78 nonogram. ACTION1\u20134 move cursor; ACTION6 (display click via display_to_grid) cycles empty / filled / mark on the clicked cell. Win when filled cells match the solution.",
+  "description": "10\u00d710 board: 8\u00d78 playfield with row/column run clues on the border. ACTION1\u20134 move cursor; ACTION6 cycles cell state. Wrong fills show red; win when filled cells match the hidden pattern.",
   "default_fps": 20,
   "baseline_actions": [
     1,

@@ -203,7 +203,7 @@ class Ck02(ARCBaseGame):
             Camera(0, 0, CAM_W, CAM_H, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 5, 6],
+            [5, 6],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -278,15 +278,6 @@ class Ck02(ARCBaseGame):
 
     def step(self) -> None:
         aid = self.action.id
-
-        if aid in (
-            GameAction.ACTION1,
-            GameAction.ACTION2,
-            GameAction.ACTION3,
-            GameAction.ACTION4,
-        ):
-            self.complete_action()
-            return
 
         if aid == GameAction.ACTION5:
             if self._checks <= 0:

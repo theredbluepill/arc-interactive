@@ -15,6 +15,8 @@ class Sv03UI(RenderableUserDisplay):
         self._warmth = 100
         self._level = 1
         self._steps_remaining = 60
+        self._last_kind: str | None = None
+        self._flash_frames = 0
 
     def update(
         self,
@@ -22,11 +24,17 @@ class Sv03UI(RenderableUserDisplay):
         warmth: int,
         level: int,
         steps_remaining: int = 60,
+        *,
+        last_kind: str | None = None,
     ) -> None:
         self._hunger = hunger
         self._warmth = warmth
         self._level = level
         self._steps_remaining = steps_remaining
+        self._last_kind = last_kind
+
+    def flash_warn(self, frames: int = 10) -> None:
+        self._flash_frames = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -49,6 +57,16 @@ class Sv03UI(RenderableUserDisplay):
 
         frame[1, w - 3] = 9
         frame[1, w - 4] = 3 + (self._level - 1)
+
+        # Last shelter entered: alternate rule (must switch yellow vs magenta zones).
+        frame[h - 2, w - 5] = 7 if self._last_kind == "warm" else 3
+        frame[h - 2, w - 4] = 11 if self._last_kind == "food" else 3
+
+        if self._flash_frames > 0:
+            for dy in range(2):
+                for dx in range(2):
+                    frame[dy, w - 2 + dx] = 8
+            self._flash_frames -= 1
 
         return frame
 
@@ -177,6 +195,7 @@ class Sv03(ARCBaseGame):
             self._warmth,
             self._level_num,
             60 - self._steps_survived,
+            last_kind=None,
         )
 
     def step(self) -> None:
@@ -210,6 +229,14 @@ class Sv03(ARCBaseGame):
         new_k = self._shelter_kind_here()
         if new_k is not None and new_k != prev_k:
             if self._last_enter is not None and self._last_enter == new_k:
+                self._ui.flash_warn(12)
+                self._ui.update(
+                    self._hunger,
+                    self._warmth,
+                    self._level_num,
+                    60 - self._steps_survived,
+                    last_kind=self._last_enter,
+                )
                 self.lose()
                 self.complete_action()
                 return
@@ -252,6 +279,7 @@ class Sv03(ARCBaseGame):
             self._warmth,
             self._level_num,
             60 - self._steps_survived,
+            last_kind=self._last_enter,
         )
 
     def _check_survival(self):

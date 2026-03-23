@@ -10,11 +10,15 @@ from arcengine import (
 
 
 class Tr01UI(RenderableUserDisplay):
-    def __init__(self, ttl: int) -> None:
-        self._ttl = ttl
+    """Bottom row: steps until current tile expires; row above: level ttl cap (reference)."""
 
-    def update(self, ttl: int) -> None:
-        self._ttl = ttl
+    def __init__(self, rem: int, ttl_cap: int) -> None:
+        self._rem = rem
+        self._ttl_cap = ttl_cap
+
+    def update(self, rem: int, ttl_cap: int) -> None:
+        self._rem = rem
+        self._ttl_cap = ttl_cap
 
     def render_interface(self, frame):
         import numpy as np
@@ -22,8 +26,13 @@ class Tr01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, _w = frame.shape
-        for i in range(min(self._ttl, 10)):
-            frame[h - 2, 1 + i] = 8
+        cap = max(1, self._ttl_cap)
+        for i in range(min(cap, 14)):
+            frame[h - 3, 1 + i] = 2
+        r = max(0, min(self._rem, cap))
+        for i in range(min(r, 14)):
+            col = 8 if r <= 3 else 11
+            frame[h - 2, 1 + i] = col
         return frame
 
 
@@ -108,7 +117,7 @@ PADDING_COLOR = 4
 
 class Tr01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Tr01UI(20)
+        self._ui = Tr01UI(20, 20)
         super().__init__(
             "tr01",
             levels,
@@ -124,7 +133,16 @@ class Tr01(ARCBaseGame):
         self._ttl = int(level.get_data("ttl") or 20)
         self._world_step = 0
         self._entered: dict[tuple[int, int], int] = {}
-        self._ui.update(self._ttl)
+        self._sync_tr_ui()
+
+    def _sync_tr_ui(self) -> None:
+        px, py = self._player.x, self._player.y
+        pos = (px, py)
+        if pos in self._entered:
+            rem = self._ttl - (self._world_step - self._entered[pos])
+        else:
+            rem = self._ttl
+        self._ui.update(rem, self._ttl)
 
     def step(self) -> None:
         self._world_step += 1
@@ -139,6 +157,7 @@ class Tr01(ARCBaseGame):
             dx = 1
 
         if dx == 0 and dy == 0:
+            self._sync_tr_ui()
             self.complete_action()
             return
 
@@ -146,11 +165,13 @@ class Tr01(ARCBaseGame):
         ny = self._player.y + dy
         gw, gh = self.current_level.grid_size
         if not (0 <= nx < gw and 0 <= ny < gh):
+            self._sync_tr_ui()
             self.complete_action()
             return
 
         sp = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
         if sp and "wall" in sp.tags:
+            self._sync_tr_ui()
             self.complete_action()
             return
 
@@ -158,6 +179,7 @@ class Tr01(ARCBaseGame):
         if (px, py) in self._entered:
             if self._world_step - self._entered[(px, py)] >= self._ttl:
                 self.lose()
+                self._sync_tr_ui()
                 self.complete_action()
                 return
 
@@ -170,10 +192,12 @@ class Tr01(ARCBaseGame):
             if self._world_step - t0 >= self._ttl:
                 if self._player.x == c[0] and self._player.y == c[1]:
                     self.lose()
+                    self._sync_tr_ui()
                     self.complete_action()
                     return
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
 
+        self._sync_tr_ui()
         self.complete_action()

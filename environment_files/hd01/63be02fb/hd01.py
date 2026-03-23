@@ -97,7 +97,11 @@ class Hd01UI(RenderableUserDisplay):
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._heat + 1, 14)):
             frame[2 + i, 1] = 8
-        frame[h - 2, w - 3] = 14 if self._immune > 0 else 3
+        im = min(self._immune, 12)
+        for i in range(im):
+            _rp(frame, h, w, w - 2 - i, h - 3, 14)
+        if self._immune <= 0:
+            _rp(frame, h, w, w - 2, h - 3, 3)
         rem = (self._interval - (self._steps_mod % self._interval)) % self._interval
         if rem == 0:
             rem = self._interval
@@ -168,7 +172,8 @@ levels = [
     mk((8, 2), (8, 14), [], [(3, 8), (12, 8)], 8, 1),
     mk((1, 1), (14, 14), [(8, y) for y in range(16) if y != 8], [(5, 5), (11, 11)], 7, 2),
     mk((0, 8), (15, 8), [], [(8, 4), (8, 12)], 6, 3),
-    mk((2, 2), (13, 13), [(x, 6) for x in range(16)], [(8, 3)], 5, 4),
+    # Was a solid wall at y=6 (unpassable). Leave a single gap so the south goal is reachable.
+    mk((2, 2), (13, 13), [(x, 6) for x in range(16) if x != 8], [(8, 3)], 5, 4),
     mk((8, 0), (8, 15), [], [(4, 8), (12, 8)], 6, 5),
 ]
 

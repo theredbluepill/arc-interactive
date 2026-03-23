@@ -38,9 +38,12 @@ from solvability_common import (  # noqa: E402
     parse_games_md_stems,
 )
 from solvers.engine_bfs import engine_bfs_single_level  # noqa: E402
+from solvers.extra_state import extra_state_key_for_stem  # noqa: E402
 from solvers.partial_obs import partial_obs_verdict  # noqa: E402
 from solvers.push_switch import verify_push_stem, verify_switch_stem  # noqa: E402
 from solvers.registry import (  # noqa: E402
+    LATTICE_TOGGLE_NOTE,
+    LATTICE_TOGGLE_TOOLING_STEMS,
     PLANNER_NOTE,
     SIMULATION_NOTE,
     STOCHASTIC_NOTE,
@@ -69,6 +72,23 @@ def _verify_one_level(
     if kind == SolverKind.PARTIAL_OBS:
         return partial_obs_verdict(stem, level_index)
 
+    if kind == SolverKind.TOOLING_GAP:
+        if stem in LATTICE_TOGGLE_TOOLING_STEMS:
+            return LevelVerdict(
+                stem=stem,
+                level_index=level_index,
+                status=VerdictStatus.TOOLING_GAP,
+                solver="lattice_toggle_skip",
+                notes=LATTICE_TOGGLE_NOTE,
+            )
+        return LevelVerdict(
+            stem=stem,
+            level_index=level_index,
+            status=VerdictStatus.TOOLING_GAP,
+            solver="wave3_reflex",
+            notes=WAVE3_REFLEX_NOTE,
+        )
+
     env = arc.make(full_game_id, seed=0, render_mode=None)
     if env is None:
         return LevelVerdict(
@@ -77,15 +97,6 @@ def _verify_one_level(
             status=VerdictStatus.ERROR,
             solver="load",
             notes="arc.make returned None",
-        )
-
-    if kind == SolverKind.TOOLING_GAP:
-        return LevelVerdict(
-            stem=stem,
-            level_index=level_index,
-            status=VerdictStatus.TOOLING_GAP,
-            solver="wave3_reflex",
-            notes=WAVE3_REFLEX_NOTE,
         )
 
     if kind == SolverKind.STOCHASTIC_GAP:
@@ -228,6 +239,7 @@ def _verify_one_level(
         max_depth=max_depth,
         max_click_cells=max_click,
         allowed_action_ids=allowed,
+        extra_state_key=extra_state_key_for_stem(stem),
     )
     dt = time.perf_counter() - t0
     if bfs.ok:

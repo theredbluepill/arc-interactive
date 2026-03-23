@@ -36,8 +36,17 @@ def _r_bar(frame, h, w, game_over, win):
 
 
 class Rh01UI(RenderableUserDisplay):
+    """HUD + lethal row tint on the letterboxed grid (camera 16×16 → 64×64 frame)."""
+
+    _CAM_W = 16
+    _CAM_H = 16
+
     def __init__(self, row: int, level_index: int = 0, num_levels: int = 5) -> None:
         self._row = row
+        self._ticks = 0
+        self._period = 3
+        self._gw = 10
+        self._gh = 10
         self._level_index = level_index
         self._num_levels = num_levels
         self._state: GameState | None = None
@@ -46,11 +55,18 @@ class Rh01UI(RenderableUserDisplay):
         self,
         row: int,
         *,
+        ticks: int = 0,
+        period: int = 3,
+        grid_size: tuple[int, int] | None = None,
         level_index: int | None = None,
         num_levels: int | None = None,
         state: GameState | None = None,
     ) -> None:
         self._row = row
+        self._ticks = ticks
+        self._period = max(period, 1)
+        if grid_size is not None:
+            self._gw, self._gh = grid_size
         if level_index is not None:
             self._level_index = level_index
         if num_levels is not None:
@@ -65,8 +81,26 @@ class Rh01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        scale = min(w // self._CAM_W, h // self._CAM_H)
+        scale = max(scale, 1)
+        x_pad = (w - self._CAM_W * scale) // 2
+        y_pad = (h - self._CAM_H * scale) // 2
+        gy = self._row % max(self._gh, 1)
+        for gx in range(min(self._gw, self._CAM_W)):
+            x0 = gx * scale + x_pad
+            y0 = gy * scale + y_pad
+            for dy in range(scale):
+                for dx in range(scale):
+                    px, py = x0 + dx, y0 + dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 8
         for i in range(min(self._row + 1, 12)):
-            frame[h - 2, 18 + i] = 8
+            if 18 + i < w:
+                frame[h - 2, 18 + i] = 8
+        until = self._period - self._ticks
+        for i in range(min(max(until, 0), 8)):
+            if 1 + i < w:
+                frame[h - 3, 1 + i] = 10
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -142,7 +176,7 @@ levels = [
             sprites["goal"].clone().set_position(9, 0),
         ],
         5,
-        2,
+        3,
     ),
 ]
 
@@ -168,9 +202,12 @@ class Rh01(ARCBaseGame):
         self._period = int(level.get_data("period") or 3)
         self._ticks = 0
         self._danger_y = 9
-        gw, _gh = self.current_level.grid_size
+        gw, gh = self.current_level.grid_size
         self._ui.update(
             self._danger_y % max(gw, 1),
+            ticks=self._ticks,
+            period=self._period,
+            grid_size=(gw, gh),
             level_index=self.level_index,
             num_levels=len(self._levels),
             state=self._state,
@@ -182,7 +219,14 @@ class Rh01(ARCBaseGame):
             self._ticks = 0
             _gw, gh = self.current_level.grid_size
             self._danger_y = (self._danger_y + 1) % gh
-            self._ui.update(self._danger_y, state=self._state)
+            gw, gh2 = self.current_level.grid_size
+            self._ui.update(
+                self._danger_y,
+                ticks=self._ticks,
+                period=self._period,
+                grid_size=(gw, gh2),
+                state=self._state,
+            )
 
     def step(self) -> None:
         dx = dy = 0
@@ -210,15 +254,36 @@ class Rh01(ARCBaseGame):
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
-            self._ui.update(self._danger_y, state=self._state)
+            gw, gh = self.current_level.grid_size
+            self._ui.update(
+                self._danger_y,
+                ticks=self._ticks,
+                period=self._period,
+                grid_size=(gw, gh),
+                state=self._state,
+            )
             self.complete_action()
             return
 
         if self._player.y == self._danger_y:
-            self._ui.update(self._danger_y, state=self._state)
+            gw, gh = self.current_level.grid_size
+            self._ui.update(
+                self._danger_y,
+                ticks=self._ticks,
+                period=self._period,
+                grid_size=(gw, gh),
+                state=self._state,
+            )
             self.lose()
             self.complete_action()
             return
 
-        self._ui.update(self._danger_y, state=self._state)
+        gw, gh = self.current_level.grid_size
+        self._ui.update(
+            self._danger_y,
+            ticks=self._ticks,
+            period=self._period,
+            grid_size=(gw, gh),
+            state=self._state,
+        )
         self.complete_action()

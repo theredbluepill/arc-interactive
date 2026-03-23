@@ -13,9 +13,13 @@ from arcengine import (
 class Em01UI(RenderableUserDisplay):
     def __init__(self, echo: bool) -> None:
         self._echo = echo
+        self._edx = 0
+        self._edy = 0
 
-    def update(self, echo: bool) -> None:
+    def update(self, echo: bool, edx: int = 0, edy: int = 0) -> None:
         self._echo = echo
+        self._edx = edx
+        self._edy = edy
 
     def render_interface(self, frame):
         import numpy as np
@@ -24,6 +28,20 @@ class Em01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         frame[h - 2, 2] = 7 if self._echo else 5
+        if self._echo and (self._edx != 0 or self._edy != 0):
+            cx, cy = 5, h - 2
+            c = 10
+            if abs(self._edx) >= abs(self._edy):
+                if self._edx < 0:
+                    frame[cy, cx - 1] = c
+                elif self._edx > 0:
+                    frame[cy, cx + 1] = c
+            else:
+                if self._edy < 0:
+                    frame[cy - 1, cx] = c
+                elif self._edy > 0:
+                    frame[cy + 1, cx] = c
+            frame[cy, cx] = c
         return frame
 
 
@@ -125,7 +143,7 @@ class Em01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._echo_dx = self._echo_dy = 0
         self._parity = 0
-        self._ui.update(False)
+        self._ui.update(False, 0, 0)
 
     def _apply_delta(self, dx: int, dy: int) -> None:
         if dx == 0 and dy == 0:
@@ -145,7 +163,7 @@ class Em01(ARCBaseGame):
 
     def step(self) -> None:
         use_echo = self._parity % 2 == 1
-        self._ui.update(use_echo)
+        self._ui.update(use_echo, self._echo_dx, self._echo_dy)
 
         dx = dy = 0
         if not use_echo:

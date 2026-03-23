@@ -90,6 +90,9 @@ class Sg01UI(RenderableUserDisplay):
         frame[2, cx] = 9
         for i in range(min(self._prog, 10)):
             frame[h - 2, 1 + i] = 11
+        need_show = min(self._need, 8)
+        for i in range(need_show):
+            frame[h - 3, 1 + i] = 11 if i < self._prog else 3
         go = self._gs == GameState.GAME_OVER
         win = self._gs == GameState.WIN
         _r_bar(frame, h, w, go, win)

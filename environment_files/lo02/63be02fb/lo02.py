@@ -70,6 +70,11 @@ class Lo02UI(RenderableUserDisplay):
         for i in range(min(self._remaining, 15)):
             self._plot_px(frame, h, w, 1 + i * 2, 1, 8)
 
+        self._plot_px(frame, h, w, w // 2, 0, 11)
+        self._plot_px(frame, h, w, w // 2, h - 1, 11)
+        self._plot_px(frame, h, w, 0, h // 2, 11)
+        self._plot_px(frame, h, w, w - 1, h // 2, 11)
+
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
             phase = Lo02UI.CLICK_ANIM_FRAMES - self._click_frames

@@ -119,6 +119,14 @@ sprites = {
     ),
 }
 
+# Distinct hues per conveyor direction (discoverability); see level data `arrows`.
+_ARROW_COLOR: dict[tuple[int, int], int] = {
+    (1, 0): 10,
+    (-1, 0): 7,
+    (0, -1): 11,
+    (0, 1): 9,
+}
+
 
 def mk(
     p: tuple[int, int],
@@ -133,8 +141,19 @@ def mk(
     ]
     for wx, wy in walls:
         sl.append(sprites["wall"].clone().set_position(wx, wy))
-    for key, (ax, ay) in arrows.items():
-        sl.append(sprites["arrow"].clone().set_position(ax, ay))
+    for key, (dx, dy) in arrows.items():
+        parts = key.split(",")
+        ax, ay = int(parts[0]), int(parts[1])
+        hue = _ARROW_COLOR.get((dx, dy), 10)
+        sl.append(
+            Sprite(
+                pixels=[[hue]],
+                name="arrow",
+                visible=True,
+                collidable=False,
+                tags=["arrow"],
+            ).set_position(ax, ay),
+        )
     ser = {k: list(v) for k, v in arrows.items()}
     return Level(
         sprites=sl,

@@ -22,15 +22,26 @@ FLAG_C = 8
 
 
 class Bn01UI(RenderableUserDisplay):
-    def __init__(self, beacons: int, found: int, need: int) -> None:
+    def __init__(self, beacons: int, found: int, need: int, steps: int, steps_max: int) -> None:
         self._beacons = beacons
         self._found = found
         self._need = need
+        self._steps = steps
+        self._steps_max = max(1, steps_max)
 
-    def update(self, beacons: int, found: int, need: int) -> None:
+    def update(
+        self,
+        beacons: int,
+        found: int,
+        need: int,
+        steps: int,
+        steps_max: int,
+    ) -> None:
         self._beacons = beacons
         self._found = found
         self._need = need
+        self._steps = steps
+        self._steps_max = max(1, steps_max)
 
     def render_interface(self, frame):
         import numpy as np
@@ -42,6 +53,17 @@ class Bn01UI(RenderableUserDisplay):
             frame[1, 1 + i] = 12
         for i in range(min(self._need, 20)):
             frame[2, 1 + i] = 14 if i < self._found else 8
+        # Step budget (shrinking tick bar).
+        cap = min(self._steps_max, 24)
+        filled = max(0, min(cap, int(round(self._steps * cap / self._steps_max))))
+        for i in range(cap):
+            c = 10 if i < filled else 3
+            if self._steps < self._steps_max * 0.15 and i < filled:
+                c = 8
+            frame[3, 1 + i] = c
+        # ACTION5 = beacon (yellow), ACTION6 = flag (red) — pixel key only.
+        frame[h - 3, 2] = 12
+        frame[h - 3, 4] = 8
         return frame
 
 
@@ -139,7 +161,7 @@ levels = [
 
 class Bn01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Bn01UI(0, 0, 1)
+        self._ui = Bn01UI(0, 0, 1, 0, 1)
         super().__init__(
             "bn01",
             levels,
@@ -157,6 +179,7 @@ class Bn01(ARCBaseGame):
         self._budget = int(self.current_level.get_data("beacon_budget") or 8)
         self._radius = int(self.current_level.get_data("reveal_radius") or 8)
         self._steps = int(self.current_level.get_data("max_steps") or 500)
+        self._steps_max = self._steps
         self._flagged: set[tuple[int, int]] = set()
         self._sync_ghosts()
         self._sync_ui()
@@ -182,7 +205,13 @@ class Bn01(ARCBaseGame):
 
     def _sync_ui(self) -> None:
         ok = len(self._hidden & self._flagged)
-        self._ui.update(self._budget, ok, max(1, len(self._hidden)))
+        self._ui.update(
+            self._budget,
+            ok,
+            max(1, len(self._hidden)),
+            self._steps,
+            self._steps_max,
+        )
 
     def _burn(self) -> bool:
         self._steps -= 1

@@ -49,6 +49,13 @@ def _r_bar(frame, h, w, game_over, win):
         _rp(frame, h, w, x, r, c)
 
 
+PULSE_FX_FRAMES = 16
+# Pulse overlay colors (HUD draws after grid tint)
+PULSE_VISIT_C = 10
+PULSE_DEPTH_BLOCK_C = 8
+PULSE_LAMP_LIT_C = 11
+
+
 class Rp02UI(RenderableUserDisplay):
     def __init__(self, relays_left: int, fires_left: int, num_levels: int) -> None:
         self._relays = relays_left
@@ -56,6 +63,12 @@ class Rp02UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._gs: GameState | None = None
+        self._grid_w = CAM_W
+        self._grid_h = CAM_H
+        self._pulse_visit: set[tuple[int, int]] = set()
+        self._pulse_lit: set[tuple[int, int]] = set()
+        self._pulse_depth_block: set[tuple[int, int]] = set()
+        self._pulse_fx_frames = 0
 
     def update(
         self,
@@ -64,6 +77,11 @@ class Rp02UI(RenderableUserDisplay):
         *,
         level_index: int | None = None,
         gs: GameState | None = None,
+        grid_wh: tuple[int, int] | None = None,
+        pulse_visit: set[tuple[int, int]] | None = None,
+        pulse_lit: set[tuple[int, int]] | None = None,
+        pulse_depth_block: set[tuple[int, int]] | None = None,
+        pulse_fx_frames: int | None = None,
     ) -> None:
         self._relays = relays_left
         self._fires = fires_left
@@ -71,6 +89,33 @@ class Rp02UI(RenderableUserDisplay):
             self._level_index = level_index
         if gs is not None:
             self._gs = gs
+        if grid_wh is not None:
+            self._grid_w, self._grid_h = grid_wh
+        if pulse_visit is not None:
+            self._pulse_visit = pulse_visit
+        if pulse_lit is not None:
+            self._pulse_lit = pulse_lit
+        if pulse_depth_block is not None:
+            self._pulse_depth_block = pulse_depth_block
+        if pulse_fx_frames is not None:
+            self._pulse_fx_frames = pulse_fx_frames
+
+    @staticmethod
+    def _paint_cell(
+        frame, fh: int, fw: int, gx: int, gy: int, gw: int, gh: int, color: int
+    ) -> None:
+        scale_x = 64 // gw
+        scale_y = 64 // gh
+        scale = min(scale_x, scale_y)
+        x_pad = (fw - (gw * scale)) // 2
+        y_pad = (fh - (gh * scale)) // 2
+        x0 = x_pad + gx * scale
+        y0 = y_pad + gy * scale
+        for sy in range(scale):
+            for sx in range(scale):
+                fx, fy = x0 + sx, y0 + sy
+                if 0 <= fx < fw and 0 <= fy < fh:
+                    frame[fy, fx] = color
 
     def render_interface(self, frame):
         import numpy as np
@@ -78,6 +123,16 @@ class Rp02UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        gw, gh = self._grid_w, self._grid_h
+        if self._pulse_fx_frames > 0:
+            for cell in self._pulse_visit:
+                self._paint_cell(frame, h, w, cell[0], cell[1], gw, gh, PULSE_VISIT_C)
+            for cell in self._pulse_depth_block:
+                self._paint_cell(
+                    frame, h, w, cell[0], cell[1], gw, gh, PULSE_DEPTH_BLOCK_C
+                )
+            for cell in self._pulse_lit:
+                self._paint_cell(frame, h, w, cell[0], cell[1], gw, gh, PULSE_LAMP_LIT_C)
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._relays, 24)):
             frame[h - 2, 1 + i] = 12
@@ -216,6 +271,10 @@ _NUM_LEVELS = len(levels)
 class Rp02(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Rp02UI(0, 0, _NUM_LEVELS)
+        self._pulse_visit: set[tuple[int, int]] = set()
+        self._pulse_lit: set[tuple[int, int]] = set()
+        self._pulse_depth_block: set[tuple[int, int]] = set()
+        self._pulse_fx_frames = 0
         super().__init__(
             "rp02",
             levels,
@@ -234,15 +293,25 @@ class Rp02(ARCBaseGame):
         self._max_fires = int(self.current_level.get_data("max_fires") or 15)
         self._fires_left = self._max_fires
         self._relay_count = len(self.current_level.get_sprites_by_tag("relay"))
+        self._pulse_visit = set()
+        self._pulse_lit = set()
+        self._pulse_depth_block = set()
+        self._pulse_fx_frames = 0
         self._sync_ui()
 
     def _sync_ui(self) -> None:
         left = max(0, self._max_relays - self._relay_count)
+        gw, gh = self.current_level.grid_size
         self._ui.update(
             left,
             self._fires_left,
             level_index=self.level_index,
             gs=self._state,
+            grid_wh=(gw, gh),
+            pulse_visit=set(self._pulse_visit),
+            pulse_lit=set(self._pulse_lit),
+            pulse_depth_block=set(self._pulse_depth_block),
+            pulse_fx_frames=self._pulse_fx_frames,
         )
 
     def _relay_cells(self) -> set[tuple[int, int]]:
@@ -260,6 +329,7 @@ class Rp02(ARCBaseGame):
         q: deque[tuple[int, int, int]] = deque()
         best: dict[tuple[int, int], int] = {}
         gw, gh = self.current_level.grid_size
+        depth_block: set[tuple[int, int]] = set()
         for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
             nx, ny = sx + dx, sy + dy
             if (nx, ny) in relays:
@@ -278,15 +348,27 @@ class Rp02(ARCBaseGame):
                     continue
                 nd = 1 if (x, y) in amps else d + 1
                 if nd > max_d:
+                    depth_block.add((nx, ny))
                     continue
                 old = best.get((nx, ny), 999)
                 if nd < old:
                     best[(nx, ny)] = nd
                     q.append((nx, ny, nd))
+        self._pulse_visit = set(best.keys())
+        self._pulse_lit = set(lit)
+        self._pulse_depth_block = depth_block
+        self._pulse_fx_frames = PULSE_FX_FRAMES
         if lit >= self._lamps:
             self.next_level()
 
     def step(self) -> None:
+        if self._pulse_fx_frames > 0:
+            self._pulse_fx_frames -= 1
+            if self._pulse_fx_frames == 0:
+                self._pulse_visit.clear()
+                self._pulse_lit.clear()
+                self._pulse_depth_block.clear()
+
         aid = self.action.id
         if aid in (
             GameAction.ACTION1,
@@ -294,6 +376,7 @@ class Rp02(ARCBaseGame):
             GameAction.ACTION3,
             GameAction.ACTION4,
         ):
+            self._sync_ui()
             self.complete_action()
             return
 

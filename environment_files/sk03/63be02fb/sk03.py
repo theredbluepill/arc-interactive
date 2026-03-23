@@ -10,11 +10,15 @@ from arcengine import (
 
 
 class Sk03UI(RenderableUserDisplay):
-    def __init__(self, remaining: int) -> None:
+    def __init__(self, remaining: int, step_limit: int) -> None:
         self._remaining = remaining
+        self._steps_left = step_limit
+        self._step_limit = max(1, step_limit)
 
-    def update(self, remaining: int) -> None:
+    def update(self, remaining: int, steps_left: int, step_limit: int) -> None:
         self._remaining = remaining
+        self._steps_left = max(0, steps_left)
+        self._step_limit = max(1, step_limit)
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,6 +30,13 @@ class Sk03UI(RenderableUserDisplay):
         for dy in range(4):
             for dx in range(4):
                 frame[h - 4 + dy, w - 4 + dx] = color
+        lim = self._step_limit
+        bar_w = min(14, max(4, min(lim, 14)))
+        for i in range(bar_w):
+            thr = lim * (1.0 - (i + 0.5) / bar_w)
+            low = self._steps_left <= max(3, lim // 6)
+            c = 14 if self._steps_left >= thr else (8 if low else 3)
+            frame[h - 1, 1 + i] = c
         return frame
 
 
@@ -131,7 +142,7 @@ PADDING_COLOR = 4
 
 class Sk03(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Sk03UI(0)
+        self._ui = Sk03UI(0, 99)
         super().__init__(
             "sk03",
             levels,
@@ -147,7 +158,8 @@ class Sk03(ARCBaseGame):
         self._targets = self.current_level.get_sprites_by_tag("target")
         self._step_limit = level.get_data("step_limit")
         self._steps = 0
-        self._ui.update(len(self._blocks))
+        sl = int(self._step_limit) if self._step_limit is not None else 99
+        self._ui.update(len(self._blocks), sl, sl)
 
     def _block_on_target(self, block, targets):
         for t in targets:
@@ -232,7 +244,9 @@ class Sk03(ARCBaseGame):
 
         self._steps += 1
         remaining = sum(1 for b in self._blocks if "done" not in b.tags)
-        self._ui.update(remaining)
+        lim = int(self._step_limit) if self._step_limit is not None else 999
+        steps_left = max(0, lim - self._steps)
+        self._ui.update(remaining, steps_left, lim)
 
         if remaining == 0:
             self.next_level()

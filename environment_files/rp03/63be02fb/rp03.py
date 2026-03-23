@@ -8,6 +8,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -23,14 +24,97 @@ SRC_C = 14
 LAMP_C = 11
 
 
-class Rp03UI(RenderableUserDisplay):
-    def __init__(self, relays_left: int, fires_left: int) -> None:
-        self._relays = relays_left
-        self._fires = fires_left
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, relays_left: int, fires_left: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+PULSE_FX_FRAMES = 16
+PULSE_VISIT_C = 10
+PULSE_DEPTH_BLOCK_C = 8
+PULSE_LAMP_LIT_C = 11
+
+
+class Rp03UI(RenderableUserDisplay):
+    def __init__(self, relays_left: int, fires_left: int, num_levels: int) -> None:
         self._relays = relays_left
         self._fires = fires_left
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._gs: GameState | None = None
+        self._grid_w = CAM_W
+        self._grid_h = CAM_H
+        self._pulse_visit: set[tuple[int, int]] = set()
+        self._pulse_lit: set[tuple[int, int]] = set()
+        self._pulse_depth_block: set[tuple[int, int]] = set()
+        self._pulse_fx_frames = 0
+
+    def update(
+        self,
+        relays_left: int,
+        fires_left: int,
+        *,
+        level_index: int | None = None,
+        gs: GameState | None = None,
+        grid_wh: tuple[int, int] | None = None,
+        pulse_visit: set[tuple[int, int]] | None = None,
+        pulse_lit: set[tuple[int, int]] | None = None,
+        pulse_depth_block: set[tuple[int, int]] | None = None,
+        pulse_fx_frames: int | None = None,
+    ) -> None:
+        self._relays = relays_left
+        self._fires = fires_left
+        if level_index is not None:
+            self._level_index = level_index
+        if gs is not None:
+            self._gs = gs
+        if grid_wh is not None:
+            self._grid_w, self._grid_h = grid_wh
+        if pulse_visit is not None:
+            self._pulse_visit = pulse_visit
+        if pulse_lit is not None:
+            self._pulse_lit = pulse_lit
+        if pulse_depth_block is not None:
+            self._pulse_depth_block = pulse_depth_block
+        if pulse_fx_frames is not None:
+            self._pulse_fx_frames = pulse_fx_frames
+
+    @staticmethod
+    def _paint_cell(
+        frame, fh: int, fw: int, gx: int, gy: int, gw: int, gh: int, color: int
+    ) -> None:
+        scale_x = 64 // gw
+        scale_y = 64 // gh
+        scale = min(scale_x, scale_y)
+        x_pad = (fw - (gw * scale)) // 2
+        y_pad = (fh - (gh * scale)) // 2
+        x0 = x_pad + gx * scale
+        y0 = y_pad + gy * scale
+        for sy in range(scale):
+            for sx in range(scale):
+                fx, fy = x0 + sx, y0 + sy
+                if 0 <= fx < fw and 0 <= fy < fh:
+                    frame[fy, fx] = color
 
     def render_interface(self, frame):
         import numpy as np
@@ -38,10 +122,24 @@ class Rp03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        gw, gh = self._grid_w, self._grid_h
+        if self._pulse_fx_frames > 0:
+            for cell in self._pulse_visit:
+                self._paint_cell(frame, h, w, cell[0], cell[1], gw, gh, PULSE_VISIT_C)
+            for cell in self._pulse_depth_block:
+                self._paint_cell(
+                    frame, h, w, cell[0], cell[1], gw, gh, PULSE_DEPTH_BLOCK_C
+                )
+            for cell in self._pulse_lit:
+                self._paint_cell(frame, h, w, cell[0], cell[1], gw, gh, PULSE_LAMP_LIT_C)
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._relays, 24)):
             frame[h - 2, 1 + i] = 12
         for i in range(min(self._fires, 8)):
             frame[h - 1, 1 + i] = 9
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -161,10 +259,16 @@ levels = [
     ),
 ]
 
+_NUM_LEVELS = len(levels)
+
 
 class Rp03(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Rp03UI(0, 0)
+        self._ui = Rp03UI(0, 0, _NUM_LEVELS)
+        self._pulse_visit: set[tuple[int, int]] = set()
+        self._pulse_lit: set[tuple[int, int]] = set()
+        self._pulse_depth_block: set[tuple[int, int]] = set()
+        self._pulse_fx_frames = 0
         super().__init__(
             "rp03",
             levels,
@@ -183,11 +287,26 @@ class Rp03(ARCBaseGame):
         self._max_fires = int(self.current_level.get_data("max_fires") or 15)
         self._fires_left = self._max_fires
         self._relay_count = len(self.current_level.get_sprites_by_tag("relay"))
+        self._pulse_visit = set()
+        self._pulse_lit = set()
+        self._pulse_depth_block = set()
+        self._pulse_fx_frames = 0
         self._sync_ui()
 
     def _sync_ui(self) -> None:
         left = max(0, self._max_relays - self._relay_count)
-        self._ui.update(left, self._fires_left)
+        gw, gh = self.current_level.grid_size
+        self._ui.update(
+            left,
+            self._fires_left,
+            level_index=self.level_index,
+            gs=self._state,
+            grid_wh=(gw, gh),
+            pulse_visit=set(self._pulse_visit),
+            pulse_lit=set(self._pulse_lit),
+            pulse_depth_block=set(self._pulse_depth_block),
+            pulse_fx_frames=self._pulse_fx_frames,
+        )
 
     def _relay_cells(self) -> set[tuple[int, int]]:
         return {(s.x, s.y) for s in self.current_level.get_sprites_by_tag("relay")}
@@ -204,6 +323,7 @@ class Rp03(ARCBaseGame):
         q: deque[tuple[int, int, int]] = deque()
         best: dict[tuple[int, int], int] = {}
         gw, gh = self.current_level.grid_size
+        depth_block: set[tuple[int, int]] = set()
         for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
             nx, ny = sx + dx, sy + dy
             if (nx, ny) in relays:
@@ -222,15 +342,27 @@ class Rp03(ARCBaseGame):
                     continue
                 nd = 1 if (x, y) in amps else d + 1
                 if nd > max_d:
+                    depth_block.add((nx, ny))
                     continue
                 old = best.get((nx, ny), 999)
                 if nd < old:
                     best[(nx, ny)] = nd
                     q.append((nx, ny, nd))
+        self._pulse_visit = set(best.keys())
+        self._pulse_lit = set(lit)
+        self._pulse_depth_block = depth_block
+        self._pulse_fx_frames = PULSE_FX_FRAMES
         if lit >= self._lamps:
             self.next_level()
 
     def step(self) -> None:
+        if self._pulse_fx_frames > 0:
+            self._pulse_fx_frames -= 1
+            if self._pulse_fx_frames == 0:
+                self._pulse_visit.clear()
+                self._pulse_lit.clear()
+                self._pulse_depth_block.clear()
+
         aid = self.action.id
         if aid in (
             GameAction.ACTION1,
@@ -238,21 +370,25 @@ class Rp03(ARCBaseGame):
             GameAction.ACTION3,
             GameAction.ACTION4,
         ):
+            self._sync_ui()
             self.complete_action()
             return
 
         if aid == GameAction.ACTION5:
             if self._fires_left <= 0:
                 self.lose()
+                self._sync_ui()
                 self.complete_action()
                 return
             self._fires_left -= 1
             self._sync_ui()
             self._fire_pulse()
+            self._sync_ui()
             self.complete_action()
             return
 
         if aid != GameAction.ACTION6:
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -260,11 +396,13 @@ class Rp03(ARCBaseGame):
         y = self.action.data.get("y", 0)
         coords = self.camera.display_to_grid(x, y)
         if coords is None:
+            self._sync_ui()
             self.complete_action()
             return
         gx, gy = coords
         gw, gh = self.current_level.grid_size
         if not (0 <= gx < gw and 0 <= gy < gh):
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -277,10 +415,12 @@ class Rp03(ARCBaseGame):
             return
 
         if sp and ("wall" in sp.tags or "source" in sp.tags or "lamp" in sp.tags):
+            self._sync_ui()
             self.complete_action()
             return
 
         if self._relay_count >= self._max_relays:
+            self._sync_ui()
             self.complete_action()
             return
 

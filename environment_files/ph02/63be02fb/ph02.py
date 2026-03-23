@@ -119,6 +119,12 @@ class Ph02(ARCBaseGame):
             x, y, v = int(row[0]), int(row[1]), int(row[2])
             self._target[(x, y)] = v
         self._blur_left = int(self.current_level.get_data("max_blur") or 40)
+        # Goal marks are authored as gray sprites; remove them so phase_cell can
+        # render on the same cells (discoverability: win-critical phase visible).
+        self._mark_cells: set[tuple[int, int]] = set()
+        for s in list(self.current_level.get_sprites_by_tag("mark")):
+            self._mark_cells.add((s.x, s.y))
+            self.current_level.remove_sprite(s)
         self._sync_ui()
         self._refresh_phase_sprites()
 
@@ -127,8 +133,7 @@ class Ph02(ARCBaseGame):
         return sp is not None and "wall" in sp.tags
 
     def _mark_at(self, x: int, y: int) -> bool:
-        sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
-        return sp is not None and "mark" in sp.tags
+        return (x, y) in self._mark_cells
 
     def _clear_phase_sprites(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("phase_cell")):
@@ -139,7 +144,7 @@ class Ph02(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         for y in range(gh):
             for x in range(gw):
-                if self._wall_at(x, y) or self._mark_at(x, y):
+                if self._wall_at(x, y):
                     continue
                 self.current_level.add_sprite(
                     _palette_sprite(self._g[x][y]).clone().set_position(x, y),

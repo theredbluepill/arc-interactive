@@ -337,9 +337,12 @@ class Wm03(ARCBaseGame):
             # Show click cursor in UI
             self._ui.set_click(x, y)
 
-            # Convert display coords to grid coords
-            grid_x = x // 2
-            grid_y = y // 2
+            hit = self.camera.display_to_grid(int(x), int(y))
+            if hit is None:
+                self._update_ui()
+                self.complete_action()
+                return
+            grid_x, grid_y = int(hit[0]), int(hit[1])
             click_lane = min(3, max(0, grid_x // 8))
 
             # Find mole AT or NEAR the clicked position (radius 2 tolerance)

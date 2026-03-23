@@ -14,10 +14,14 @@ class Dr01UI(RenderableUserDisplay):
     def __init__(self, drills: int, steps: int) -> None:
         self._drills = drills
         self._steps = steps
+        self._miss_flash = 0
 
     def update(self, drills: int, steps: int) -> None:
         self._drills = drills
         self._steps = steps
+
+    def flash_miss(self, frames: int = 6) -> None:
+        self._miss_flash = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -29,6 +33,13 @@ class Dr01UI(RenderableUserDisplay):
             frame[h - 3, 1 + i] = 11
         for i in range(min(self._steps, 14)):
             frame[h - 2, 1 + i] = 10
+        if self._miss_flash > 0:
+            for dy in range(2):
+                for dx in range(2):
+                    px, py = w - 2 + dx, h - 4 + dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 12
+            self._miss_flash -= 1
         return frame
 
 
@@ -172,10 +183,13 @@ class Dr01(ARCBaseGame):
                 if sp and "wall" in sp.tags:
                     best = sp
                     break
-            if best:
-                self.current_level.remove_sprite(best)
-                self._drills -= 1
-                self._ui.update(self._drills, self._steps)
+            if not best:
+                self._ui.flash_miss()
+                self.complete_action()
+                return
+            self.current_level.remove_sprite(best)
+            self._drills -= 1
+            self._ui.update(self._drills, self._steps)
             if self._burn_step():
                 self.complete_action()
                 return

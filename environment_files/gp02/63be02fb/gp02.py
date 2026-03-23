@@ -74,6 +74,9 @@ class Gp02UI(RenderableUserDisplay):
             c = 14 if i < self._matched else 8
             self._plot_px(frame, h, w, 1 + i * 2, 1, c)
 
+        self._plot_px(frame, h, w, 48, 1, HINT_COLOR)
+        self._plot_px(frame, h, w, 50, 1, PAINT_COLOR)
+
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
             phase = Gp02UI.CLICK_ANIM_FRAMES - self._click_frames

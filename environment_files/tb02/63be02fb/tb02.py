@@ -47,6 +47,10 @@ class Tb02UI(RenderableUserDisplay):
         self._bridges: set[tuple[int, int]] = set()
         self._player_cell: tuple[int, int] = (0, 0)
         self._difficulty = 1
+        self._steps_remaining: int | None = None
+        self._step_limit: int | None = None
+        self._max_bridges: int | None = None
+        self._reject_flash = 0
 
     def update(
         self,
@@ -54,10 +58,20 @@ class Tb02UI(RenderableUserDisplay):
         player_x: int,
         player_y: int,
         difficulty: int = 1,
+        *,
+        steps_remaining: int | None = None,
+        step_limit: int | None = None,
+        max_bridges: int | None = None,
+        bridge_reject: bool = False,
     ) -> None:
         self._bridges = bridges
         self._player_cell = (player_x, player_y)
         self._difficulty = max(1, min(5, difficulty))
+        self._steps_remaining = steps_remaining
+        self._step_limit = step_limit
+        self._max_bridges = max_bridges
+        if bridge_reject:
+            self._reject_flash = 10
 
     def render_interface(self, frame):
         import numpy as np
@@ -65,6 +79,35 @@ class Tb02UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        if self._reject_flash > 0:
+            for dy in range(2):
+                for dx in range(2):
+                    px, py = w - 3 + dx, dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 8
+            self._reject_flash -= 1
+        # Step budget (when level has a limit): row h-3, proportional fill
+        if self._step_limit is not None and self._steps_remaining is not None:
+            bar_w = min(24, w - 4)
+            x0 = 2
+            filled = min(
+                bar_w,
+                max(0, self._steps_remaining * bar_w // max(1, self._step_limit)),
+            )
+            for i in range(bar_w):
+                px = x0 + i
+                if px >= w:
+                    break
+                frame[h - 3, px] = 11 if i < filled else 3
+        # Bridge cap usage: dots on row h-1 (right side)
+        if self._max_bridges is not None:
+            n = len(self._bridges)
+            cap = self._max_bridges
+            for i in range(min(cap, 12)):
+                px = w - 2 - i
+                if px <= 0:
+                    break
+                frame[h - 1, px] = 12 if i < n else 2
         # Level / difficulty ticks (1–5) — bottom-left in 64×64 frame space
         for i in range(5):
             frame[h - 2, 2 + i] = 9 if i < self._difficulty else 3
@@ -340,6 +383,7 @@ class Tb02(ARCBaseGame):
         self._last_dx = 1
         self._last_dy = 0
         self._lives = 3
+        self._bridge_reject = False
         self._update_ui()
 
     def _is_rock(self, x: int, y: int) -> bool:
@@ -378,6 +422,8 @@ class Tb02(ARCBaseGame):
             self._max_bridges is not None
             and len(self._bridges) >= self._max_bridges
         ):
+            self._bridge_reject = True
+            self._update_ui()
             return
         self._bridges.add((gx, gy))
         self._update_ui()
@@ -457,6 +503,18 @@ class Tb02(ARCBaseGame):
             self.next_level()
 
     def _update_ui(self) -> None:
+        steps_rem: int | None = None
+        if self._step_limit is not None:
+            steps_rem = max(0, self._step_limit - self._steps_this_level)
+        br = self._bridge_reject
+        self._bridge_reject = False
         self._ui.update(
-            self._bridges, self._player.x, self._player.y, self._difficulty
+            self._bridges,
+            self._player.x,
+            self._player.y,
+            self._difficulty,
+            steps_remaining=steps_rem,
+            step_limit=self._step_limit,
+            max_bridges=self._max_bridges,
+            bridge_reject=br,
         )

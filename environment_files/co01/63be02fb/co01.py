@@ -13,9 +13,13 @@ from arcengine import (
 class Co01UI(RenderableUserDisplay):
     def __init__(self, active: int) -> None:
         self._active = active
+        self._door_flash = 0
 
     def update(self, active: int) -> None:
         self._active = active
+
+    def flash_door_open(self, frames: int = 8) -> None:
+        self._door_flash = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,7 +30,17 @@ class Co01UI(RenderableUserDisplay):
         for dy in range(3):
             for dx in range(3):
                 frame[h - 3 + dy, 1 + dx] = self._active
+        if self._door_flash > 0:
+            c = 14 if (self._door_flash % 2) == 0 else 0
+            for dx in range(4):
+                self._plot_corner(frame, h, w, w - 4 + dx, h - 1, c)
+            self._door_flash -= 1
         return frame
+
+    @staticmethod
+    def _plot_corner(frame, h: int, w: int, x: int, y: int, c: int) -> None:
+        if 0 <= x < w and 0 <= y < h:
+            frame[y, x] = c
 
 
 sprites = {
@@ -167,14 +181,23 @@ class Co01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._doors = list(self.current_level.get_sprites_by_tag("door"))
         self._active = 11
-        self._sync_doors()
-        self._ui.update(self._active)
+        self._sync_doors_and_flash()
 
-    def _sync_doors(self) -> None:
+    def _sync_doors(self) -> bool:
+        any_opened = False
         for d in self._doors:
             need = 8 if "c8" in d.tags else 11
             open_ok = need == self._active
+            was_blocked = d.is_collidable
             d.set_collidable(not open_ok)
+            if was_blocked and open_ok:
+                any_opened = True
+        return any_opened
+
+    def _sync_doors_and_flash(self) -> None:
+        if self._sync_doors():
+            self._ui.flash_door_open()
+        self._ui.update(self._active)
 
     def step(self) -> None:
         dx = dy = 0
@@ -215,8 +238,7 @@ class Co01(ARCBaseGame):
                 self._active = 8
             elif "c11" in sp2.tags:
                 self._active = 11
-            self._sync_doors()
-            self._ui.update(self._active)
+            self._sync_doors_and_flash()
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()

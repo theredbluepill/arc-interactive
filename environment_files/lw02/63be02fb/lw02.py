@@ -22,11 +22,23 @@ class Lw02UI(RenderableUserDisplay):
         self._active = active
         self._n = n_colors
         self._steps_left = steps_left
+        self._flash_px = 0
+        self._flash_py = 0
+        self._flash_frames = 0
 
     def update(self, active: int, n_colors: int, steps_left: int) -> None:
         self._active = active
         self._n = n_colors
         self._steps_left = steps_left
+
+    def start_conflict_flash(self, frame_x: int, frame_y: int) -> None:
+        self._flash_px = frame_x
+        self._flash_py = frame_y
+        self._flash_frames = 16
+
+    def tick_flash(self) -> None:
+        if self._flash_frames > 0:
+            self._flash_frames -= 1
 
     def render_interface(self, frame):
         import numpy as np
@@ -39,6 +51,18 @@ class Lw02UI(RenderableUserDisplay):
             frame[h - 2, 2 + i * 2] = c
         for t in range(min(self._steps_left, 20)):
             frame[h - 1, 1 + t] = 14 if t < min(self._steps_left, 20) else 8
+        if self._flash_frames > 0:
+            cx, cy = self._flash_px, self._flash_py
+            col = 8
+            for arm in range(1, 5):
+                for px, py in (
+                    (cx - arm, cy),
+                    (cx + arm, cy),
+                    (cx, cy - arm),
+                    (cx, cy + arm),
+                ):
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = col
         return frame
 
 
@@ -105,7 +129,15 @@ def _lvl_fix_pairs(pairs, grid, walls, diff, max_steps):
 
 
 levels = [
-    _lvl_fix_pairs([((2, 12), (22, 12))], (24, 24), [], 1, 120),
+    # L1 — two colors on row 12, shared corridor 6..18; both enter shared cells
+    # horizontally (parallel OK); vertical detours hit perpendicular flash.
+    _lvl_fix_pairs(
+        [((2, 12), (18, 12)), ((22, 12), (6, 12))],
+        (24, 24),
+        [],
+        1,
+        200,
+    ),
     _lvl_fix_pairs(
         [((2, 6), (20, 6)), ((2, 18), (20, 18))],
         (24, 24),
@@ -238,6 +270,7 @@ class Lw02(ARCBaseGame):
         return False
 
     def step(self) -> None:
+        self._ui.tick_flash()
         aid = self.action.id
 
         if aid == GameAction.ACTION1:
@@ -316,6 +349,8 @@ class Lw02(ARCBaseGame):
 
         pdx, pdy = gx - cur[0], gy - cur[1]
         if self._perpendicular_on_shared(gx, gy, pdx, pdy, self._active):
+            fx, fy = self._grid_to_frame_pixel(gx, gy)
+            self._ui.start_conflict_flash(fx, fy)
             if self._burn_step():
                 self.complete_action()
                 return

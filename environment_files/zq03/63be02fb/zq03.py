@@ -13,10 +13,14 @@ class Zq03UI(RenderableUserDisplay):
     def __init__(self, a: bool, b: bool) -> None:
         self._a = a
         self._b = b
+        self._hazard_flash = 0
 
     def update(self, a: bool, b: bool) -> None:
         self._a = a
         self._b = b
+
+    def flash_hazard_block(self, frames: int = 6) -> None:
+        self._hazard_flash = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -30,6 +34,11 @@ class Zq03UI(RenderableUserDisplay):
             for dx in range(2):
                 frame[h - 3 + dy, w - 5 + dx] = c0
                 frame[h - 3 + dy, w - 3 + dx] = c1
+        if self._hazard_flash > 0:
+            for dy in range(2):
+                for dx in range(2):
+                    frame[h - 5 + dy, 1 + dx] = 8
+            self._hazard_flash -= 1
         return frame
 
 
@@ -157,7 +166,7 @@ levels = [
         ],
         (10, 8),
         4,
-        [(3, y) for y in range(8)],
+        [(3, y) for y in range(8) if y != 4],
         [(6, y) for y in range(8) if y != 4],
         M4A,
         M4B,
@@ -262,6 +271,7 @@ class Zq03(ARCBaseGame):
         if sprite and sprite.is_collidable and (
             "zq3_hazard_a" in sprite.tags or "zq3_hazard_b" in sprite.tags
         ):
+            self._ui.flash_hazard_block()
             self.complete_action()
             return
 

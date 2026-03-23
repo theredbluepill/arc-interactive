@@ -92,8 +92,19 @@ STOCHASTIC_NOTE = (
     "deterministic redesign; not implemented in this harness."
 )
 
+# Paint / Lights-Out style: subset state space makes naive per-cell ACTION6 BFS
+# intractable and slow; skip rather than emit false counterexamples.
+LATTICE_TOGGLE_TOOLING_STEMS: frozenset[str] = frozenset({"gp02", "lo02"})
+LATTICE_TOGGLE_NOTE = (
+    "lattice_toggle_tooling: generic per-cell ACTION6 BFS over paint/light subset "
+    "state is not run (exponential space / multi-minute levels); use a dedicated "
+    "witness or local linear algebra for Lights Out."
+)
+
 
 def solver_kind_for_stem(stem: str) -> SolverKind:
+    if stem in LATTICE_TOGGLE_TOOLING_STEMS:
+        return SolverKind.TOOLING_GAP
     if stem in PARTIAL_OBS_STEMS:
         return SolverKind.PARTIAL_OBS
     if stem in SIMULATION_TOOLING_STEMS:

@@ -8,6 +8,44 @@ from arcengine import (
     Sprite,
 )
 
+# Directional arrow tiles (1×1): distinct ARC palette indices so orientation is visible.
+_ARROW_UP = 6
+_ARROW_DOWN = 7
+_ARROW_RIGHT = 12
+_ARROW_LEFT = 13
+_ARROW_OTHER = 15
+
+
+def _arrow_color(dx: int, dy: int) -> int:
+    if (dx, dy) == (0, -1):
+        return _ARROW_UP
+    if (dx, dy) == (0, 1):
+        return _ARROW_DOWN
+    if (dx, dy) == (-1, 0):
+        return _ARROW_LEFT
+    if (dx, dy) == (1, 0):
+        return _ARROW_RIGHT
+    return _ARROW_OTHER
+
+
+def arrow_sprite_for_vec(dx: int, dy: int) -> Sprite:
+    c = _arrow_color(dx, dy)
+    return Sprite(
+        pixels=[[c]],
+        name="arrow",
+        visible=True,
+        collidable=False,
+        tags=["arrow"],
+    )
+
+
+def _sgn_hud(v: int) -> int:
+    if v > 0:
+        return 1
+    if v < 0:
+        return -1
+    return 0
+
 
 class Nw02UI(RenderableUserDisplay):
     def __init__(self, px: int, py: int) -> None:
@@ -24,8 +62,21 @@ class Nw02UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        frame[h - 2, 2] = 10 + (self._px + 1) % 5
-        frame[h - 2, 3] = 10 + (self._py + 1) % 5
+        # Pending vector: 3×3 compass (gray cross + blue tip toward (sgn(px), sgn(py))).
+        cy, cx0 = h - 4, 2
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                frame[cy + 1 + dy, cx0 + 1 + dx] = 4
+        frame[cy + 1, cx0 + 1] = 2
+        ox, oy = _sgn_hud(self._px), _sgn_hud(self._py)
+        if ox != 0 or oy != 0:
+            frame[cy + 1 + oy, cx0 + 1 + ox] = 9
+        # Legend: which color means which push (R U L D).
+        leg_y = h - 2
+        frame[leg_y, 6] = _ARROW_RIGHT
+        frame[leg_y, 7] = _ARROW_UP
+        frame[leg_y, 8] = _ARROW_LEFT
+        frame[leg_y, 9] = _ARROW_DOWN
         return frame
 
 
@@ -52,7 +103,7 @@ sprites = {
         tags=["wall"],
     ),
     "arrow": Sprite(
-        pixels=[[6]],
+        pixels=[[_ARROW_UP]],
         name="arrow",
         visible=True,
         collidable=False,
@@ -153,6 +204,16 @@ class Nw02(ARCBaseGame):
         for entry in level.get_data("arrows") or []:
             pos, vec = entry
             self._arrow_map[tuple(pos)] = tuple(vec)
+        for s in list(self.current_level.get_sprites_by_tag("arrow")):
+            pos = (s.x, s.y)
+            vec = self._arrow_map.get(pos)
+            if vec is None:
+                continue
+            self.current_level.remove_sprite(s)
+            dx, dy = int(vec[0]), int(vec[1])
+            self.current_level.add_sprite(
+                arrow_sprite_for_vec(dx, dy).set_position(pos[0], pos[1]),
+            )
         self._pend_x = 0
         self._pend_y = 0
         self._ui.update(0, 0)

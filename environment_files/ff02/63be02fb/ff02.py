@@ -279,6 +279,15 @@ class Ff02UI(RenderableUserDisplay):
         else:
             self._click_pos = None
 
+        # Subtle frame to separate the 64×64 playfield from letterbox padding.
+        border_c = 2
+        for x in range(w):
+            self._plot_px(frame, h, w, x, 0, border_c)
+            self._plot_px(frame, h, w, x, h - 1, border_c)
+        for y in range(h):
+            self._plot_px(frame, h, w, 0, y, border_c)
+            self._plot_px(frame, h, w, w - 1, y, border_c)
+
         return frame
 
 

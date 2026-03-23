@@ -73,9 +73,9 @@ tc01,generic,no,no,• 1-4: Move
 tt02,generic,no,no,• 1-4: Move
 zm01,generic,no,yes,• 1-4: Move • 5: Switch color • 6: Expand
 as01,generic,no,no,• 1-4: Move • 5: Pickup/drop
-bp01,generic,no,no,• 1-4: Move • 5: Charge pickup/drop
+bp01,generic,no,no,• 1-4: Move • 5: Power tower
 bn02,generic,no,yes,• 1-4: Move • 5: Beacon • 6: Flag
-ck02,generic,no,yes,• 1-4: No-op • 5: Test wire • 6: Toggle wire
+ck02,generic,no,yes,• 5: Test wire • 6: Toggle wire
 cr01,generic,no,yes,• 1-4: Move • 6: Place plank
 dm01,generic,no,yes,• 6: Toggle domino
 ex02,generic,no,no,• 1-4: Move • 5: Hold

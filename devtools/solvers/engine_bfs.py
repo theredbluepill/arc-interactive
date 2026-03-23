@@ -35,12 +35,32 @@ class BFSResult:
     reason: str
 
 
+def _display_click_payload_for_grid_cell(env, gx: int, gy: int, *, frame_size: int = 64) -> dict:
+    """Map grid cell to ACTION6 ``data`` using the same letterboxing as typical 64×64 renders.
+
+    Games use ``camera.display_to_grid`` on **display** pixels, not raw grid indices
+    (see AGENTS.md). Passing ``(gx, gy)`` as x/y falsely appears as clicks on the
+    top-left corner only.
+    """
+    cam = getattr(env._game, "camera", None)
+    if cam is None:
+        return {"x": gx, "y": gy}
+    cw, ch = int(cam.width), int(cam.height)
+    scale = max(1, min(frame_size // cw, frame_size // ch))
+    x_pad = (frame_size - cw * scale) // 2
+    y_pad = (frame_size - ch * scale) // 2
+    px = gx * scale + scale // 2 + x_pad
+    py = gy * scale + scale // 2 + y_pad
+    return {"x": px, "y": py}
+
+
 def _iter_action_specs(
     *,
     available: Iterable[int],
     grid_w: int,
     grid_h: int,
     max_click_cells: int,
+    env,
 ) -> list[tuple[int, dict]]:
     specs: list[tuple[int, dict]] = []
     avail = sorted(set(available))
@@ -55,7 +75,7 @@ def _iter_action_specs(
                 )
             for y in range(grid_h):
                 for x in range(grid_w):
-                    specs.append((6, {"x": x, "y": y}))
+                    specs.append((6, _display_click_payload_for_grid_cell(env, x, y)))
         else:
             specs.append((aid, {}))
     return specs
@@ -105,6 +125,7 @@ def engine_bfs_single_level(
             grid_w=gw,
             grid_h=gh,
             max_click_cells=max_click_cells,
+            env=env,
         )
     except ValueError as e:
         return BFSResult(False, 0, None, str(e))

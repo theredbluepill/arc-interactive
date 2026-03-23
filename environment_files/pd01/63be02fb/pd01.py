@@ -143,7 +143,7 @@ def mk(
 
 
 levels = [
-    mk([(x, 0) for x in range(10)] + [(x, 9) for x in range(10)] + [(0, y) for y in range(10)] + [(9, y) for y in range(10)], (1, 5), (8, 5), 1),
+    mk([(x, 0) for x in range(10)] + [(x, 9) for x in range(10)] + [(0, y) for y in range(10)] + [(9, y) for y in range(10)], (2, 5), (7, 5), 1),
     mk([(x, 0) for x in range(10)] + [(x, 9) for x in range(10)] + [(0, y) for y in range(10)] + [(9, y) for y in range(10)], (5, 1), (5, 8), 2),
     mk([(x, 0) for x in range(10)] + [(x, 9) for x in range(10)] + [(0, y) for y in range(10)] + [(9, y) for y in range(10)], (1, 1), (8, 8), 3),
     mk([(x, 0) for x in range(10)] + [(x, 9) for x in range(10)] + [(0, y) for y in range(10)] + [(9, y) for y in range(10)], (2, 5), (7, 5), 4),

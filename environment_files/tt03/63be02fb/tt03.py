@@ -51,6 +51,9 @@ class Tt03UI(RenderableUserDisplay):
         self._level_index = level_index
         self._num_levels = num_levels
         self._state: GameState | None = None
+        self._target_cap = 6
+        self._move_count = 0
+        self._spawn_every = 10
 
     def update(
         self,
@@ -59,6 +62,9 @@ class Tt03UI(RenderableUserDisplay):
         level_index: int | None = None,
         num_levels: int | None = None,
         state: GameState | None = None,
+        target_cap: int | None = None,
+        move_count: int | None = None,
+        spawn_every: int | None = None,
     ) -> None:
         self._targets = targets_remaining
         if level_index is not None:
@@ -67,6 +73,12 @@ class Tt03UI(RenderableUserDisplay):
             self._num_levels = num_levels
         if state is not None:
             self._state = state
+        if target_cap is not None:
+            self._target_cap = max(1, target_cap)
+        if move_count is not None:
+            self._move_count = move_count
+        if spawn_every is not None:
+            self._spawn_every = max(1, spawn_every)
 
     def render_interface(self, frame):
         import numpy as np
@@ -76,6 +88,16 @@ class Tt03UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._targets)
+        cap = min(6, self._target_cap)
+        n = min(self._targets, cap)
+        for i in range(cap):
+            frame[h - 2, w - 1 - cap + i] = 11 if i < n else 5
+        se = self._spawn_every
+        ph = self._move_count % se
+        for i in range(6):
+            cx = w - 7 + i
+            if cx >= 0:
+                frame[h - 3, cx] = 10 if i < (ph * 6 // se) else 3
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -208,11 +230,17 @@ class Tt03(ARCBaseGame):
         self._spawn_every = int(self.current_level.get_data("spawn_every") or 10)
         self._target_cap = int(self.current_level.get_data("target_cap") or 6)
         self._move_count = 0
+        self._sync_tt_ui()
+
+    def _sync_tt_ui(self) -> None:
         self._ui.update(
             len(self._targets),
             level_index=self.level_index,
             num_levels=len(levels),
             state=self._state,
+            target_cap=self._target_cap,
+            move_count=self._move_count,
+            spawn_every=self._spawn_every,
         )
 
     def _maybe_spawn_target(self) -> None:
@@ -237,12 +265,7 @@ class Tt03(ARCBaseGame):
         t = sprites["target"].clone().set_position(sx, sy)
         self.current_level.add_sprite(t)
         self._targets.append(t)
-        self._ui.update(
-            len(self._targets),
-            level_index=self.level_index,
-            num_levels=len(levels),
-            state=self._state,
-        )
+        self._sync_tt_ui()
 
     def _advance_patrols(self) -> None:
         for i, (sp, pts, idx) in enumerate(self._patrol_hazards):
@@ -287,12 +310,7 @@ class Tt03(ARCBaseGame):
                 self.current_level.remove_sprite(sprite)
                 self._targets.remove(sprite)
                 self._player.set_position(new_x, new_y)
-                self._ui.update(
-                    len(self._targets),
-                    level_index=self.level_index,
-                    num_levels=len(levels),
-                    state=self._state,
-                )
+                self._sync_tt_ui()
             elif not sprite or not sprite.is_collidable:
                 self._player.set_position(new_x, new_y)
             elif sprite and "hazard" in sprite.tags:
@@ -309,22 +327,12 @@ class Tt03(ARCBaseGame):
         hit = self.current_level.get_sprite_at(px, py, ignore_collidable=True)
         if hit and "hazard" in hit.tags:
             self.lose()
-            self._ui.update(
-                len(self._targets),
-                level_index=self.level_index,
-                num_levels=len(levels),
-                state=self._state,
-            )
+            self._sync_tt_ui()
             self.complete_action()
             return
 
         if len(self._targets) == 0:
             self.next_level()
 
-        self._ui.update(
-            len(self._targets),
-            level_index=self.level_index,
-            num_levels=len(levels),
-            state=self._state,
-        )
+        self._sync_tt_ui()
         self.complete_action()

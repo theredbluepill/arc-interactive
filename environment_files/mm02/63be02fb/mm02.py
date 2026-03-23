@@ -252,19 +252,19 @@ class Mm02(ARCBaseGame):
         )
 
     def step(self) -> None:
-        self._steps_remaining -= 1
-        self._ui.update(self._pairs_remaining, self._steps_remaining, self._display_level)
-
-        if self._steps_remaining <= 0:
-            self.lose()
-            self.complete_action()
-            return
-
         if self._waiting_for_flip_back:
             self._flip_back_timer -= 1
             if self._flip_back_timer <= 0:
                 self._do_flip_back()
                 self._waiting_for_flip_back = False
+            self.complete_action()
+            return
+
+        self._steps_remaining -= 1
+        self._ui.update(self._pairs_remaining, self._steps_remaining, self._display_level)
+
+        if self._steps_remaining <= 0:
+            self.lose()
             self.complete_action()
             return
 

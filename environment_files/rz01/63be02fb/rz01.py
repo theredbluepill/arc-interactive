@@ -24,9 +24,11 @@ class Rz01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        exit_open = self._n == 0
+        c = 14 if exit_open else 11
         for dy in range(3):
             for dx in range(3):
-                frame[h - 3 + dy, w - 3 + dx] = 15 if self._n == 0 else 11
+                frame[h - 3 + dy, w - 3 + dx] = c
         return frame
 
 

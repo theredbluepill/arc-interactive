@@ -42,6 +42,9 @@ class Ju01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._gs: GameState | None = None
+        self._skid_gx = -1
+        self._skid_gy = -1
+        self._skid_frames = 0
 
     def update(
         self,
@@ -56,6 +59,11 @@ class Ju01UI(RenderableUserDisplay):
         if gs is not None:
             self._gs = gs
 
+    def mark_skid_cell(self, gx: int, gy: int, frames: int = 8) -> None:
+        self._skid_gx = gx
+        self._skid_gy = gy
+        self._skid_frames = frames
+
     def render_interface(self, frame):
         import numpy as np
 
@@ -68,6 +76,14 @@ class Ju01UI(RenderableUserDisplay):
         go = self._gs == GameState.GAME_OVER
         win = self._gs == GameState.WIN
         _r_bar(frame, h, w, go, win)
+        if self._skid_frames > 0 and self._skid_gx >= 0:
+            scale = 4
+            cx = self._skid_gx * scale + scale // 2
+            cy = self._skid_gy * scale + scale // 2
+            c = 0 if self._skid_frames % 2 == 0 else 12
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                _rp(frame, h, w, cx + dx, cy + dy, c)
+            self._skid_frames -= 1
         return frame
 
 
@@ -218,6 +234,7 @@ class Ju01(ARCBaseGame):
         n2x, n2y = x + 2 * dx, y + 2 * dy
         if self._has_jump(n1x, n1y) and not self._blocked(n2x, n2y):
             self._player.set_position(n2x, n2y)
+            self._ui.mark_skid_cell(n1x, n1y)
         else:
             self._player.set_position(n1x, n1y)
 

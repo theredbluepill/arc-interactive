@@ -12,18 +12,25 @@ from arcengine import (
 class Dg01UI(RenderableUserDisplay):
     def __init__(self, digs: int) -> None:
         self._digs = digs
+        self._reject_frames = 0
 
     def update(self, digs: int) -> None:
         self._digs = digs
+
+    def flash_reject(self) -> None:
+        self._reject_frames = 3
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
         for i in range(min(self._digs, 10)):
             frame[h - 2, 1 + i] = 12
+        if self._reject_frames > 0:
+            frame[2, min(3, w - 1)] = 11
+            self._reject_frames -= 1
         return frame
 
 
@@ -149,6 +156,7 @@ class Dg01(ARCBaseGame):
                     best = sp
                     break
             if best is None:
+                self._ui.flash_reject()
                 self.complete_action()
                 return
             self.current_level.remove_sprite(best)

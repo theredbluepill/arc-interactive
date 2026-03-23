@@ -10,11 +10,11 @@ from arcengine import (
 
 
 class Mb01UI(RenderableUserDisplay):
-    def __init__(self, d: int) -> None:
-        self._d = d
+    def __init__(self, n_crates: int) -> None:
+        self._n_crates = n_crates
 
-    def update(self, d: int) -> None:
-        self._d = d
+    def update(self, n_crates: int) -> None:
+        self._n_crates = n_crates
 
     def render_interface(self, frame):
         import numpy as np
@@ -22,7 +22,7 @@ class Mb01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, _w = frame.shape
-        for i in range(min(self._d, 12)):
+        for i in range(min(self._n_crates, 12)):
             frame[h - 2, 1 + i] = 12
         return frame
 
@@ -130,7 +130,7 @@ class Mb01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._crates = list(self.current_level.get_sprites_by_tag("metal"))
-        self._ui.update(int(level.get_data("difficulty") or 1))
+        self._ui.update(len(self._crates))
 
     def _blocked_move(self, x: int, y: int, ignore: Sprite | None = None) -> bool:
         gw, gh = self.current_level.grid_size

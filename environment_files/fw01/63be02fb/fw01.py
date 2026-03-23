@@ -103,6 +103,8 @@ class Fw01UI(RenderableUserDisplay):
             _rp(frame, h, w, 1 + i, h - 2, 12)
         for i in range(min(self._fire_count, 10)):
             _rp(frame, h, w, w - 2 - i, h - 2, 8)
+        _rp(frame, h, w, w - 4, h - 4, 10)
+        _rp(frame, h, w, w - 3, h - 3, 10)
         go = self._gs == GameState.GAME_OVER
         win = self._gs == GameState.WIN
         _r_bar(frame, h, w, go, win)

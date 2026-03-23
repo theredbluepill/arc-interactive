@@ -166,6 +166,16 @@ class Pu01(ARCBaseGame):
         self._src = (em.x, em.y)
         self._snk = (sk.x, sk.y)
         self._ui.update(self._reachable())
+        self._sync_pipe_sprites()
+
+    def _sync_pipe_sprites(self) -> None:
+        """H vs V: distinct hues (12 vs 13) so orientation is visible without toggling."""
+        for sp in self.current_level.get_sprites_by_tag("pipe"):
+            o = self._pipe.get((sp.x, sp.y), 0)
+            want = 12 if o == 0 else 13
+            cur = int(sp.pixels[0][0])
+            if cur != want:
+                sp.color_remap(cur, want)
 
     def _shape(self, x: int, y: int) -> tuple[int, int, int, int]:
         if (x, y) == self._src:
@@ -219,6 +229,7 @@ class Pu01(ARCBaseGame):
         gx, gy = coords
         if (gx, gy) in self._pipe:
             self._pipe[(gx, gy)] = 1 - self._pipe[(gx, gy)]
+            self._sync_pipe_sprites()
             ok = self._reachable()
             self._ui.update(ok)
             if ok:

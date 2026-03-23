@@ -10,13 +10,34 @@ from arcengine import (
 
 
 class Nw02UI(RenderableUserDisplay):
+    """Pending impulse (px, py): horizontal/vertical bars + blocked flash."""
+
     def __init__(self, px: int, py: int) -> None:
         self._px = px
         self._py = py
+        self._blocked_flash = 0
 
     def update(self, px: int, py: int) -> None:
         self._px = px
         self._py = py
+
+    def flash_blocked(self, frames: int = 8) -> None:
+        self._blocked_flash = frames
+
+    @staticmethod
+    def _pend_bar(frame, h: int, row: int, x0: int, width: int, pend: int) -> None:
+        mid = width // 2
+        for i in range(width):
+            c = 3
+            if i == mid:
+                c = 5
+            xp = x0 + i
+            if 0 <= xp < frame.shape[1] and 0 <= row < frame.shape[0]:
+                frame[row, xp] = c
+        off = max(-mid, min(mid, pend))
+        mark = x0 + mid + off
+        if 0 <= mark < frame.shape[1] and 0 <= row < frame.shape[0]:
+            frame[row, mark] = 11
 
     def render_interface(self, frame):
         import numpy as np
@@ -24,8 +45,36 @@ class Nw02UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        frame[h - 2, 2] = 10 + (self._px + 1) % 5
-        frame[h - 2, 3] = 10 + (self._py + 1) % 5
+        row_x = h - 2
+        row_y = h - 3
+        self._pend_bar(frame, h, row_x, 1, 7, self._px)
+        self._pend_bar(frame, h, row_y, 1, 7, self._py)
+        # Dominant next-step hint from pending (same tie-break as step: abs vx >= abs vy)
+        cx, cy = w - 4, h - 3
+        if self._px != 0 or self._py != 0:
+            if abs(self._px) >= abs(self._py):
+                d = _sgn(self._px)
+                arr_c = 10
+                if d < 0 and cx - 1 >= 0:
+                    frame[row_x, cx - 1] = arr_c
+                if d > 0 and cx + 1 < w:
+                    frame[row_x, cx + 1] = arr_c
+                frame[row_x, cx] = arr_c
+            else:
+                d = _sgn(self._py)
+                arr_c = 10
+                if d < 0 and row_y - 1 >= 0:
+                    frame[row_y - 1, cx] = arr_c
+                if d > 0 and row_y + 1 < h:
+                    frame[row_y + 1, cx] = arr_c
+                frame[row_y, cx] = arr_c
+        if self._blocked_flash > 0:
+            for dy in range(2):
+                for dx in range(2):
+                    px, py = w - 2 + dx, dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 8
+            self._blocked_flash -= 1
         return frame
 
 
@@ -190,11 +239,13 @@ class Nw03(ARCBaseGame):
         new_y = self._player.y + dy
         grid_w, grid_h = self.current_level.grid_size
         if not (0 <= new_x < grid_w and 0 <= new_y < grid_h):
+            self._ui.flash_blocked()
             self.complete_action()
             return
 
         sprite = self.current_level.get_sprite_at(new_x, new_y, ignore_collidable=True)
         if sprite and "wall" in sprite.tags:
+            self._ui.flash_blocked()
             self.complete_action()
             return
 

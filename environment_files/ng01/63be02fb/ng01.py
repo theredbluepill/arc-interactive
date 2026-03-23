@@ -1,4 +1,4 @@
-"""Nonogram lite: 8×8 grid. ACTION1–4 move cursor; ACTION6 (click) cycles cell under cursor in display space via display_to_grid. Match the hidden solution in level data."""
+"""Nonogram lite: 8×8 playfield with visible row/column run clues on a 1-cell border. ACTION1–4 move cursor; ACTION6 cycles empty / filled / mark. Win when filled cells match the solution."""
 
 from __future__ import annotations
 
@@ -14,12 +14,15 @@ from arcengine import (
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 GW = GH = 8
-CAM = 16
+# 10×10: 2×2 corner + row hints on x=0–1, col hints on y=0–1, playfield (2..9,2..9).
+OUT = 10
+OFF = 2
 EMPTY_C = 2
 FILL_C = 9
 MARK_C = 8
-CURSOR_C = 0
-WALL_C = 3
+HINT_BG = 5
+# Clue digits 1..8 map to distinct palette indices (avoid clash with play colors).
+_CLUE_BASE = 12
 
 
 class Ng01UI(RenderableUserDisplay):
@@ -37,10 +40,10 @@ class Ng01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        scale = min(64 // CAM, 64 // CAM)
-        pad = (64 - CAM * scale) // 2
-        px = self._cx * scale + pad
-        py = self._cy * scale + pad
+        scale = max(1, min(64 // OUT, 64 // OUT))
+        pad = (64 - OUT * scale) // 2
+        px = (OFF + self._cx) * scale + pad
+        py = (OFF + self._cy) * scale + pad
         for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             x, y = px + dx, py + dy
             if 0 <= x < w and 0 <= y < h:
@@ -62,13 +65,44 @@ def _parse_sol(rows: list[str]) -> list[list[int]]:
     return [[1 if c == "#" else 0 for c in row] for row in rows]
 
 
+def _runs(line: list[int]) -> list[int]:
+    out: list[int] = []
+    c = 0
+    for v in line:
+        if v == 1:
+            c += 1
+        elif c:
+            out.append(c)
+            c = 0
+    if c:
+        out.append(c)
+    return out if out else [0]
+
+
+def _clue_color(n: int) -> int:
+    n = int(n)
+    if n <= 0:
+        return HINT_BG
+    return min(_CLUE_BASE + n - 1, 15)
+
+
 def mk(sol_rows: list[str], diff: int) -> Level:
     sol = _parse_sol(sol_rows)
     assert len(sol) == GW and all(len(r) == GW for r in sol)
+    row_clues = [_runs(sol[y]) for y in range(GH)]
+    col_clues: list[list[int]] = []
+    for x in range(GW):
+        col = [sol[y][x] for y in range(GH)]
+        col_clues.append(_runs(col))
     return Level(
         sprites=[],
-        grid_size=(GW, GH),
-        data={"difficulty": diff, "solution": sol},
+        grid_size=(OUT, OUT),
+        data={
+            "difficulty": diff,
+            "solution": sol,
+            "row_clues": row_clues,
+            "col_clues": col_clues,
+        },
     )
 
 
@@ -147,7 +181,7 @@ class Ng01(ARCBaseGame):
         super().__init__(
             "ng01",
             levels,
-            Camera(0, 0, CAM, CAM, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            Camera(0, 0, OUT, OUT, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
             [1, 2, 3, 4, 6],
@@ -155,6 +189,8 @@ class Ng01(ARCBaseGame):
 
     def on_set_level(self, level: Level) -> None:
         self._sol = self.current_level.get_data("solution")
+        self._row_clues = self.current_level.get_data("row_clues") or []
+        self._col_clues = self.current_level.get_data("col_clues") or []
         self._st = [[0 for _ in range(GW)] for _ in range(GH)]
         self._cx = self._cy = 0
         for s in list(self.current_level.get_sprites_by_tag("ng_cell")):
@@ -165,11 +201,46 @@ class Ng01(ARCBaseGame):
     def _refresh_cells(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("ng_cell")):
             self.current_level.remove_sprite(s)
-        for y in range(GH):
-            for x in range(GW):
-                t = self._st[y][x]
-                c = EMPTY_C if t == 0 else (FILL_C if t == 1 else MARK_C)
-                self.current_level.add_sprite(_cell_sprite(c).set_position(x, y))
+        for y in range(OUT):
+            for x in range(OUT):
+                if y < OFF and x < OFF:
+                    self.current_level.add_sprite(_cell_sprite(HINT_BG).set_position(x, y))
+                    continue
+                if y < OFF and x >= OFF:
+                    if x < OFF + GW:
+                        cc = self._col_clues[x - OFF]
+                        if y == 0:
+                            c = _clue_color(cc[0]) if len(cc) > 0 else HINT_BG
+                        else:
+                            c = _clue_color(cc[1]) if len(cc) > 1 else HINT_BG
+                        self.current_level.add_sprite(_cell_sprite(c).set_position(x, y))
+                    else:
+                        self.current_level.add_sprite(_cell_sprite(HINT_BG).set_position(x, y))
+                    continue
+                if x < OFF and y >= OFF:
+                    if y < OFF + GH:
+                        rc = self._row_clues[y - OFF]
+                        if x == 0:
+                            c = _clue_color(rc[0]) if len(rc) > 0 else HINT_BG
+                        else:
+                            c = _clue_color(rc[1]) if len(rc) > 1 else HINT_BG
+                        self.current_level.add_sprite(_cell_sprite(c).set_position(x, y))
+                    else:
+                        self.current_level.add_sprite(_cell_sprite(HINT_BG).set_position(x, y))
+                    continue
+                if x >= OFF and y >= OFF and x < OFF + GW and y < OFF + GH:
+                    lx, ly = x - OFF, y - OFF
+                    t = self._st[ly][lx]
+                    want = self._sol[ly][lx]
+                    if t == 0:
+                        c = EMPTY_C
+                    elif t == 1:
+                        c = FILL_C if want == 1 else 8
+                    else:
+                        c = MARK_C
+                    self.current_level.add_sprite(_cell_sprite(c).set_position(x, y))
+                    continue
+                self.current_level.add_sprite(_cell_sprite(HINT_BG).set_position(x, y))
 
     def _win(self) -> bool:
         for y in range(GH):
@@ -197,10 +268,11 @@ class Ng01(ARCBaseGame):
             hit = self.camera.display_to_grid(px, py)
             if hit is not None:
                 gx, gy = int(hit[0]), int(hit[1])
-                if 0 <= gx < GW and 0 <= gy < GH:
-                    self._cx, self._cy = gx, gy
-                    t = self._st[gy][gx]
-                    self._st[gy][gx] = (t + 1) % 3
+                if OFF <= gx < OFF + GW and OFF <= gy < OFF + GH:
+                    lx, ly = gx - OFF, gy - OFF
+                    self._cx, self._cy = lx, ly
+                    t = self._st[ly][lx]
+                    self._st[ly][lx] = (t + 1) % 3
                     self._refresh_cells()
                     if self._win():
                         self.next_level()

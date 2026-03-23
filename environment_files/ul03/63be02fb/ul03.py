@@ -253,7 +253,7 @@ class Ul03(ARCBaseGame):
             self._player.set_position(nx, ny)
             self._maybe_reveal_gold()
             self._ui.update(self._has_a, self._has_b, self._has_gold)
-        elif sp and "key_gold" in sp.tags and sp.visible:
+        elif sp and "key_gold" in sp.tags and getattr(sp, "is_visible", True):
             self.current_level.remove_sprite(sp)
             self._has_gold = True
             self._player.set_position(nx, ny)

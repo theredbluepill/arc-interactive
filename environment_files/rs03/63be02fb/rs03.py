@@ -25,6 +25,7 @@ class Rs03UI(RenderableUserDisplay):
         self._targets_left = 0
         self._difficulty = 1
         self._win_holding = False
+        self._reject_flash = 0
 
     def update(
         self,
@@ -49,6 +50,9 @@ class Rs03UI(RenderableUserDisplay):
         self._targets_left = targets_left
         self._difficulty = difficulty
         self._win_holding = win_holding
+
+    def flash_reject(self, frames: int = 6) -> None:
+        self._reject_flash = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -80,6 +84,15 @@ class Rs03UI(RenderableUserDisplay):
             if 14 + dx < w and 1 < hr:
                 frame[1, 14 + dx] = self._forbidden
 
+        # Legend ticks under safe / forbidden stripes (teaches HUD read order).
+        if 4 < hr:
+            if 7 < w:
+                frame[4, 7] = 0
+            if 11 < w:
+                frame[4, 11] = 0
+            if 15 < w:
+                frame[4, 15] = 0
+
         for i in range(min(self._num_pairs, 6)):
             px = 16 + i * 2
             if px < w and 3 < hr:
@@ -99,6 +112,10 @@ class Rs03UI(RenderableUserDisplay):
             pulse = 14 if (self._difficulty + self._targets_left) % 2 == 0 else 11
             for px in range(4, min(w - 4, 40)):
                 frame[4, px] = pulse
+        elif self._reject_flash > 0 and 4 < hr:
+            for px in range(4, min(w - 4, 36)):
+                frame[4, px] = 8
+            self._reject_flash -= 1
 
         return frame
 
@@ -191,7 +208,7 @@ levels = [
         (1, 1),
         [((3, 3), 8), ((5, 5), 8), ((3, 5), 14), ((5, 3), 14)],
         [],
-        [[8, 14], [11, 15]],
+        [[8, 14]],
         15,
         1,
     ),
@@ -321,6 +338,7 @@ class Rs03(ARCBaseGame):
         self._steps = 0
         self._win_hold = 0
         self._forbidden = int(level.get_data("forbidden_color") or 12)
+        self._soft_reject_used = False
         self._sync_ui()
 
     def _sync_ui(self) -> None:
@@ -398,6 +416,13 @@ class Rs03(ARCBaseGame):
                 self._targets.remove(sprite)
                 self._player.set_position(new_x, new_y)
             else:
+                d = int(self.current_level.get_data("difficulty") or 1)
+                if d == 1 and not self._soft_reject_used:
+                    self._soft_reject_used = True
+                    self._ui.flash_reject()
+                    self._sync_ui()
+                    self.complete_action()
+                    return
                 self.lose()
                 self.complete_action()
                 return

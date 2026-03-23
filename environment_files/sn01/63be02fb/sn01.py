@@ -51,6 +51,13 @@ sprites = {
         collidable=True,
         tags=["wall"],
     ),
+    "snake_body": Sprite(
+        pixels=[[10]],
+        name="snake_body",
+        visible=True,
+        collidable=False,
+        tags=["snake_body"],
+    ),
 }
 
 
@@ -128,10 +135,22 @@ class Sn01(ARCBaseGame):
         self._foods = list(self.current_level.get_sprites_by_tag("food"))
         x, y = self._player.x, self._player.y
         self._body: deque[tuple[int, int]] = deque([(x, y)])
+        self._sync_body_sprites()
         self._sync_ui()
 
     def _sync_ui(self) -> None:
         self._ui.update(len(self._foods))
+
+    def _clear_body_sprites(self) -> None:
+        for s in list(self.current_level.get_sprites_by_tag("snake_body")):
+            self.current_level.remove_sprite(s)
+
+    def _sync_body_sprites(self) -> None:
+        self._clear_body_sprites()
+        for bx, by in list(self._body)[:-1]:
+            self.current_level.add_sprite(
+                sprites["snake_body"].clone().set_position(bx, by),
+            )
 
     def _wall_at(self, x: int, y: int) -> bool:
         sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
@@ -183,6 +202,7 @@ class Sn01(ARCBaseGame):
 
         tx, ty = self._body[-1]
         self._player.set_position(tx, ty)
+        self._sync_body_sprites()
         self._sync_ui()
 
         if not self._foods:

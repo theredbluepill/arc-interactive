@@ -457,6 +457,7 @@ Condensed from many shipped stems. **Preview GIFs** use **`scripts/render_arc_ga
 | Mechanic summary | `GAMES.md` row + `{stem}.py` module docstring |
 | Preview / registry GIF | `scripts/render_arc_game_gif.py` + `registry_gif_lib`, `registry_gif_overrides.json` |
 | GIF-ready HUD audit | Skill **`generate-arc-game-gif`** (`skills/` / `.opencode/skills/` / `.agents/skills/`) |
+| Discovery-through-play / cold-start review | Skill **`check-arc-game-discoverable`** (`.opencode/skills/` / `.agents/skills/` / `.claude/skills/`) |
 | Solvability smoke | `scripts/verify_*solvability*.py` when one exists for your batch |
 
 ---

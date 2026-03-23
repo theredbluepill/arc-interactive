@@ -10,11 +10,13 @@ from arcengine import (
 
 
 class Op01UI(RenderableUserDisplay):
-    def __init__(self, ok: bool) -> None:
+    def __init__(self, ok: bool, steps_remaining: int) -> None:
         self._ok = ok
+        self._steps_remaining = steps_remaining
 
-    def update(self, ok: bool) -> None:
+    def update(self, ok: bool, steps_remaining: int) -> None:
         self._ok = ok
+        self._steps_remaining = steps_remaining
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,6 +28,10 @@ class Op01UI(RenderableUserDisplay):
         for dy in range(3):
             for dx in range(3):
                 frame[h - 3 + dy, w - 3 + dx] = c
+        cap = min(max(self._steps_remaining, 0), 20)
+        for i in range(cap):
+            if 1 + i < w - 4:
+                frame[h - 2, 1 + i] = 14
         return frame
 
 
@@ -93,7 +99,7 @@ PADDING_COLOR = 4
 
 class Op01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Op01UI(False)
+        self._ui = Op01UI(False, 80)
         super().__init__(
             "op01",
             levels,
@@ -120,7 +126,8 @@ class Op01(ARCBaseGame):
         return False
 
     def _sync_ui(self) -> None:
-        self._ui.update(self._block_on_target())
+        rem = max(0, self._step_limit - self._steps)
+        self._ui.update(self._block_on_target(), rem)
 
     def step(self) -> None:
         dx = dy = 0
@@ -165,6 +172,7 @@ class Op01(ARCBaseGame):
                 self.complete_action()
                 return
             self._pushed.add(bid)
+            sprite.color_remap(15, 12)
             sprite.set_position(bx, by)
             self._player.set_position(new_x, new_y)
         elif not sprite or not sprite.is_collidable:

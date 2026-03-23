@@ -28,7 +28,12 @@ class Mc01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        frame[h - 2, 2] = 9 if self._lead == 0 else 10
+        c = 9 if self._lead == 0 else 10
+        frame[h - 2, 2] = c
+        # "L" glyph: lead avatar moves first for collision resolution.
+        frame[h - 2, 4] = c
+        frame[h - 2, 5] = c
+        frame[h - 3, 4] = c
         return frame
 
 
@@ -48,7 +53,7 @@ sprites = {
         tags=["player", "p2"],
     ),
     "goal1": Sprite(
-        pixels=[[14]],
+        pixels=[[11]],
         name="goal1",
         visible=True,
         collidable=False,
@@ -91,7 +96,8 @@ def mk(
 
 
 levels = [
-    mk((2, 8), (3, 8), (12, 7), (12, 9), [], 1),
+    # Narrow corridor teaches joint motion before open layouts.
+    mk((2, 8), (3, 8), (12, 7), (12, 9), [(x, 6) for x in range(16) if x != 8], 1),
     mk((1, 1), (14, 1), (1, 14), (14, 14), [(8, y) for y in range(16) if y != 7], 2),
     mk((2, 2), (13, 2), (2, 13), (13, 13), [(x, 8) for x in range(16) if x != 8], 3),
     mk((0, 0), (15, 15), (7, 7), (8, 8), [], 4),

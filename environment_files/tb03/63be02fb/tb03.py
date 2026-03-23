@@ -49,6 +49,11 @@ class Tb03UI(RenderableUserDisplay):
         self._bridges: set[tuple[int, int]] = set()
         self._player_cell: tuple[int, int] = (0, 0)
         self._difficulty = 1
+        self._steps_this = 0
+        self._step_limit: int | None = None
+        self._max_bridges: int | None = None
+        self._reef_every = 18
+        self._bridge_reject_frames = 0
 
     def update(
         self,
@@ -56,10 +61,21 @@ class Tb03UI(RenderableUserDisplay):
         player_x: int,
         player_y: int,
         difficulty: int = 1,
+        *,
+        steps_this: int = 0,
+        step_limit: int | None = None,
+        max_bridges: int | None = None,
+        reef_every: int = 18,
+        bridge_reject_frames: int = 0,
     ) -> None:
         self._bridges = bridges
         self._player_cell = (player_x, player_y)
         self._difficulty = max(1, min(5, difficulty))
+        self._steps_this = steps_this
+        self._step_limit = step_limit
+        self._max_bridges = max_bridges
+        self._reef_every = max(1, reef_every)
+        self._bridge_reject_frames = bridge_reject_frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -67,6 +83,28 @@ class Tb03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        if self._bridge_reject_frames > 0:
+            for px, py in ((0, 0), (1, 0), (0, 1), (1, 1)):
+                if px < w and py < h:
+                    frame[py, px] = 8
+        if self._step_limit is not None:
+            lim = max(1, self._step_limit)
+            rem = max(0, lim - min(self._steps_this, lim))
+            bar = min(10, max(4, lim // 25 or 4))
+            for i in range(bar):
+                frame[h - 1, 1 + i] = 14 if rem * bar > i * lim else 3
+        if self._max_bridges is not None:
+            mb = max(1, self._max_bridges)
+            bc = len(self._bridges)
+            mx = min(8, mb)
+            base = w - 1 - mx
+            for i in range(mx):
+                if base + i >= 0:
+                    frame[0, base + i] = 12 if i < bc else 5
+        re = self._reef_every
+        ph = self._steps_this % re
+        for i in range(6):
+            frame[1, w - 7 + i] = 10 if i < (ph * 6 // re) else 3
         # Level / difficulty ticks (1–5) — bottom-left in 64×64 frame space
         for i in range(5):
             frame[h - 2, 2 + i] = 9 if i < self._difficulty else 3
@@ -344,6 +382,7 @@ class Tb03(ARCBaseGame):
         self._last_dx = 1
         self._last_dy = 0
         self._lives = 3
+        self._bridge_reject_frames = 0
         self._update_ui()
 
     def _is_rock(self, x: int, y: int) -> bool:
@@ -404,6 +443,8 @@ class Tb03(ARCBaseGame):
             self._max_bridges is not None
             and len(self._bridges) >= self._max_bridges
         ):
+            self._bridge_reject_frames = 8
+            self._update_ui()
             return
         self._bridges.add((gx, gy))
         self._update_ui()
@@ -420,6 +461,9 @@ class Tb03(ARCBaseGame):
         self.complete_action()
 
     def step(self) -> None:
+        if self._bridge_reject_frames > 0:
+            self._bridge_reject_frames -= 1
+
         dx = dy = 0
 
         if self.action.id == GameAction.ACTION1:
@@ -488,5 +532,13 @@ class Tb03(ARCBaseGame):
 
     def _update_ui(self) -> None:
         self._ui.update(
-            self._bridges, self._player.x, self._player.y, self._difficulty
+            self._bridges,
+            self._player.x,
+            self._player.y,
+            self._difficulty,
+            steps_this=self._steps_this_level,
+            step_limit=self._step_limit,
+            max_bridges=self._max_bridges,
+            reef_every=self._reef_every,
+            bridge_reject_frames=self._bridge_reject_frames,
         )

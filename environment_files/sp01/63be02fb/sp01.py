@@ -19,11 +19,17 @@ WALL_C = 3
 
 
 class Sp01UI(RenderableUserDisplay):
+    """Step budget plus current vs target total grain (discoverable win parameter)."""
+
     def __init__(self, steps: int) -> None:
         self._steps = steps
+        self._current_sum = 0
+        self._target_sum = 0
 
-    def update(self, steps: int) -> None:
+    def update(self, steps: int, current_sum: int = 0, target_sum: int = 0) -> None:
         self._steps = steps
+        self._current_sum = current_sum
+        self._target_sum = target_sum
 
     def render_interface(self, frame):
         import numpy as np
@@ -33,6 +39,23 @@ class Sp01UI(RenderableUserDisplay):
         h, w = frame.shape
         for i in range(min(self._steps, 20)):
             frame[h - 2, 1 + i] = 11
+        # Row h-3: progress toward target_sum (green fill) + white cap at goal
+        bar_x0 = 2
+        bar_w = min(28, max(8, w - 4))
+        tgt = max(1, self._target_sum)
+        filled = min(bar_w, self._current_sum * bar_w // tgt)
+        goal_x = bar_x0 + min(bar_w - 1, self._target_sum * bar_w // tgt)
+        for i in range(bar_w):
+            px = bar_x0 + i
+            if px >= w:
+                break
+            if i < filled:
+                c = 8 if self._current_sum > self._target_sum else 14
+            else:
+                c = 5
+            frame[h - 3, px] = c
+        if bar_x0 <= goal_x < w:
+            frame[h - 3, goal_x] = 0
         return frame
 
 
@@ -96,11 +119,19 @@ class Sp01(ARCBaseGame):
             [1, 2, 3, 4, 6],
         )
 
+    def _grain_sum(self) -> int:
+        return sum(self._g[y][x] for y in range(GH) for x in range(GW))
+
     def on_set_level(self, level: Level) -> None:
         self._target_sum = int(self.current_level.get_data("target_sum") or 0)
         self._g = [[0 for _ in range(GW)] for _ in range(GH)]
         self._steps_left = int(self.current_level.get_data("max_steps") or 200)
         self._refresh_sprites()
+        self._ui.update(
+            self._steps_left,
+            current_sum=self._grain_sum(),
+            target_sum=self._target_sum,
+        )
 
     def _wall(self, x: int, y: int) -> bool:
         sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
@@ -171,7 +202,11 @@ class Sp01(ARCBaseGame):
         self._topple()
         self._refresh_sprites()
         self._steps_left -= 1
-        self._ui.update(self._steps_left)
+        self._ui.update(
+            self._steps_left,
+            current_sum=self._grain_sum(),
+            target_sum=self._target_sum,
+        )
         if self._win():
             self.next_level()
         elif self._steps_left <= 0:

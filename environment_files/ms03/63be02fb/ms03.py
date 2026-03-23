@@ -61,9 +61,14 @@ sprites = {
 class Ms03UI(RenderableUserDisplay):
     def __init__(self, n: int) -> None:
         self._n = n
+        self._bad_flag_frames = 0
 
     def update(self, n: int) -> None:
         self._n = n
+
+    def flash_bad_flag(self) -> None:
+        """Brief HUD signal: flags only work on hidden mines."""
+        self._bad_flag_frames = 10
 
     def render_interface(self, frame):
         import numpy as np
@@ -73,6 +78,9 @@ class Ms03UI(RenderableUserDisplay):
         h, w = frame.shape
         for i in range(min(self._n, 15)):
             frame[h - 2, 1 + i] = 12
+        if self._bad_flag_frames > 0:
+            frame[h - 2, w - 2] = 8
+            self._bad_flag_frames -= 1
         return frame
 
 
@@ -187,7 +195,7 @@ class Ms03(ARCBaseGame):
                 self.complete_action()
                 return
             if (gx, gy) not in self._minefield:
-                self.lose()
+                self._ui.flash_bad_flag()
                 self.complete_action()
                 return
             self.current_level.add_sprite(sprites["flag"].clone().set_position(gx, gy))

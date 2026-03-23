@@ -13,10 +13,16 @@ class Ex03UI(RenderableUserDisplay):
     def __init__(self, progress: int, need: int) -> None:
         self._progress = progress
         self._need = need
+        self._hold_pulse = 0
+        self._hold_pulse_ok = True
 
     def update(self, progress: int, need: int) -> None:
         self._progress = progress
         self._need = need
+
+    def pulse_hold(self, ok: bool, frames: int = 8) -> None:
+        self._hold_pulse = frames
+        self._hold_pulse_ok = ok
 
     def render_interface(self, frame):
         import numpy as np
@@ -28,6 +34,21 @@ class Ex03UI(RenderableUserDisplay):
         for dy in range(4):
             for dx in range(4):
                 frame[h - 4 + dy, w - 4 + dx] = color
+        if self._hold_pulse > 0:
+            edge = 14 if self._hold_pulse_ok else 8
+            y0, x0 = h - 4, w - 4
+            for d in range(4):
+                if 0 <= y0 + d < h:
+                    if 0 <= x0 < w:
+                        frame[y0 + d, x0] = edge
+                    if 0 <= x0 + 3 < w:
+                        frame[y0 + d, x0 + 3] = edge
+            for d in range(4):
+                if 0 <= y0 < h and 0 <= x0 + d < w:
+                    frame[y0, x0 + d] = edge
+                if 0 <= y0 + 3 < h and 0 <= x0 + d < w:
+                    frame[y0 + 3, x0 + d] = edge
+            self._hold_pulse -= 1
         return frame
 
 
@@ -180,11 +201,13 @@ class Ex03(ARCBaseGame):
             if self._on_exit_pad():
                 self._hold += 1
                 self._ui.update(self._hold, need)
+                self._ui.pulse_hold(True)
                 if self._hold >= need:
                     self.next_level()
             else:
                 self._hold = 0
                 self._ui.update(0, need)
+                self._ui.pulse_hold(False)
             self.complete_action()
             return
 

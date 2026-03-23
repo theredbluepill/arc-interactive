@@ -68,6 +68,8 @@ class Tg01UI(RenderableUserDisplay):
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         chaser_moves = self._tick % 2 == 0
         _rp(frame, h, w, w - 2, 1, 14 if chaser_moves else 3)
+        _rp(frame, h, w, w - 5, 1, 14)
+        _rp(frame, h, w, w - 4, 1, 8)
         for i in range(min(self._left, 15)):
             frame[h - 2, 1 + i] = 8
         go = self._gs == GameState.GAME_OVER

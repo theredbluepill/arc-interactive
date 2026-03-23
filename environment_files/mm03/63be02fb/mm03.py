@@ -166,13 +166,16 @@ def create_level(level_index: int) -> Level:
     )
 
 
+levels = [create_level(i) for i in range(5)]
+
+
 class Mm03(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Mm03UI(2)
         self._display_level = 1
         super().__init__(
             "mm03",
-            [create_level(i) for i in range(5)],
+            levels,
             Camera(
                 0,
                 0,

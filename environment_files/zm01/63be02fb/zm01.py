@@ -1,4 +1,4 @@
-"""Flood duel: magenta vs yellow territory. ACTION5 switches active color; ACTION6 claims a cell orthogonally adjacent to your active region (not wall). Cover 70% of floor to win."""
+"""Flood duel: magenta vs yellow territory. ACTION5 switches active color; ACTION6 claims a floor cell orthogonally adjacent to your active region (not wall). Win when the larger region covers need_pct of floor (per level data)."""
 
 from __future__ import annotations
 
@@ -21,13 +21,15 @@ YLW_C = 11
 
 
 class Zm01UI(RenderableUserDisplay):
-    def __init__(self, active: int, pct: int) -> None:
+    def __init__(self, active: int, best_pct: int, need_pct: int) -> None:
         self._active = active
-        self._pct = pct
+        self._best_pct = best_pct
+        self._need_pct = need_pct
 
-    def update(self, active: int, pct: int) -> None:
+    def update(self, active: int, best_pct: int, need_pct: int) -> None:
         self._active = active
-        self._pct = pct
+        self._best_pct = best_pct
+        self._need_pct = need_pct
 
     def render_interface(self, frame):
         import numpy as np
@@ -36,8 +38,19 @@ class Zm01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         frame[h - 2, 2] = MAG_C if self._active == 0 else YLW_C
-        for i in range(min(self._pct, 20)):
-            frame[h - 1, 1 + i] = 14
+        # Dominant region as % of floor (matches win: max(mag,yel)*100//floor >= need_pct).
+        filled = min(20, self._best_pct * 20 // 100)
+        goal_i = min(19, max(0, (self._need_pct * 20 + 50) // 100 - 1))
+        for i in range(20):
+            x = 1 + i
+            if x >= w:
+                break
+            if i < filled:
+                frame[h - 1, x] = 14
+            elif i == goal_i:
+                frame[h - 1, x] = 11
+            else:
+                frame[h - 1, x] = 3
         return frame
 
 
@@ -97,14 +110,14 @@ levels = [
 
 class Zm01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Zm01UI(0, 0)
+        self._ui = Zm01UI(0, 0, 60)
         super().__init__(
             "zm01",
             levels,
             Camera(0, 0, CAM, CAM, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 5, 6],
+            [5, 6],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -129,23 +142,17 @@ class Zm01(ARCBaseGame):
                     w += 1
         return max(1, gw * gh - w)
 
-    def _pct_active(self) -> int:
+    def _best_floor_pct(self) -> int:
+        fl = self._floor()
         mag = len(self._zones("magenta"))
         yel = len(self._zones("yellow"))
-        tot = mag + yel
-        if self._active == 0:
-            return mag * 100 // tot if tot else 0
-        return yel * 100 // tot if tot else 0
+        return max(mag, yel) * 100 // fl if fl else 0
 
     def _sync_ui(self) -> None:
-        self._ui.update(self._active, self._pct_active())
+        self._ui.update(self._active, self._best_floor_pct(), self._need)
 
     def step(self) -> None:
         aid = self.action.id
-
-        if aid in (GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3, GameAction.ACTION4):
-            self.complete_action()
-            return
 
         if aid == GameAction.ACTION5:
             self._active = 1 - self._active
@@ -186,10 +193,7 @@ class Zm01(ARCBaseGame):
         spr = sprites["m"].clone() if self._active == 0 else sprites["y"].clone()
         self.current_level.add_sprite(spr.set_position(gx, gy))
 
-        fl = self._floor()
-        mag = len(self._zones("magenta"))
-        yel = len(self._zones("yellow"))
-        best = max(mag, yel) * 100 // fl
+        best = self._best_floor_pct()
         self._sync_ui()
         if best >= self._need:
             self.next_level()

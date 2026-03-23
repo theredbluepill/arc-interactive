@@ -52,6 +52,8 @@ class Sq03UI(RenderableUserDisplay):
         self._sequence = sequence
         self._progress = progress
         self._lives = lives
+        self._steps_used = 0
+        self._step_limit = 1
 
         self._click_pos: tuple[int, int] | None = None
         self._click_frames = 0
@@ -59,11 +61,26 @@ class Sq03UI(RenderableUserDisplay):
         # Brief HUD flash feedback
         self._flash_color: int | None = None
         self._flash_frames = 0
+        # Cold-start: blink pixels so display / tap is salient (only ACTION6 is legal).
+        self._click_hint_frames = 0
 
-    def update(self, sequence: list[str], progress: int, lives: int) -> None:
+    def start_click_hint(self, frames: int = 36) -> None:
+        self._click_hint_frames = frames
+
+    def update(
+        self,
+        sequence: list[str],
+        progress: int,
+        lives: int,
+        *,
+        steps_used: int = 0,
+        step_limit: int = 1,
+    ) -> None:
         self._sequence = sequence
         self._progress = progress
         self._lives = lives
+        self._steps_used = steps_used
+        self._step_limit = max(1, step_limit)
 
     def flash(self, color: int, frames: int = 10) -> None:
         self._flash_color = color
@@ -205,6 +222,21 @@ class Sq03UI(RenderableUserDisplay):
             self._click_frames -= 1
         else:
             self._click_pos = None
+
+        # Step budget (remaining steps before timeout lose).
+        lim = self._step_limit
+        rem = max(0, lim - self._steps_used)
+        bar_w = max(0, min(24, rem * 24 // lim))
+        row_s = h - 1
+        for i in range(min(24, w - 2)):
+            c = 10 if i < bar_w else 3
+            self._plot_px(frame, h, w, 1 + i, row_s, c)
+
+        if self._click_hint_frames > 0:
+            c = 0 if (self._click_hint_frames // 3) % 2 == 0 else 10
+            self._plot_px(frame, h, w, w - 3, h - 2, c)
+            self._plot_px(frame, h, w, w - 2, h - 2, c)
+            self._click_hint_frames -= 1
 
         return frame
 
@@ -361,7 +393,14 @@ class Sq03(ARCBaseGame):
         self._ripple_tail = 0
 
         disp = self._seq_a + self._seq_b
-        self._ui.update(disp, self._pa + self._pb, self._lives)
+        self._ui.update(
+            disp,
+            self._pa + self._pb,
+            self._lives,
+            steps_used=self._steps,
+            step_limit=self._step_limit,
+        )
+        self._ui.start_click_hint(40)
 
         # Map colors to sprites currently in the level
         self._color_to_sprite: dict[str, Sprite] = {}
@@ -421,7 +460,13 @@ class Sq03(ARCBaseGame):
         self._reset_blocks()
         self._ui.flash(8, frames=12)
         disp = self._seq_a + self._seq_b
-        self._ui.update(disp, self._pa + self._pb, self._lives)
+        self._ui.update(
+            disp,
+            self._pa + self._pb,
+            self._lives,
+            steps_used=self._steps,
+            step_limit=self._step_limit,
+        )
 
         if self._lives <= 0:
             self._pending_lose = True
@@ -522,7 +567,13 @@ class Sq03(ARCBaseGame):
             self.current_level.remove_sprite(clicked_sprite)
             del self._color_to_sprite[clicked_color]
             disp = self._seq_a + self._seq_b
-            self._ui.update(disp, self._pa + self._pb, self._lives)
+            self._ui.update(
+                disp,
+                self._pa + self._pb,
+                self._lives,
+                steps_used=self._steps,
+                step_limit=self._step_limit,
+            )
             self._sync_visibility()
 
             if self._pa >= len(self._seq_a) and self._pb >= len(self._seq_b):

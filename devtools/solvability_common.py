@@ -54,6 +54,15 @@ def parse_games_md_stems(path: Path | None = None) -> list[str]:
     return stems
 
 
+def parse_games_md_stems_line_range(
+    start_line: int, end_line: int, path: Path | None = None
+) -> list[str]:
+    """1-based inclusive line numbers in ``GAMES.md`` (table rows with ``| stem |``)."""
+    lines = (path or GAMES_MD).read_text(encoding="utf-8").splitlines()
+    chunk = "\n".join(lines[start_line - 1 : end_line])
+    return [m.group(1) for m in _STEM_ROW_RE.finditer(chunk)]
+
+
 def list_environment_stems() -> list[str]:
     base = environment_dir()
     if not base.is_dir():

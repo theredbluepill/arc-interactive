@@ -20,11 +20,24 @@ BASE = [2, 6, 9, 11]
 
 
 class Qr01UI(RenderableUserDisplay):
+    """Steps budget plus an 8×8 target reference (same palette as playfield) for discoverability."""
+
     def __init__(self, steps: int) -> None:
         self._steps = steps
+        self._target: list[list[int]] = [[0] * GW for _ in range(GH)]
+        self._wall_cells: frozenset[tuple[int, int]] = frozenset()
 
-    def update(self, steps: int) -> None:
+    def update(
+        self,
+        steps: int,
+        target: list[list[int]] | None = None,
+        wall_cells: frozenset[tuple[int, int]] | None = None,
+    ) -> None:
         self._steps = steps
+        if target is not None:
+            self._target = [row[:] for row in target]
+        if wall_cells is not None:
+            self._wall_cells = wall_cells
 
     def render_interface(self, frame):
         import numpy as np
@@ -32,6 +45,16 @@ class Qr01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        # Target pattern (goal) — top-right, 1 px per cell; walls shown as gray
+        for y in range(GH):
+            for x in range(GW):
+                tx = w - GW - 2 + x
+                ty = 1 + y
+                if 0 <= tx < w and 0 <= ty < h:
+                    if (x, y) in self._wall_cells:
+                        frame[ty, tx] = WALL_C
+                    else:
+                        frame[ty, tx] = BASE[self._target[y][x] % 4]
         for i in range(min(self._steps, 15)):
             frame[h - 2, 1 + i] = 10
         return frame
@@ -102,11 +125,21 @@ class Qr01(ARCBaseGame):
             [1, 2, 3, 4, 6],
         )
 
+    def _wall_cells(self) -> frozenset[tuple[int, int]]:
+        return frozenset(
+            (s.x, s.y) for s in self.current_level.get_sprites_by_tag("wall")
+        )
+
     def on_set_level(self, level: Level) -> None:
         self._g = [row[:] for row in self.current_level.get_data("init")]
         self._target = self.current_level.get_data("target")
         self._steps_left = int(self.current_level.get_data("max_steps") or 150)
         self._paint()
+        self._ui.update(
+            self._steps_left,
+            target=self._target,
+            wall_cells=self._wall_cells(),
+        )
 
     def _paint(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("qtile")):
@@ -172,7 +205,7 @@ class Qr01(ARCBaseGame):
 
         self._paint()
         self._steps_left -= 1
-        self._ui.update(self._steps_left)
+        self._ui.update(self._steps_left, target=self._target, wall_cells=self._wall_cells())
         if self._win():
             self.next_level()
 

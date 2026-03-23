@@ -12,6 +12,9 @@ from arcengine import (
 
 
 class Jw01UI(RenderableUserDisplay):
+    _CAM_W = 16
+    _CAM_H = 16
+
     def __init__(self, swaps: int, num_levels: int) -> None:
         self._swaps = swaps
         self._li = 0
@@ -19,10 +22,37 @@ class Jw01UI(RenderableUserDisplay):
         self._state: GameState | None = None
         self._click_pos: tuple[int, int] | None = None
         self._click_frames = 0
+        self._outline_frames = 0
+        self._outline_rects: list[tuple[int, int, int, int]] = []
 
     def set_click(self, x: int, y: int) -> None:
         self._click_pos = (int(x), int(y))
         self._click_frames = 8
+
+    def set_swap_outline(self, ra: tuple[int, int, int, int], rb: tuple[int, int, int, int]) -> None:
+        self._outline_rects = [ra, rb]
+        self._outline_frames = 10
+
+    def _draw_rect_outline(
+        self, frame, fh: int, fw: int, rect: tuple[int, int, int, int], color: int
+    ) -> None:
+        x0, y0, rw, rh = rect
+        scale = max(min(fw // self._CAM_W, fh // self._CAM_H), 1)
+        x_pad = (fw - self._CAM_W * scale) // 2
+        y_pad = (fh - self._CAM_H * scale) // 2
+
+        def dot(px: int, py: int) -> None:
+            if 0 <= px < fw and 0 <= py < fh:
+                frame[py, px] = color
+
+        for gx in range(x0, x0 + rw):
+            for dx in range(scale):
+                dot(gx * scale + x_pad + dx, y0 * scale + y_pad)
+                dot(gx * scale + x_pad + dx, (y0 + rh - 1) * scale + y_pad + scale - 1)
+        for gy in range(y0, y0 + rh):
+            for dy in range(scale):
+                dot(x0 * scale + x_pad, gy * scale + y_pad + dy)
+                dot((x0 + rw - 1) * scale + x_pad + scale - 1, gy * scale + y_pad + dy)
 
     def update(
         self,
@@ -68,6 +98,10 @@ class Jw01UI(RenderableUserDisplay):
             self._click_frames -= 1
         else:
             self._click_pos = None
+        if self._outline_frames > 0:
+            for rect in self._outline_rects:
+                self._draw_rect_outline(frame, h, w, rect, 8)
+            self._outline_frames -= 1
         if self._state in (GameState.GAME_OVER, GameState.WIN):
             r = h - 3
             if r >= 0:
@@ -257,6 +291,7 @@ class Jw01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._swap_count += 1
+        self._ui.set_swap_outline(self._ra, self._rb)
         self._sync_ui()
 
     def step(self) -> None:

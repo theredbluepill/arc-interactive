@@ -1,7 +1,7 @@
 {
   "game_id": "ph01-63be02fb",
   "title": "Phase Interference",
-  "description": "24\u00d724 phase field (0\u20133 per cell). ACTION6 increments a cell\u2019s phase; ACTION5 blurs every non-wall cell with (self + sum of 4-neighbors) mod 4. Match gray-marked target phases.",
+  "description": "24\u00d724 phase field (0\u20133). ACTION6 increments; ACTION5 blurs (self + orth neighbors) mod 4 on non-walls. HUD shows target vs current phase on each target cell; blur budget ticks bottom.",
   "default_fps": 20,
   "baseline_actions": [
     1,

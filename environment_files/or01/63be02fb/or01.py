@@ -14,10 +14,14 @@ class Or01UI(RenderableUserDisplay):
     def __init__(self, held: int, need: int) -> None:
         self._held = held
         self._need = need
+        self._pickup_flash = 0
 
     def update(self, held: int, need: int) -> None:
         self._held = held
         self._need = need
+
+    def flash_pickup(self, frames: int = 6) -> None:
+        self._pickup_flash = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -27,6 +31,14 @@ class Or01UI(RenderableUserDisplay):
         h, w = frame.shape
         for i in range(min(self._need, 4)):
             frame[h - 2, 2 + i] = 11 if i < self._held else 5
+        if self._pickup_flash > 0:
+            c = 0 if self._pickup_flash % 2 == 0 else 11
+            for dy in range(2):
+                for dx in range(3):
+                    px, py = w - 5 + dx, h - 4 + dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = c
+            self._pickup_flash -= 1
         return frame
 
 
@@ -205,6 +217,7 @@ class Or01(ARCBaseGame):
                 self._keys.pop(i)
                 self._ring_index.pop(i)
                 self._held += 1
+                self._ui.flash_pickup()
                 break
         self._ui.update(self._held, self._need_keys)
 

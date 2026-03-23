@@ -47,7 +47,7 @@ Point your agent at the same conventions humans use:
 | [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md) | End-to-end steps: layout, sprites, levels, `step()`, metadata, registry |
 | [skills/generate-arc-game-gif/SKILL.md](skills/generate-arc-game-gif/SKILL.md) | Preview GIFs: `RenderableUserDisplay` GIF-readiness, `scripts/render_arc_game_gif.py` |
 
-The **create-arc-game** and **play-arc-game** skills (and **generate-arc-game-gif** for previews) are mirrored under **`skills/`** (repo root), **`.opencode/skills/`**, and **`.agents/skills/`**—use whichever path your tool resolves best.
+The **create-arc-game** and **play-arc-game** skills (and **generate-arc-game-gif** for previews, **check-arc-game-discoverable** for discovery-through-play review) are mirrored under **`skills/`** (repo root, when present), **`.opencode/skills/`**, and **`.agents/skills/`**—use whichever path your tool resolves best.
 
 **Minimal prompt you can paste:** *Implement a new ARC-AGI-3 game `{game_id}` at `environment_files/{game_id}/v1/`. Follow [AGENTS.md](AGENTS.md) and [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md): static levels only, `ARCBaseGame` + `metadata.json`, register a row in [GAMES.md](GAMES.md). Game design: [grid size, entities, win/lose, which actions 1–7 do].*
 
@@ -258,4 +258,4 @@ Maintainers: turn on **required status checks** for `main` as described in [`.gi
 - [AGENTS.md](AGENTS.md) — implementation patterns and pitfalls
 - [SIMILARITY_TRIAGE.md](devtools/SIMILARITY_TRIAGE.md) — interpreting the similar-games report and resolving false positives
 - [Game Registry](GAMES.md)
-- Agent skills (mirrored under **`skills/`**, **`.opencode/skills/`**, **`.agents/skills/`**): **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**
+- Agent skills (mirrored under **`skills/`**, **`.opencode/skills/`**, **`.agents/skills/`**): **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**, **check-arc-game-discoverable**

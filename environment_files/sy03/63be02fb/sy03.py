@@ -278,17 +278,20 @@ class Sy03(ARCBaseGame):
         placed_set = set((b.x, b.y) for b in self._placed_blocks)
         return placed_set == self._target_mirror_positions
 
-    def _click_at(self, x: int, y: int) -> None:
+    def _click_at(self, x: int, y: int) -> bool:
         existing = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
         if existing and "player_block" in existing.tags:
             self.current_level.remove_sprite(existing)
             self._placed_blocks.remove(existing)
             self._ui.set_placed(*self._grid_to_frame_pixel(x, y))
-        elif y >= 6 and y < GRID_WIDTH:
+            return True
+        if y >= 6 and y < GRID_WIDTH:
             new_block = PLAYER_SPRITE.clone().set_position(x, y)
             self.current_level.add_sprite(new_block)
             self._placed_blocks.append(new_block)
             self._ui.set_placed(*self._grid_to_frame_pixel(x, y))
+            return True
+        return False
 
     def step(self) -> None:
         if self._end_frames > 0:
@@ -302,15 +305,14 @@ class Sy03(ARCBaseGame):
             self.complete_action()
             return
 
-        self._moves_used += 1
-
         cx = self.action.data.get("x", 0)
         cy = self.action.data.get("y", 0)
         coords = self.camera.display_to_grid(cx, cy)
         if coords is not None:
             gx, gy = int(coords[0]), int(coords[1])
             self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
-            self._click_at(gx, gy)
+            if self._click_at(gx, gy):
+                self._moves_used += 1
 
         placed_count = self._get_placed_count()
         moves_remaining = self._max_moves - self._moves_used

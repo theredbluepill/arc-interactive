@@ -119,6 +119,15 @@ BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
 
+def _sync_glass_sprite_look(sprite: Sprite, visits: int) -> None:
+    """Per-cell crack stage using color_remap (engine-safe; pixels stay array-like)."""
+    cur = int(sprite.pixels[0][0])
+    if visits == 1 and cur == 1:
+        sprite.color_remap(1, 2)
+    elif visits == 2 and cur == 2:
+        sprite.color_remap(2, 11)
+
+
 class Gl01(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Gl01UI(0)
@@ -176,6 +185,9 @@ class Gl01(ARCBaseGame):
         if self._glass_at(nx, ny):
             v = self._visits.get(pos, 0) + 1
             self._visits[pos] = v
+            gsp = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
+            if gsp and "glass" in gsp.tags:
+                _sync_glass_sprite_look(gsp, v)
             self._ui.update(v)
             if v >= 3:
                 self.lose()
@@ -184,5 +196,8 @@ class Gl01(ARCBaseGame):
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
+
+        if not self._glass_at(self._player.x, self._player.y):
+            self._ui.update(0)
 
         self.complete_action()

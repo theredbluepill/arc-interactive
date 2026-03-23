@@ -33,6 +33,9 @@ GOAL_C = 11
 MIR_SL = 15
 MIR_BS = 7
 
+BEAM_FX_FRAMES = 12
+BEAM_CELL_C = 12
+
 
 class Ml03UI(RenderableUserDisplay):
     """HUD + red **fragile** cue (ml02 has no red corner — helps tell GIFs apart)."""
@@ -40,10 +43,45 @@ class Ml03UI(RenderableUserDisplay):
     def __init__(self, inv: int, steps: int) -> None:
         self._inv = inv
         self._steps = steps
+        self._grid_w = CAM_W
+        self._grid_h = CAM_H
+        self._beam_cells: set[tuple[int, int]] = set()
+        self._beam_fx_frames = 0
 
-    def update(self, inv: int, steps: int) -> None:
+    def update(
+        self,
+        inv: int,
+        steps: int,
+        *,
+        grid_wh: tuple[int, int] | None = None,
+        beam_cells: set[tuple[int, int]] | None = None,
+        beam_fx_frames: int | None = None,
+    ) -> None:
         self._inv = inv
         self._steps = steps
+        if grid_wh is not None:
+            self._grid_w, self._grid_h = grid_wh
+        if beam_cells is not None:
+            self._beam_cells = beam_cells
+        if beam_fx_frames is not None:
+            self._beam_fx_frames = beam_fx_frames
+
+    @staticmethod
+    def _paint_cell(
+        frame, fh: int, fw: int, gx: int, gy: int, gw: int, gh: int, color: int
+    ) -> None:
+        scale_x = 64 // gw
+        scale_y = 64 // gh
+        scale = min(scale_x, scale_y)
+        x_pad = (fw - (gw * scale)) // 2
+        y_pad = (fh - (gh * scale)) // 2
+        x0 = x_pad + gx * scale
+        y0 = y_pad + gy * scale
+        for sy in range(scale):
+            for sx in range(scale):
+                fx, fy = x0 + sx, y0 + sy
+                if 0 <= fx < fw and 0 <= fy < fh:
+                    frame[fy, fx] = color
 
     def render_interface(self, frame):
         import numpy as np
@@ -51,11 +89,14 @@ class Ml03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        gw, gh = self._grid_w, self._grid_h
+        if self._beam_fx_frames > 0:
+            for cell in self._beam_cells:
+                self._paint_cell(frame, h, w, cell[0], cell[1], gw, gh, BEAM_CELL_C)
         for i in range(min(self._inv, 10)):
             frame[h - 2, 1 + i] = 15
         for i in range(min(self._steps, 30)):
             frame[h - 1, 1 + i] = 10
-        # Fragile mirrors: red corner (ml02 omits this)
         if w > 3 and h > 4:
             frame[h - 4, w - 2] = 8
             frame[h - 3, w - 3] = 8
@@ -237,6 +278,8 @@ def _reflect(dx: int, dy: int, slash: bool) -> tuple[int, int]:
 class Ml03(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Ml03UI(0, 0)
+        self._beam_cells: set[tuple[int, int]] = set()
+        self._beam_fx_frames = 0
         super().__init__(
             "ml03",
             levels,
@@ -261,10 +304,19 @@ class Ml03(ARCBaseGame):
         self._inv = int(mi) if mi is not None else 6
         ms = self.current_level.get_data("max_steps")
         self._steps = int(ms) if ms is not None else 250
+        self._beam_cells = set()
+        self._beam_fx_frames = 0
         self._sync_ui()
 
     def _sync_ui(self) -> None:
-        self._ui.update(self._inv, self._steps)
+        gw, gh = self.current_level.grid_size
+        self._ui.update(
+            self._inv,
+            self._steps,
+            grid_wh=(gw, gh),
+            beam_cells=set(self._beam_cells),
+            beam_fx_frames=self._beam_fx_frames,
+        )
 
     def _burn(self) -> bool:
         self._steps -= 1
@@ -286,9 +338,11 @@ class Ml03(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         hit: set[tuple[int, int]] = set()
         mirrors_used: list[Sprite] = []
+        beam_trace: list[tuple[int, int]] = []
         for _ in range(gw * gh + 10):
             if not (0 <= x < gw and 0 <= y < gh):
                 break
+            beam_trace.append((x, y))
             if self.current_level.get_sprite_at(
                 x, y, tag="receptor", ignore_collidable=True
             ):
@@ -318,12 +372,20 @@ class Ml03(ARCBaseGame):
                 continue
             x += dx
             y += dy
+        self._beam_cells = set(beam_trace)
+        self._beam_fx_frames = BEAM_FX_FRAMES
         for m in mirrors_used:
             self.current_level.remove_sprite(m)
         if self._receptors and hit >= self._receptors:
             self.next_level()
 
     def step(self) -> None:
+        if self._beam_fx_frames > 0:
+            self._beam_fx_frames -= 1
+            if self._beam_fx_frames == 0:
+                self._beam_cells.clear()
+        self._sync_ui()
+
         aid = self.action.id
 
         if aid in (GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3, GameAction.ACTION4):
@@ -344,6 +406,7 @@ class Ml03(ARCBaseGame):
                     pass
                 elif sp and "hazard" in sp.tags:
                     self.lose()
+                    self._sync_ui()
                     self.complete_action()
                     return
                 elif not sp or not sp.is_collidable:
@@ -351,13 +414,16 @@ class Ml03(ARCBaseGame):
                 elif "emitter" in sp.tags or "receptor" in sp.tags:
                     self._player.set_position(nx, ny)
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
+            self._sync_ui()
             self.complete_action()
             return
 
         if aid == GameAction.ACTION5:
             self._fire_laser()
+            self._sync_ui()
             if self._burn():
                 self.complete_action()
                 return
@@ -373,6 +439,7 @@ class Ml03(ARCBaseGame):
         coords = self.camera.display_to_grid(px, py)
         if coords is None:
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
             self.complete_action()
@@ -380,6 +447,7 @@ class Ml03(ARCBaseGame):
         gx, gy = coords
         if abs(gx - self._player.x) + abs(gy - self._player.y) != 1:
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
             self.complete_action()
@@ -387,6 +455,7 @@ class Ml03(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         if not (0 <= gx < gw and 0 <= gy < gh):
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
             self.complete_action()
@@ -403,8 +472,10 @@ class Ml03(ARCBaseGame):
             )
             self.current_level.add_sprite(new_sp)
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -415,6 +486,7 @@ class Ml03(ARCBaseGame):
             or "receptor" in existing.tags
         ):
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
             self.complete_action()
@@ -422,6 +494,7 @@ class Ml03(ARCBaseGame):
 
         if self._inv <= 0:
             if self._burn():
+                self._sync_ui()
                 self.complete_action()
                 return
             self.complete_action()
