@@ -31,12 +31,31 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._t = (0, 0, 0)
+        self._tar = (0, 0, 0)
+        self._sep_flash = 0
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        state=None,
+        t=None,
+        tar=None,
+        tumbler_pulse: bool = False,
+    ) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if t is not None:
+            self._t = tuple(t)
+        if tar is not None:
+            self._tar = tuple(tar)
+        if tumbler_pulse:
+            self._sep_flash = 3
+        elif self._sep_flash > 0:
+            self._sep_flash -= 1
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +66,13 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        r = h - 2
+        if r >= 0:
+            dc = 11 if self._sep_flash > 0 else 5
+            _rp(f, h, w, 7, r, dc)
+            for i in range(3):
+                _rp(f, h, w, 1 + i * 2, r, 8 + (self._t[i] % 6))
+                _rp(f, h, w, 9 + i * 2, r, 8 + (self._tar[i] % 6))
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -67,22 +93,31 @@ class Lk01(ARCBaseGame):
         super().__init__("lk01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
-
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         ds = self.current_level.get_sprites_by_tag("door")
         self._door = ds[0] if ds else None
         self._t = [0, 0, 0]
         self._tar = list(level.get_data("target"))
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            t=self._t,
+            tar=self._tar,
+        )
+
     def step(self):
         v = self.action.id.value
+        pulse = False
         if self._door is not None:
             if v == 1:
                 self._t[0] = (self._t[0] + 1) % 6
+                pulse = True
             elif v == 2:
                 self._t[1] = (self._t[1] + 1) % 6
+                pulse = True
             elif v == 3:
                 self._t[2] = (self._t[2] + 1) % 6
+                pulse = True
             if self._t == self._tar and self._door in self.current_level._sprites:
                 self.current_level.remove_sprite(self._door)
                 self._door = None
@@ -104,5 +139,11 @@ class Lk01(ARCBaseGame):
                     self._p.set_position(nx, ny)
         if self._p.x == self._g.x and self._p.y == self._g.y:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            t=self._t,
+            tar=self._tar,
+            tumbler_pulse=pulse,
+        )
         self.complete_action()

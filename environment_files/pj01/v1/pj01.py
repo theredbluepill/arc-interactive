@@ -67,6 +67,13 @@ levels = [
     lvl(4,[s["p"].clone().set_position(2,2), s["b"].clone().set_position(3,7), s["k"].clone().set_position(11,11)]),
     lvl(5,[s["p"].clone().set_position(0,0), s["b"].clone().set_position(2,5), s["k"].clone().set_position(13,13)]),
 ]
+def _mirror_paint(sp: Sprite) -> None:
+    if "fs" in sp.tags:
+        sp.pixels = [[7]]
+    else:
+        sp.pixels = [[15]]
+
+
 class Pj01(ARCBaseGame):
     def __init__(self):
         self._ui = U(len(levels))
@@ -78,6 +85,8 @@ class Pj01(ARCBaseGame):
         self._bolt = self.current_level.get_sprites_by_tag("bolt")[0]
         self._sink = self.current_level.get_sprites_by_tag("sink")[0]
         self._bdx, self._bdy = 1, 0
+        for sp in self.current_level.get_sprites_by_tag("mirror"):
+            _mirror_paint(sp)
     def step(self):
         if self.action.id == GameAction.ACTION6:
             px, py = int(self.action.data.get("x",0)), int(self.action.data.get("y",0))
@@ -86,7 +95,9 @@ class Pj01(ARCBaseGame):
                 gx, gy = int(h[0]), int(h[1])
                 cell = self.current_level.get_sprite_at(gx,gy,ignore_collidable=True)
                 if not cell:
-                    self.current_level.add_sprite(spr()["m"].clone().set_position(gx,gy))
+                    m = spr()["m"].clone().set_position(gx,gy)
+                    _mirror_paint(m)
+                    self.current_level.add_sprite(m)
                 elif "mirror" in cell.tags:
                     if "fs" in cell.tags:
                         cell.tags.remove("fs")
@@ -94,6 +105,7 @@ class Pj01(ARCBaseGame):
                     else:
                         cell.tags.remove("bs")
                         cell.tags.append("fs")
+                    _mirror_paint(cell)
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         dx=dy=0

@@ -40,12 +40,17 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._reject = 0
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(self, *, level_index: int | None = None, state=None, reject: bool = False) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if reject:
+            self._reject = 3
+        elif self._reject > 0:
+            self._reject -= 1
 
     def render_interface(self, f):
         import numpy as np
@@ -54,6 +59,8 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        if self._reject > 0:
+            _rp(f, h, w, 14, h - 2, 8)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -105,6 +112,7 @@ class Hn01(ARCBaseGame):
                 sp.set_position(PEGX[self._peg], 2)
     def step(self):
         v = self.action.id.value
+        rej = False
         if v in (1,2,3):
             self._peg = v - 1
         elif self.action.id == GameAction.ACTION5:
@@ -116,8 +124,10 @@ class Hn01(ARCBaseGame):
                 if top > self._hand:
                     st.append(self._hand)
                     self._hand = None
+                else:
+                    rej = True
         self._layout()
         if self._st[2] == [3,2,1]:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(level_index=self.level_index, state=self._state, reject=rej)
         self.complete_action()

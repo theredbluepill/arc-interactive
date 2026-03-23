@@ -63,6 +63,9 @@ class U(RenderableUserDisplay):
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
         b = max(1, self._beat_b)
         f[h - 2, 2] = 14 if self._beat_t % b == 0 else 2
+        for i in range(min(b, 6)):
+            c = 14 if (self._beat_t % b) == i else 3
+            _rp(f, h, w, 4 + i, h - 2, c)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)

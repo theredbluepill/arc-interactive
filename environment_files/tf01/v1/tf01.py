@@ -26,6 +26,10 @@ class U(RenderableUserDisplay):
         self._li = 0
         self._nlv = 1
         self._gs: GameState | None = None
+        self._reject_frames = 0
+
+    def flash_reject(self) -> None:
+        self._reject_frames = 3
 
     def update(self, ph, level_index=None, num_levels=None, gs=None):
         self.ph = ph
@@ -51,6 +55,9 @@ class U(RenderableUserDisplay):
                 c = 14 if (self.ph % 4) == q else 3
                 _rp(f, h, w, 2 + q, h - 4, c)
             f[h - 2, 2] = 14 if self.ph % 4 < 2 else 8
+            if self._reject_frames > 0:
+                f[2, min(3, w - 1)] = 11
+                self._reject_frames -= 1
             go = self._gs == GameState.GAME_OVER
             win = self._gs == GameState.WIN
             _r_bar(f, h, w, go, win)
@@ -120,6 +127,7 @@ class Tf01(ARCBaseGame):
         nx, ny = self._p.x + dx, self._p.y + dy
         if 0 <= nx < gw and 0 <= ny < gh:
             if (nx, ny) in self._cross and (self._t % 4) >= 2:
+                self._ui.flash_reject()
                 self._ui.update(
                     self._t,
                     level_index=self.level_index,
@@ -129,6 +137,8 @@ class Tf01(ARCBaseGame):
                 self.complete_action()
                 return
             self._p.set_position(nx, ny)
+        else:
+            self._ui.flash_reject()
         self._t += 1
         self._ui.update(
             self._t,

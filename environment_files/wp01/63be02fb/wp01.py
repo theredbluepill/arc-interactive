@@ -12,11 +12,21 @@ from arcengine import (
 class Wp01UI(RenderableUserDisplay):
     def __init__(self, n_levels: int) -> None:
         self._ok = False
+        self._sum = 0
+        self._need = 3
         self._n_levels = n_levels
         self._li = 0
 
-    def update(self, ok: bool, level_index: int | None = None) -> None:
+    def update(
+        self,
+        ok: bool,
+        weight_sum: int,
+        need: int,
+        level_index: int | None = None,
+    ) -> None:
         self._ok = ok
+        self._sum = weight_sum
+        self._need = need
         if level_index is not None:
             self._li = level_index
 
@@ -33,6 +43,10 @@ class Wp01UI(RenderableUserDisplay):
             c = 14 if i < self._li else (11 if i == self._li else 3)
             frame[0, cx] = c
         frame[h - 2, 2] = 14 if self._ok else 11
+        for i in range(min(self._sum, 10)):
+            frame[h - 3, 1 + i] = 10
+        for i in range(min(self._need, 10)):
+            frame[h - 4, 1 + i] = 11
         return frame
 
 
@@ -172,9 +186,10 @@ class Wp01(ARCBaseGame):
         return w
 
     def _sync_goal(self) -> None:
-        ok = self._weight_on_plate() >= self._need
+        wsum = self._weight_on_plate()
+        ok = wsum >= self._need
         self._goal.set_collidable(not ok)
-        self._ui.update(ok, self.level_index)
+        self._ui.update(ok, wsum, self._need, self.level_index)
 
     def step(self) -> None:
         dx = dy = 0

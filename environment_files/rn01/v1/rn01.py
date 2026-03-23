@@ -8,12 +8,21 @@ class Rn01UI(RenderableUserDisplay):
         self._p = p
         self._li = 0
         self._nlv = 1
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
     def update(self, p: bool, level_index: int | None = None, num_levels: int | None = None) -> None:
         self._p = p
         if level_index is not None:
             self._li = level_index
         if num_levels is not None:
             self._nlv = num_levels
+
+    def set_click(self, x: int, y: int) -> None:
+        """ACTION6 position in final frame space (same coords as action.data)."""
+        self._click_pos = (x, y)
+        self._click_frames = 8
+
     def render_interface(self, frame):
         import numpy as np
         if isinstance(frame, np.ndarray):
@@ -25,6 +34,21 @@ class Rn01UI(RenderableUserDisplay):
                 dot = 14 if i < self._li else (11 if i == self._li else 3)
                 frame[0, cx] = dot
             frame[h-2,2] = 11 if self._p else 5
+            if self._click_pos and self._click_frames > 0:
+                cx, cy = self._click_pos
+                hit = 10
+                for px, py in (
+                    (cx, cy),
+                    (cx - 1, cy),
+                    (cx + 1, cy),
+                    (cx, cy - 1),
+                    (cx, cy + 1),
+                ):
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = hit
+                self._click_frames -= 1
+            else:
+                self._click_pos = None
         return frame
 
 def spr():
@@ -73,6 +97,7 @@ class Rn01(ARCBaseGame):
     def step(self):
         if self.action.id == GameAction.ACTION6:
             px, py = int(self.action.data.get("x",0)), int(self.action.data.get("y",0))
+            self._ui.set_click(px, py)
             h = self.camera.display_to_grid(px, py)
             if h:
                 gx, gy = int(h[0]), int(h[1])

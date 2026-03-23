@@ -49,6 +49,8 @@ class Rv01UI(RenderableUserDisplay):
             frame[0, cx] = c
         for i in range(4):
             frame[h - 2, 2 + i] = 11 if (self._wind % 4) == i else 2
+        for i in range(min(self._remaining, 10)):
+            frame[h - 3, 1 + i] = 11
         return frame
 
 

@@ -78,6 +78,19 @@ class Fb01(ARCBaseGame):
 
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._fuse = {id(b): 5 for b in self.current_level.get_sprites_by_tag("bomb")}
+        self._paint_bombs()
+
+    def _paint_bombs(self) -> None:
+        # Fuse remaining → distinct hues (remap from any prior fuse color).
+        pal = {5: 8, 4: 12, 3: 11, 2: 2, 1: 7}
+        hues = (8, 12, 11, 2, 7)
+        for b in self.current_level.get_sprites_by_tag("bomb"):
+            k = max(1, self._fuse.get(id(b), 5))
+            tgt = pal[k]
+            for c in hues:
+                if c != tgt:
+                    b.color_remap(c, tgt)
+
     def _tick(self):
         dead = []
         for b in self.current_level.get_sprites_by_tag("bomb"):
@@ -131,9 +144,11 @@ class Fb01(ARCBaseGame):
             elif not h or not h.is_collidable:
                 self._p.set_position(nx, ny)
         if self._tick():
+            self._paint_bombs()
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action()
             return
+        self._paint_bombs()
         if self._p.x == self._g.x and self._p.y == self._g.y:
             self.next_level()
         self._ui.update(level_index=self.level_index, state=self._state)

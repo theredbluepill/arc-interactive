@@ -10,16 +10,25 @@ CAM = 16
 ROWS = 4
 WALL_C = 3
 ON, OFF = 11, 2
+TARG_ON, TARG_OFF = 6, 3
 
 
 class Cz01UI(RenderableUserDisplay):
     def __init__(self, row: int, steps: int) -> None:
         self._row = row
         self._steps = steps
+        self._target: list[list[int]] = [[0] * GW for _ in range(ROWS)]
 
-    def update(self, row: int, steps: int) -> None:
+    def update(
+        self,
+        row: int,
+        steps: int,
+        target: list[list[int]] | None = None,
+    ) -> None:
         self._row = row
         self._steps = steps
+        if target is not None:
+            self._target = [r[:] for r in target]
 
     def render_interface(self, frame):
         import numpy as np
@@ -30,6 +39,12 @@ class Cz01UI(RenderableUserDisplay):
         frame[h - 2, 2 + self._row] = 10
         for i in range(min(self._steps, 15)):
             frame[h - 2, 8 + i] = 14
+        ox, oy = 46, 4
+        for yy in range(ROWS):
+            for xx in range(GW):
+                c = TARG_ON if self._target[yy][xx] else TARG_OFF
+                if 0 <= ox + xx < w and 0 <= oy + yy < h:
+                    frame[oy + yy, ox + xx] = c
         return frame
 
 
@@ -97,7 +112,7 @@ class Cz01(ARCBaseGame):
         self._steps_left = int(self.current_level.get_data("max_steps") or 60)
         self._active_row = 0
         self._paint()
-        self._ui.update(self._active_row, self._steps_left)
+        self._ui.update(self._active_row, self._steps_left, target=self._target)
 
     def _paint(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("bit")):
@@ -119,7 +134,11 @@ class Cz01(ARCBaseGame):
         v = self.action.id.value
         if v in (1, 2, 3, 4):
             self._active_row = min(v - 1, ROWS - 1)
-            self._ui.update(self._active_row, self._steps_left)
+            self._ui.update(
+                self._active_row,
+                self._steps_left,
+                target=self._target,
+            )
             self.complete_action()
             return
 
@@ -137,7 +156,11 @@ class Cz01(ARCBaseGame):
 
         self._paint()
         self._steps_left -= 1
-        self._ui.update(self._active_row, self._steps_left)
+        self._ui.update(
+            self._active_row,
+            self._steps_left,
+            target=self._target,
+        )
         if self._win():
             self.next_level()
 

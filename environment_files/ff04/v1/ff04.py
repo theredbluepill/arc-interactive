@@ -27,10 +27,14 @@ class Ff04UI(RenderableUserDisplay):
         self._budget = budget
         self._click_pos: tuple[int, int] | None = None
         self._click_frames = 0
+        self._reject_frames = 0
 
     def update(self, cost: int, budget: int) -> None:
         self._cost = cost
         self._budget = budget
+
+    def pulse_reject(self) -> None:
+        self._reject_frames = 12
 
     def set_click(self, fx: int, fy: int) -> None:
         self._click_pos = (fx, fy)
@@ -49,6 +53,9 @@ class Ff04UI(RenderableUserDisplay):
         h, w = frame.shape
         ok = self._cost <= self._budget
         self._plot_px(frame, h, w, 2, 2, 14 if ok else 8)
+        if self._reject_frames > 0:
+            self._plot_px(frame, h, w, 6, 2, 8)
+            self._reject_frames -= 1
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
             for r in (1, 2):
@@ -195,10 +202,12 @@ class Ff04(ARCBaseGame):
 
         c = (gx, gy)
         if c in self._walls or not (0 <= gx < GW and 0 <= gy < GH):
+            self._ui.pulse_reject()
             self.complete_action()
             return
 
         if c in self._painted:
+            self._ui.pulse_reject()
             self.complete_action()
             return
 
@@ -209,11 +218,13 @@ class Ff04(ARCBaseGame):
                 ok_nb = True
                 break
         if not ok_nb:
+            self._ui.pulse_reject()
             self.complete_action()
             return
 
         add_cost = _manh(c, self._seed)
         if self._total_cost() + add_cost > self._budget:
+            self._ui.pulse_reject()
             self.complete_action()
             return
 

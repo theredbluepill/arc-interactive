@@ -12,11 +12,22 @@ from arcengine import (
 class Pm01UI(RenderableUserDisplay):
     def __init__(self, n_levels: int) -> None:
         self._s = 0
+        self._prime_step = False
+        self._move_noop = False
         self._n_levels = n_levels
         self._li = 0
 
-    def update(self, s: int, level_index: int | None = None) -> None:
+    def update(
+        self,
+        s: int,
+        level_index: int | None = None,
+        *,
+        prime_step: bool = False,
+        move_noop: bool = False,
+    ) -> None:
         self._s = s
+        self._prime_step = prime_step
+        self._move_noop = move_noop
         if level_index is not None:
             self._li = level_index
 
@@ -34,6 +45,9 @@ class Pm01UI(RenderableUserDisplay):
             frame[0, cx] = c
         for i in range(min(self._s % 20, 18)):
             frame[2, 2 + i] = 11
+        frame[3, 2] = 14 if self._prime_step else 3
+        if self._move_noop:
+            frame[h - 1, min(w - 1, 15)] = 12
         return frame
 
 
@@ -159,11 +173,10 @@ class Pm01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._si = 0
-        self._ui.update(0, self.level_index)
+        self._ui.update(0, self.level_index, prime_step=False, move_noop=False)
 
     def step(self) -> None:
         self._si += 1
-        self._ui.update(self._si, self.level_index)
         prime = _is_prime(self._si)
 
         dx = dy = 0
@@ -176,7 +189,11 @@ class Pm01(ARCBaseGame):
         elif self.action.id.value == 4:
             dx = 1
 
-        if prime and (dx != 0 or dy != 0):
+        move_intent = dx != 0 or dy != 0
+        move_noop = move_intent and not prime
+        self._ui.update(self._si, self.level_index, prime_step=prime, move_noop=move_noop)
+
+        if prime and move_intent:
             nx = self._player.x + dx
             ny = self._player.y + dy
             gw, gh = self.current_level.grid_size

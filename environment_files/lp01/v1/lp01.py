@@ -31,12 +31,25 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._seq_len = 0
+        self._ni = 0
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        state=None,
+        seq_len: int | None = None,
+        ni: int | None = None,
+    ) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if seq_len is not None:
+            self._seq_len = seq_len
+        if ni is not None:
+            self._ni = ni
 
     def render_interface(self, f):
         import numpy as np
@@ -47,13 +60,27 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        r = h - 2
+        if r >= 0 and self._seq_len > 0:
+            for i in range(min(self._seq_len, 12)):
+                cx = 1 + i * 2
+                if cx >= w:
+                    break
+                _rp(f, h, w, cx, r, 14 if i < self._ni else (11 if i == self._ni else 3))
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
         return f
 
+
+# Distinct palette per letter (raster-discoverable); avoid 5 bg, 9 player, 14 goal.
+_HUE = [11, 12, 13, 6, 7, 8, 15, 1, 2, 3, 4, 10, 0]
+
+
 def L(letter, x, y):
-    sp = Sprite(pixels=[[10]], name=letter, visible=True, collidable=False, tags=["letter", letter])
+    u = letter.upper()
+    c = _HUE[(ord(u) - ord("A")) % len(_HUE)] if "A" <= u <= "Z" else 10
+    sp = Sprite(pixels=[[c]], name=letter, visible=True, collidable=False, tags=["letter", letter])
     return sp.set_position(x, y)
 def spr():
     return {"p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),
@@ -67,9 +94,9 @@ def lvl(d, seq, positions, goal):
 levels = [
     lvl(1, "AB", [(1,5),(3,5),(7,5)], (7,9)),
     lvl(2, "ABC", [(1,1),(2,3),(4,5),(7,8)], (7,9)),
-    lvl(3, "AB", [(2,9),(5,5),(8,2)], (8,2)),
-    lvl(4, "ABC", [(0,0),(4,4),(6,2),(8,10)], (8,10)),
-    lvl(5, "AB", [(3,3),(6,6),(3,9)], (3,9)),
+    lvl(3, "AB", [(2,9),(5,5),(8,2)], (8,3)),
+    lvl(4, "ABC", [(0,0),(4,4),(6,2),(8,10)], (7,10)),
+    lvl(5, "AB", [(3,3),(6,6),(3,9)], (3,8)),
 ]
 class Lp01(ARCBaseGame):
     def __init__(self):
@@ -82,6 +109,13 @@ class Lp01(ARCBaseGame):
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._seq = list(level.get_data("seq"))
         self._ni = 0
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            seq_len=len(self._seq),
+            ni=self._ni,
+        )
+
     def step(self):
         dx=dy=0
         v=self.action.id.value
@@ -101,11 +135,21 @@ class Lp01(ARCBaseGame):
                     self._ni += 1
                     self.current_level.remove_sprite(h)
                 else:
-                    self._ui.update(level_index=self.level_index, state=self._state)
+                    self._ui.update(
+                        level_index=self.level_index,
+                        state=self._state,
+                        seq_len=len(self._seq),
+                        ni=self._ni,
+                    )
                     self.lose(); self.complete_action(); return
             elif not h or not h.is_collidable:
                 self._p.set_position(nx,ny)
         if self._ni >= len(self._seq) and self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            seq_len=len(self._seq),
+            ni=self._ni,
+        )
         self.complete_action()

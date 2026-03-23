@@ -10,6 +10,10 @@ class Dp01UI(RenderableUserDisplay):
         self._p = plane
         self._li = 0
         self._nlv = 1
+        self._reject_frames = 0
+
+    def flash_reject(self) -> None:
+        self._reject_frames = 3
 
     def update(
         self,
@@ -37,6 +41,9 @@ class Dp01UI(RenderableUserDisplay):
             # Bottom: active **plane** A=blue / B=magenta; top-right yellow = spatial overlay mode (not timeline).
             frame[h - 2, 2] = 9 if self._p == "a" else 7
             frame[1, min(w - 2, 20)] = 11
+            if self._reject_frames > 0:
+                frame[2, min(3, w - 1)] = 11
+                self._reject_frames -= 1
         return frame
 
 
@@ -137,6 +144,10 @@ class Dp01(ARCBaseGame):
             hit = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
             if not self._wall_blocks(hit):
                 self._player.set_position(nx, ny)
+            else:
+                self._ui.flash_reject()
+        else:
+            self._ui.flash_reject()
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
         self._ui.update(

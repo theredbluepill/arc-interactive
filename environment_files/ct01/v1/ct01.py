@@ -51,6 +51,10 @@ class Ct01UI(RenderableUserDisplay):
         self._level_index = level_index
         self._num_levels = num_levels
         self._state = None
+        self._reject_frames = 0
+
+    def pulse_reject(self) -> None:
+        self._reject_frames = 14
 
     def update(
         self,
@@ -75,6 +79,9 @@ class Ct01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        if self._reject_frames > 0:
+            _rp(frame, h, w, 31, h - 2, 12)
+            self._reject_frames -= 1
         frame[h - 2, 28] = 14 if self._ok else 8
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
@@ -227,6 +234,8 @@ class Ct01(ARCBaseGame):
         else:
             for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
                 if (gx + dx, gy + dy) in self._selected:
+                    self._ui.pulse_reject()
+                    self._sync_ui()
                     self.complete_action()
                     return
             self._selected.add(p)

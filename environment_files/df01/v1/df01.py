@@ -6,18 +6,32 @@ BG, PAD = 5, 4
 
 
 class Df01UI(RenderableUserDisplay):
-    def __init__(self, t: int) -> None:
+    def __init__(self, t: int, lo: int, hi: int) -> None:
         self._t = t
+        self._lo = lo
+        self._hi = hi
         self._li = 0
         self._nlv = 1
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 8
 
     def update(
         self,
         t: int,
+        lo: int | None = None,
+        hi: int | None = None,
         level_index: int | None = None,
         num_levels: int | None = None,
     ) -> None:
         self._t = t
+        if lo is not None:
+            self._lo = lo
+        if hi is not None:
+            self._hi = hi
         if level_index is not None:
             self._li = level_index
         if num_levels is not None:
@@ -34,7 +48,29 @@ class Df01UI(RenderableUserDisplay):
                     break
                 dot = 14 if i < self._li else (11 if i == self._li else 3)
                 frame[0, cx] = dot
-            frame[h - 2, 2] = min(15, max(0, self._t % 16))
+            # Coarse temp readout + goal band markers (learnable without prose).
+            tt = min(15, max(0, (self._t + 24) // 4))
+            frame[h - 2, 2] = tt
+            lo_c = min(15, max(0, (self._lo + 24) // 4))
+            hi_c = min(15, max(0, (self._hi + 24) // 4))
+            frame[h - 2, 4] = lo_c
+            frame[h - 2, 5] = hi_c
+            frame[h - 2, 6] = 14 if self._lo <= self._t <= self._hi else 8
+            if self._click_pos and self._click_frames > 0:
+                cx, cy = self._click_pos
+                hit = 11
+                for px, py in (
+                    (cx, cy),
+                    (cx - 1, cy),
+                    (cx + 1, cy),
+                    (cx, cy - 1),
+                    (cx, cy + 1),
+                ):
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = hit
+                self._click_frames -= 1
+            else:
+                self._click_pos = None
         return frame
 
 
@@ -65,7 +101,7 @@ levels = [
 
 class Df01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Df01UI(0)
+        self._ui = Df01UI(0, 0, 0)
         super().__init__(
             "df01",
             levels,
@@ -80,7 +116,13 @@ class Df01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._lo = int(level.get_data("t_lo"))
         self._hi = int(level.get_data("t_hi"))
-        self._ui.update(0, level_index=self.level_index, num_levels=len(levels))
+        self._ui.update(
+            0,
+            lo=self._lo,
+            hi=self._hi,
+            level_index=self.level_index,
+            num_levels=len(levels),
+        )
         gw, gh = level.grid_size
         self._temp = [[0 for _ in range(gw)] for _ in range(gh)]
         for y in range(gh):
@@ -108,6 +150,7 @@ class Df01(ARCBaseGame):
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:
             px, py = int(self.action.data.get("x", 0)), int(self.action.data.get("y", 0))
+            self._ui.set_click(px, py)
             h = self.camera.display_to_grid(px, py)
             if h:
                 gx, gy = int(h[0]), int(h[1])
@@ -118,7 +161,13 @@ class Df01(ARCBaseGame):
                         if 0 <= nx < gw and 0 <= ny < gh:
                             self._temp[ny][nx] = max(-20, self._temp[ny][nx] - 2)
             t = self._temp[self._player.y][self._player.x]
-            self._ui.update(t, level_index=self.level_index, num_levels=len(levels))
+            self._ui.update(
+                t,
+                lo=self._lo,
+                hi=self._hi,
+                level_index=self.level_index,
+                num_levels=len(levels),
+            )
             self.complete_action()
             return
         dx = dy = 0
@@ -140,7 +189,13 @@ class Df01(ARCBaseGame):
             self._player.set_position(nx, ny)
         self._diffuse()
         t = self._temp[self._player.y][self._player.x]
-        self._ui.update(t, level_index=self.level_index, num_levels=len(levels))
+        self._ui.update(
+            t,
+            lo=self._lo,
+            hi=self._hi,
+            level_index=self.level_index,
+            num_levels=len(levels),
+        )
         if self._player.x == self._goal.x and self._player.y == self._goal.y and self._lo <= t <= self._hi:
             self.next_level()
         self.complete_action()

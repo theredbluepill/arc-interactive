@@ -13,6 +13,7 @@ from arcengine import (
 class Kb01UI(RenderableUserDisplay):
     def __init__(self, r: int, num_levels: int) -> None:
         self._r = r
+        self._dist = 0
         self._li = 0
         self._nl = num_levels
         self._state: GameState | None = None
@@ -21,11 +22,14 @@ class Kb01UI(RenderableUserDisplay):
         self,
         r: int,
         *,
+        dist: int | None = None,
         level_index: int | None = None,
         num_levels: int | None = None,
         state: GameState | None = None,
     ) -> None:
         self._r = r
+        if dist is not None:
+            self._dist = dist
         if level_index is not None:
             self._li = level_index
         if num_levels is not None:
@@ -51,8 +55,21 @@ class Kb01UI(RenderableUserDisplay):
                 cc = 14 if self._state == GameState.WIN else 8
                 for x in range(min(w, 16)):
                     frame[rrow, x] = cc
+        # Bottom row: Manhattan slack (R − d). Green = headroom, yellow = caution, red at i=0 when slack=0 (at leash limit).
+        slack = max(0, self._r - self._dist)
         for i in range(min(self._r + 1, 8)):
-            frame[h - 2, 1 + i] = 7
+            x = 1 + i
+            if x >= w:
+                break
+            if slack == 0:
+                c = 8 if i == 0 else 3
+            elif i < slack:
+                c = 14
+            elif i == slack:
+                c = 11
+            else:
+                c = 3
+            frame[h - 2, x] = c
         return frame
 
 
@@ -165,8 +182,10 @@ class Kb01(ARCBaseGame):
         self._sync_ui()
 
     def _sync_ui(self) -> None:
+        d = abs(self._player.x - self._key.x) + abs(self._player.y - self._key.y)
         self._ui.update(
             self._r,
+            dist=d,
             level_index=self.level_index,
             num_levels=len(levels),
             state=self._state,

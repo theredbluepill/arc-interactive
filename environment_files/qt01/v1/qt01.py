@@ -61,7 +61,8 @@ def spr():
             "g": Sprite(pixels=[[14]], name="g", visible=True, collidable=False, tags=["goal"]),
             "s": Sprite(pixels=[[7]], name="s", visible=True, collidable=False, tags=["split"]),
             "o": Sprite(pixels=[[10]], name="o", visible=True, collidable=False, tags=["observe"]),
-            "w": Sprite(pixels=[[3]], name="w", visible=True, collidable=True, tags=["wall"])}
+            "w": Sprite(pixels=[[3]], name="w", visible=True, collidable=True, tags=["wall"]),
+            "ghost": Sprite(pixels=[[6]], name="ghost", visible=True, collidable=False, tags=["ghost"])}
 s = spr()
 def lvl(d,parts):
     return Level(sprites=parts, grid_size=(10,10), data={"difficulty":d})
@@ -74,13 +75,29 @@ levels = [
 ]
 class Qt01(ARCBaseGame):
     def __init__(self):
+        self._ghost_sp = None
         self._ui = U(len(levels))
         super().__init__("qt01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
+
+    def _sync_ghost_sprite(self) -> None:
+        if self._split and self._gx is not None and self._gy is not None:
+            if self._ghost_sp is None:
+                self._ghost_sp = s["ghost"].clone().set_position(self._gx, self._gy)
+                self.current_level.add_sprite(self._ghost_sp)
+            else:
+                self._ghost_sp.set_position(self._gx, self._gy)
+        elif self._ghost_sp is not None:
+            self.current_level.remove_sprite(self._ghost_sp)
+            self._ghost_sp = None
+
     def on_set_level(self, level: Level):
+        self._ghost_sp = None
         self._p = self.current_level.get_sprites_by_tag("player")[0]
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._split = False
         self._gx = self._gy = None
+        for sp in list(self.current_level.get_sprites_by_tag("ghost")):
+            self.current_level.remove_sprite(sp)
         self._ui.update(level_index=self.level_index, state=self._state, split=False)
     def _blocked(self, x, y):
         gw, gh = self.current_level.grid_size
@@ -108,12 +125,14 @@ class Qt01(ARCBaseGame):
             if hit2 and "observe" in hit2.tags and self._split:
                 self._split = False
                 self._gx = self._gy = None
+                self._sync_ghost_sprite()
         else:
             nx, ny = self._p.x+dx, self._p.y+dy
             gx, gy = self._gx+dx, self._gy+dy
             b1, b2 = self._blocked(nx,ny), self._blocked(gx,gy)
             if b1 and b2:
                 self.lose()
+                self._sync_ghost_sprite()
                 self._ui.update(level_index=self.level_index, state=self._state, split=self._split)
                 self.complete_action()
                 return
@@ -125,6 +144,7 @@ class Qt01(ARCBaseGame):
             if hit and "observe" in hit.tags:
                 self._split = False
                 self._gx = self._gy = None
+        self._sync_ghost_sprite()
         if self._p.x == self._g.x and self._p.y == self._g.y and not self._split:
             self.next_level()
         self._ui.update(level_index=self.level_index, state=self._state, split=self._split)

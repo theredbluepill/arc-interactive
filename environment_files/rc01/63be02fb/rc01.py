@@ -42,6 +42,7 @@ class Rc01UI(RenderableUserDisplay):
         self._level_index = level_index
         self._num_levels = num_levels
         self._recall_flash = 0
+        self._reject_frames = 0
         self._end: GameState | None = None
 
     def update(
@@ -63,6 +64,9 @@ class Rc01UI(RenderableUserDisplay):
         if end is not None:
             self._end = end
 
+    def flash_reject(self) -> None:
+        self._reject_frames = 4
+
     def render_interface(self, frame):
         import numpy as np
 
@@ -78,6 +82,9 @@ class Rc01UI(RenderableUserDisplay):
             if rf:
                 c = 15
             _rp(frame, h, w, 28 + i, h - 2, c)
+        if self._reject_frames > 0:
+            _rp(frame, h, w, min(3, w - 1), 2, 11)
+            self._reject_frames -= 1
         go = self._end == GameState.GAME_OVER
         win = self._end == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -193,6 +200,8 @@ class Rc01(ARCBaseGame):
                     recall_pulse=True,
                     end=self._state,
                 )
+            else:
+                self._ui.flash_reject()
             self.complete_action()
             return
 

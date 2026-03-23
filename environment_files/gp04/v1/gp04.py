@@ -80,6 +80,8 @@ class Gp04UI(RenderableUserDisplay):
         bc = 14 if self._blobs <= self._cap else 8
         self._plot_px(frame, h, w, 58, 1, bc)
         self._plot_px(frame, h, w, 60, 1, 10)
+        for i in range(min(self._cap, 10)):
+            self._plot_px(frame, h, w, 26 + i * 2, 1, 11)
 
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos

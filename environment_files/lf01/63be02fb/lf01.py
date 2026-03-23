@@ -12,11 +12,24 @@ from arcengine import (
 class Lf01UI(RenderableUserDisplay):
     def __init__(self, n_levels: int) -> None:
         self._on = False
+        self._p = 3
+        self._row = 5
         self._n_levels = n_levels
         self._li = 0
 
-    def update(self, on: bool, level_index: int | None = None) -> None:
+    def update(
+        self,
+        on: bool,
+        level_index: int | None = None,
+        *,
+        period: int | None = None,
+        laser_row: int | None = None,
+    ) -> None:
         self._on = on
+        if period is not None:
+            self._p = period
+        if laser_row is not None:
+            self._row = laser_row
         if level_index is not None:
             self._li = level_index
 
@@ -33,6 +46,10 @@ class Lf01UI(RenderableUserDisplay):
             c = 14 if i < self._li else (11 if i == self._li else 3)
             frame[0, cx] = c
         frame[h - 2, 2] = 8 if self._on else 14
+        for i in range(min(self._p, 8)):
+            frame[h - 3, 1 + i] = 10
+        rr = min(max(self._row, 0), w - 2)
+        frame[h - 4, 1 + rr] = 11
         return frame
 
 
@@ -136,7 +153,12 @@ class Lf01(ARCBaseGame):
         self._p = int(level.get_data("period") or 3)
         self._row = int(level.get_data("laser_row") or 5)
         self._tick = 0
-        self._ui.update(self._laser_on(), self.level_index)
+        self._ui.update(
+            self._laser_on(),
+            self.level_index,
+            period=self._p,
+            laser_row=self._row,
+        )
 
     def _laser_on(self) -> bool:
         return (self._tick // self._p) % 2 == 0
@@ -167,7 +189,12 @@ class Lf01(ARCBaseGame):
             return
 
         self._tick += 1
-        self._ui.update(self._laser_on(), self.level_index)
+        self._ui.update(
+            self._laser_on(),
+            self.level_index,
+            period=self._p,
+            laser_row=self._row,
+        )
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()

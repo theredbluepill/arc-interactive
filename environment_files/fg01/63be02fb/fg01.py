@@ -60,7 +60,7 @@ levels = [
     mk(
         [
             sprites["player"].clone().set_position(1, 5),
-            sprites["goal"].clone().set_position(8, 5),
+            sprites["goal"].clone().set_position(4, 5),
         ],
         1,
         3,

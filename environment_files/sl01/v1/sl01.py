@@ -19,21 +19,32 @@ from arcengine import (
 )
 
 
+_GOAL_TILE_COLORS = [6, 7, 8, 10, 11, 12, 13, 14]
+
+
 class Sl01UI(RenderableUserDisplay):
     def __init__(self, n_levels: int) -> None:
         self._steps = 0
         self._limit: int | None = None
+        self._goal: list[list[int]] = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
         self._n_levels = n_levels
         self._li = 0
+        self._edge_bump = False
 
     def update(
         self,
         steps: int,
         limit: int | None,
         level_index: int | None = None,
+        goal: list[list[int]] | None = None,
+        *,
+        edge_bump: bool = False,
     ) -> None:
         self._steps = steps
         self._limit = limit
+        self._edge_bump = edge_bump
+        if goal is not None:
+            self._goal = goal
         if level_index is not None:
             self._li = level_index
 
@@ -49,10 +60,19 @@ class Sl01UI(RenderableUserDisplay):
                 break
             c = 14 if i < self._li else (11 if i == self._li else 3)
             frame[0, cx] = c
+        gh = len(self._goal)
+        gw = len(self._goal[0]) if gh else 0
+        for y in range(min(gh, 3)):
+            for x in range(min(gw, 3)):
+                v = int(self._goal[y][x])
+                tc = 5 if v == 0 else _GOAL_TILE_COLORS[v - 1]
+                frame[1 + y, 1 + x] = tc
         c = 14 if self._limit is None or self._steps < self._limit else 8
         for dy in range(3):
             for dx in range(3):
                 frame[h - 3 + dy, w - 6 + dx] = c
+        if self._edge_bump:
+            frame[min(h - 1, 7), min(w - 1, 7)] = 8
         return frame
 
 
@@ -140,7 +160,13 @@ class Sl01(ARCBaseGame):
         self._goal = level.get_data("goal") or _GOAL3
         self._step_limit = level.get_data("step_limit")
         self._steps = 0
-        self._ui.update(self._steps, self._step_limit, self.level_index)
+        self._ui.update(
+            self._steps,
+            self._step_limit,
+            self.level_index,
+            goal=[list(row) for row in self._goal],
+            edge_bump=False,
+        )
 
     def _solved(self) -> bool:
         px, py = self._player.x, self._player.y
@@ -179,6 +205,13 @@ class Sl01(ARCBaseGame):
         tx, ty = px + dx, py + dy
         gw, gh = self.current_level.grid_size
         if not (0 <= tx < gw and 0 <= ty < gh):
+            self._ui.update(
+                self._steps,
+                self._step_limit,
+                self.level_index,
+                goal=[list(row) for row in self._goal],
+                edge_bump=True,
+            )
             self.complete_action()
             return
 
@@ -190,7 +223,13 @@ class Sl01(ARCBaseGame):
         tile.set_position(px, py)
         self._player.set_position(tx, ty)
         self._steps += 1
-        self._ui.update(self._steps, self._step_limit, self.level_index)
+        self._ui.update(
+            self._steps,
+            self._step_limit,
+            self.level_index,
+            goal=[list(row) for row in self._goal],
+            edge_bump=False,
+        )
 
         if self._solved():
             self.next_level()

@@ -61,6 +61,9 @@ class Pk01UI(RenderableUserDisplay):
         frame[h - 2, 2] = 11 if self._pending else 5
         for i in range(min(self._done, 14)):
             frame[h - 2, 4 + i] = 14
+        left = max(0, self._total - self._done)
+        for i in range(min(left, 10)):
+            frame[h - 3, 1 + i] = 12
         return frame
 
 

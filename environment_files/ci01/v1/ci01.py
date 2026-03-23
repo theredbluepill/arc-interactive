@@ -20,11 +20,24 @@ from arcengine import (
 class Ci01UI(RenderableUserDisplay):
     def __init__(self, n_levels: int) -> None:
         self._remaining = 0
+        self._steps = 0
+        self._limit: int | None = None
         self._n_levels = n_levels
         self._li = 0
 
-    def update(self, remaining: int, level_index: int | None = None) -> None:
+    def update(
+        self,
+        remaining: int,
+        level_index: int | None = None,
+        *,
+        steps: int | None = None,
+        step_limit: int | None = None,
+    ) -> None:
         self._remaining = remaining
+        if steps is not None:
+            self._steps = steps
+        if step_limit is not None:
+            self._limit = step_limit
         if level_index is not None:
             self._li = level_index
 
@@ -44,6 +57,13 @@ class Ci01UI(RenderableUserDisplay):
         for dy in range(4):
             for dx in range(4):
                 frame[h - 4 + dy, w - 4 + dx] = color
+        if self._limit is not None:
+            slack = max(0, int(self._limit) - int(self._steps))
+            for i in range(min(slack, 12)):
+                frame[h - 2, 1 + i] = 12
+            if slack == 0 and self._remaining > 0:
+                for i in range(min(12, w - 2)):
+                    frame[h - 2, 1 + i] = 8
         return frame
 
 
@@ -185,6 +205,8 @@ class Ci01(ARCBaseGame):
         self._ui.update(
             sum(1 for b in self._blocks if "done" not in b.tags),
             self.level_index,
+            steps=0,
+            step_limit=self._step_limit,
         )
 
     def _block_on_target(self, block: Sprite) -> bool:
@@ -269,7 +291,12 @@ class Ci01(ARCBaseGame):
 
         self._steps += 1
         remaining = sum(1 for b in self._blocks if "done" not in b.tags)
-        self._ui.update(remaining, self.level_index)
+        self._ui.update(
+            remaining,
+            self.level_index,
+            steps=self._steps,
+            step_limit=self._step_limit,
+        )
 
         if remaining == 0:
             self.next_level()

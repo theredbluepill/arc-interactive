@@ -31,12 +31,25 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._on_exit = False
+        self._tails_near = (0, 0)
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        state=None,
+        on_exit: bool | None = None,
+        tails_near: tuple[int, int] | None = None,
+    ) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if on_exit is not None:
+            self._on_exit = on_exit
+        if tails_near is not None:
+            self._tails_near = tails_near
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +60,11 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        row_y = h - 2
+        if row_y >= 0 and self._on_exit:
+            ok, total = self._tails_near
+            for i in range(min(total, 5)):
+                _rp(f, h, w, 34 + i * 2, row_y, 14 if i < ok else 8)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -72,10 +90,23 @@ class Fc01(ARCBaseGame):
         super().__init__("fc01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
-
         self._tails = self.current_level.get_sprites_by_tag("tail")
         self._ex = self.current_level.get_sprites_by_tag("exit")[0]
+        self._sync_chain_ui()
+
+    def _sync_chain_ui(self) -> None:
+        def near(t):
+            return max(abs(t.x - self._ex.x), abs(t.y - self._ex.y)) <= 1
+
+        on_ex = self._p.x == self._ex.x and self._p.y == self._ex.y
+        ok = sum(1 for t in self._tails if near(t))
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            on_exit=on_ex,
+            tails_near=(ok, len(self._tails)),
+        )
+
     def step(self):
         dx=dy=0
         v=self.action.id.value
@@ -91,7 +122,7 @@ class Fc01(ARCBaseGame):
             h = self.current_level.get_sprite_at(nx,ny,ignore_collidable=True)
             if not h or not h.is_collidable or "tail" in h.tags:
                 if h and "tail" in h.tags:
-                    self._ui.update(level_index=self.level_index, state=self._state)
+                    self._sync_chain_ui()
                     self.lose(); self.complete_action(); return
                 prev = [(px,py)] + [(t.x,t.y) for t in self._tails]
                 self._p.set_position(nx,ny)
@@ -103,5 +134,5 @@ class Fc01(ARCBaseGame):
         ok_p = self._p.x == self._ex.x and self._p.y == self._ex.y
         if ok_p and all(near(t) for t in self._tails):
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._sync_chain_ui()
         self.complete_action()

@@ -43,7 +43,10 @@ class Wr01UI(RenderableUserDisplay):
                 frame[0, cx] = dot
             for i in range(min(self._b, 6)):
                 frame[h - 2, 2 + i] = 11
-            frame[h - 2, 10] = min(15, self._u % 16)
+            # Steps until next world rotation (one yellow tick per step, capped for HUD width).
+            rem = max(0, min(self._u, 12))
+            for i in range(min(rem, 10)):
+                frame[h - 3, 2 + i] = 11
         return frame
 
 

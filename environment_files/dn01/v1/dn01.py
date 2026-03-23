@@ -1,14 +1,29 @@
 """Plan #24: torus + winding counter."""
 from arcengine import ARCBaseGame, Camera, Level, RenderableUserDisplay, Sprite
 BG, PAD = 5, 4
+
+
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
 class U(RenderableUserDisplay):
-    def __init__(self, w): self.w = w
-    def update(self, w): self.w = w
+    def __init__(self) -> None:
+        self.w = 0
+        self.need = 2
+
+    def update(self, w: int, need: int = 2) -> None:
+        self.w = w
+        self.need = need
+
     def render_interface(self, f):
         import numpy as np
         if isinstance(f, np.ndarray):
-            h,w=f.shape
-            f[h-2,2] = min(15, self.w)
+            h, fw = f.shape
+            f[h - 2, 2] = min(15, self.w)
+            for i in range(min(self.need, 4)):
+                _rp(f, h, fw, 4 + i, h - 2, 14 if self.w > i else 3)
         return f
 def spr():
     return {"p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),
@@ -20,12 +35,14 @@ def lvl(d, px, py, gx, gy):
 levels = [lvl(i,2,8,14,8) for i in range(1,6)]
 class Dn01(ARCBaseGame):
     def __init__(self):
-        self._ui = U(0)
+        self._ui = U()
         super().__init__("dn01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._wind = 0
+        self._ui.update(0, need=2)
+
     def step(self):
         dx=dy=0
         v=self.action.id.value
@@ -45,7 +62,7 @@ class Dn01(ARCBaseGame):
         elif ny < 0:
             ny = gh - 1
         self._p.set_position(nx, ny)
-        self._ui.update(self._wind)
+        self._ui.update(self._wind, need=2)
         if self._p.x==self._g.x and self._p.y==self._g.y and self._wind>=2:
             self.next_level()
         self.complete_action()

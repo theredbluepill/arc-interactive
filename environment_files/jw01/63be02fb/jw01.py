@@ -24,14 +24,23 @@ class Jw01UI(RenderableUserDisplay):
         self._click_frames = 0
         self._outline_frames = 0
         self._outline_rects: list[tuple[int, int, int, int]] = []
+        self._outline_color = 8
 
     def set_click(self, x: int, y: int) -> None:
         self._click_pos = (int(x), int(y))
         self._click_frames = 8
 
-    def set_swap_outline(self, ra: tuple[int, int, int, int], rb: tuple[int, int, int, int]) -> None:
+    def set_swap_outline(
+        self,
+        ra: tuple[int, int, int, int],
+        rb: tuple[int, int, int, int],
+        *,
+        frames: int = 10,
+        color: int = 8,
+    ) -> None:
         self._outline_rects = [ra, rb]
-        self._outline_frames = 10
+        self._outline_frames = frames
+        self._outline_color = color
 
     def _draw_rect_outline(
         self, frame, fh: int, fw: int, rect: tuple[int, int, int, int], color: int
@@ -100,7 +109,7 @@ class Jw01UI(RenderableUserDisplay):
             self._click_pos = None
         if self._outline_frames > 0:
             for rect in self._outline_rects:
-                self._draw_rect_outline(frame, h, w, rect, 8)
+                self._draw_rect_outline(frame, h, w, rect, self._outline_color)
             self._outline_frames -= 1
         if self._state in (GameState.GAME_OVER, GameState.WIN):
             r = h - 3
@@ -248,6 +257,7 @@ class Jw01(ARCBaseGame):
         self._rb = tuple(int(x) for x in rb)
         self._swap_count = 0
         self._sync_ui()
+        self._ui.set_swap_outline(self._ra, self._rb, frames=14, color=10)
 
     def _sync_ui(self) -> None:
         self._ui.update(
@@ -291,7 +301,7 @@ class Jw01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._swap_count += 1
-        self._ui.set_swap_outline(self._ra, self._rb)
+        self._ui.set_swap_outline(self._ra, self._rb, frames=10, color=8)
         self._sync_ui()
 
     def step(self) -> None:

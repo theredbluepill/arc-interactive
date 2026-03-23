@@ -31,12 +31,29 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._mod = 0
+        self._M = 1
+        self._tgt = 0
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        state=None,
+        mod: int | None = None,
+        M: int | None = None,
+        tgt: int | None = None,
+    ) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if mod is not None:
+            self._mod = mod
+        if M is not None:
+            self._M = M
+        if tgt is not None:
+            self._tgt = tgt
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +64,11 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        r = h - 2
+        if r >= 0:
+            _rp(f, h, w, 1, r, min(15, self._mod + 4))
+            _rp(f, h, w, 4, r, min(15, self._M + 2))
+            _rp(f, h, w, 7, r, min(15, self._tgt + 6))
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -81,14 +103,20 @@ class Vt01(ARCBaseGame):
         super().__init__("vt01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
-
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._M = int(level.get_data("M"))
         self._tgt = int(level.get_data("target"))
         self._plates = {(sp.x,sp.y) for sp in self.current_level.get_sprites_by_tag("plate")}
         ds = self.current_level.get_sprites_by_tag("door")
         self._door = ds[0] if ds else None
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            mod=self._sum_mod(),
+            M=self._M,
+            tgt=self._tgt,
+        )
+
     def _sum_mod(self):
         s = 0
         for sp in self.current_level.get_sprites_by_tag("block"):
@@ -129,5 +157,11 @@ class Vt01(ARCBaseGame):
             self._door = None
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            mod=self._sum_mod(),
+            M=self._M,
+            tgt=self._tgt,
+        )
         self.complete_action()

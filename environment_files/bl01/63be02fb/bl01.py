@@ -12,8 +12,11 @@ from arcengine import (
 class Bl01UI(RenderableUserDisplay):
     def __init__(self, armed: bool) -> None:
         self._armed = armed
+        self._pulse = 0
 
     def update(self, armed: bool) -> None:
+        if armed and not self._armed:
+            self._pulse = 8
         self._armed = armed
 
     def render_interface(self, frame):
@@ -22,7 +25,14 @@ class Bl01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, _w = frame.shape
-        frame[h - 2, 2] = 10 if self._armed else 3
+        if self._armed:
+            for i, x in enumerate((2, 3, 4)):
+                c = 15 if (self._pulse > 0 and i == 1) else 10
+                frame[h - 2, x] = c
+        else:
+            frame[h - 2, 2] = 3
+        if self._pulse > 0:
+            self._pulse -= 1
         return frame
 
 

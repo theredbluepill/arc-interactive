@@ -1,4 +1,4 @@
-"""Battery steps: charge drops each step; green pads refill; at 0 charge lose."""
+"""Battery steps: charge drops each move; pads refill to cap; goal clears before 0-charge loss on the same step."""
 
 from arcengine import (
     ARCBaseGame,
@@ -111,7 +111,7 @@ levels = [
             sprites["goal"].clone().set_position(9, 0),
         ],
         5,
-        15,
+        22,
     ),
 ]
 
@@ -172,12 +172,14 @@ class Bt01(ARCBaseGame):
             self._charge = self._cap
         self._ui.update(self._charge)
 
+        if self._player.x == self._goal.x and self._player.y == self._goal.y:
+            self.next_level()
+            self.complete_action()
+            return
+
         if self._charge <= 0:
             self.lose()
             self.complete_action()
             return
-
-        if self._player.x == self._goal.x and self._player.y == self._goal.y:
-            self.next_level()
 
         self.complete_action()

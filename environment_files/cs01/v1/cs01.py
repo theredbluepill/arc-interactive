@@ -44,6 +44,50 @@ def _r_bar(frame, h, w, game_over, win):
         _rp(frame, h, w, x, r, c)
 
 
+GW = GH = 8
+CAM_PX = 16
+
+
+def _vertex_center_frame(
+    gx: int, gy: int, *, fh: int, fw: int, cw: int = CAM_PX, ch: int = CAM_PX
+) -> tuple[int, int]:
+    scale = min(fw // cw, fh // ch)
+    x_pad = (fw - cw * scale) // 2
+    y_pad = (fh - ch * scale) // 2
+    tcx = int((gx + 0.5) * cw / GW)
+    tcy = int((gy + 0.5) * ch / GH)
+    return tcx * scale + x_pad + scale // 2, tcy * scale + y_pad + scale // 2
+
+
+def _line_frame(
+    frame,
+    h: int,
+    w: int,
+    x0: int,
+    y0: int,
+    x1: int,
+    y1: int,
+    color: int,
+) -> None:
+    dx = abs(x1 - x0)
+    dy = -abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx + dy
+    x, y = x0, y0
+    while True:
+        _rp(frame, h, w, x, y, color)
+        if x == x1 and y == y1:
+            break
+        e2 = 2 * err
+        if e2 >= dy:
+            err += dy
+            x += sx
+        if e2 <= dx:
+            err += dx
+            y += sy
+
+
 class Cs01UI(RenderableUserDisplay):
     def __init__(self, sel: int, cap: int, level_index: int = 0, num_levels: int = 7) -> None:
         self._sel = sel
@@ -51,6 +95,7 @@ class Cs01UI(RenderableUserDisplay):
         self._level_index = level_index
         self._num_levels = num_levels
         self._state = None
+        self._edges: list[tuple[tuple[int, int], tuple[int, int]]] = []
 
     def update(
         self,
@@ -60,6 +105,7 @@ class Cs01UI(RenderableUserDisplay):
         level_index: int | None = None,
         num_levels: int | None = None,
         state=None,
+        edges: list[tuple[tuple[int, int], tuple[int, int]]] | None = None,
     ) -> None:
         self._sel = sel
         self._cap = cap
@@ -69,6 +115,8 @@ class Cs01UI(RenderableUserDisplay):
             self._num_levels = num_levels
         if state is not None:
             self._state = state
+        if edges is not None:
+            self._edges = edges
 
     def render_interface(self, frame):
         import numpy as np
@@ -76,6 +124,10 @@ class Cs01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        for a, b in self._edges:
+            xa, ya = _vertex_center_frame(a[0], a[1], fh=h, fw=w)
+            xb, yb = _vertex_center_frame(b[0], b[1], fh=h, fw=w)
+            _line_frame(frame, h, w, xa, ya, xb, yb, 4)
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         for i in range(min(self._sel, 12)):
             frame[h - 2, 2 + i] = 14
@@ -170,6 +222,7 @@ class Cs01(ARCBaseGame):
             level_index=self.level_index,
             num_levels=len(levels),
             state=self._state,
+            edges=self._edges,
         )
 
     def _refresh_marks(self) -> None:

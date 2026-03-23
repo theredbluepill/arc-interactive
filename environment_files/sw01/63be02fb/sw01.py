@@ -12,18 +12,25 @@ from arcengine import (
 class Sw01UI(RenderableUserDisplay):
     def __init__(self, d: int) -> None:
         self._d = d
+        self._reject_frames = 0
 
     def update(self, d: int) -> None:
         self._d = d
+
+    def flash_reject(self) -> None:
+        self._reject_frames = 4
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
         for i in range(min(self._d, 12)):
             frame[h - 2, 1 + i] = 7
+        if self._reject_frames > 0:
+            frame[2, min(3, w - 1)] = 11
+            self._reject_frames -= 1
         return frame
 
 
@@ -141,6 +148,8 @@ class Sw01(ARCBaseGame):
                 qx, qy = self._partner.x, self._partner.y
                 self._player.set_position(qx, qy)
                 self._partner.set_position(px, py)
+            else:
+                self._ui.flash_reject()
             self.complete_action()
             return
 

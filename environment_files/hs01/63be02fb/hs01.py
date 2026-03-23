@@ -12,18 +12,23 @@ from arcengine import (
 class Hs01UI(RenderableUserDisplay):
     def __init__(self, d: int) -> None:
         self._d = d
+        self._hunter_fill = 0
 
-    def update(self, d: int) -> None:
+    def update(self, d: int, hunter_fill: int = 0) -> None:
         self._d = d
+        self._hunter_fill = hunter_fill
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
         for i in range(min(self._d, 12)):
             frame[h - 2, 1 + i] = 8
+        # Two ticks = player moves before the hunter steps (period 2).
+        for i in range(min(self._hunter_fill, 2)):
+            frame[h - 3, min(20 + i * 2, w - 1)] = 8
         return frame
 
 
@@ -129,7 +134,8 @@ class Hs01(ARCBaseGame):
         self._hunter = self.current_level.get_sprites_by_tag("hunter")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._move_ctr = 0
-        self._ui.update(int(level.get_data("difficulty") or 1))
+        self._difficulty = int(level.get_data("difficulty") or 1)
+        self._ui.update(self._difficulty, 0)
 
     def _blocked(self, x: int, y: int, ignore: Sprite | None = None) -> bool:
         gw, gh = self.current_level.grid_size
@@ -190,9 +196,11 @@ class Hs01(ARCBaseGame):
                 self._player.set_position(nx, ny)
 
         self._move_ctr += 1
+        hunter_moved = False
         if self._move_ctr >= 2:
             self._move_ctr = 0
             self._hunter_step()
+            hunter_moved = True
 
         if self._hunter.x == self._player.x and self._hunter.y == self._player.y:
             self.lose()
@@ -202,4 +210,6 @@ class Hs01(ARCBaseGame):
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
 
+        fill = 0 if hunter_moved else self._move_ctr
+        self._ui.update(self._difficulty, fill)
         self.complete_action()

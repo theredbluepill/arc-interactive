@@ -31,6 +31,10 @@ class Kv01UI(RenderableUserDisplay):
         v1d: int,
         v2n: int,
         v2d: int,
+        t1n: int,
+        t1d: int,
+        t2n: int,
+        t2d: int,
     ) -> None:
         self._r0 = r0
         self._r1 = r1
@@ -39,6 +43,10 @@ class Kv01UI(RenderableUserDisplay):
         self._v1d = v1d
         self._v2n = v2n
         self._v2d = v2d
+        self._t1n = t1n
+        self._t1d = t1d
+        self._t2n = t2n
+        self._t2d = t2d
         self._bad_check = False
         self._li = 0
         self._nlv = 1
@@ -52,6 +60,10 @@ class Kv01UI(RenderableUserDisplay):
         v1d: int,
         v2n: int,
         v2d: int,
+        t1n: int,
+        t1d: int,
+        t2n: int,
+        t2d: int,
         *,
         bad_check: bool | None = None,
         level_index: int | None = None,
@@ -64,6 +76,10 @@ class Kv01UI(RenderableUserDisplay):
         self._v1d = v1d
         self._v2n = v2n
         self._v2d = v2d
+        self._t1n = t1n
+        self._t1d = t1d
+        self._t2n = t2n
+        self._t2d = t2d
         if bad_check is not None:
             self._bad_check = bad_check
         if level_index is not None:
@@ -77,12 +93,30 @@ class Kv01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+
+        def _c(x: int) -> int:
+            return min(15, max(0, int(x)))
+
+        frame[h - 5, 0] = 11
+        frame[h - 1, 0] = 5
         for i, rv in enumerate((self._r0, self._r1, self._r2)):
             c = 6 + (rv % 3) * 3
             frame[h - 4, 2 + i] = c
-        frame[h - 3, 2] = min(15, max(0, self._v1n % 16))
-        frame[h - 3, 4] = min(15, max(0, self._v2n % 16))
-        frame[h - 2, 0] = 8 if self._bad_check else 5
+        # Current probe voltages (numerator / denominator) — full small integers, no mod wrap.
+        frame[h - 3, 1] = _c(self._v1n)
+        frame[h - 3, 2] = _c(self._v1d)
+        frame[h - 3, 4] = _c(self._v2n)
+        frame[h - 3, 5] = _c(self._v2d)
+        frame[h - 3, 0] = 10
+        frame[h - 3, 3] = 5
+        # Targets to match (same encoding).
+        frame[h - 2, 1] = _c(self._t1n)
+        frame[h - 2, 2] = _c(self._t1d)
+        frame[h - 2, 4] = _c(self._t2n)
+        frame[h - 2, 5] = _c(self._t2d)
+        frame[h - 2, 0] = 11
+        frame[h - 2, 3] = 5
+        frame[h - 2, 7] = 8 if self._bad_check else 5
         for i in range(min(self._nlv, 14)):
             cx = 1 + i * 2
             if cx >= w:
@@ -146,7 +180,7 @@ PADDING_COLOR = 4
 
 class Kv01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Kv01UI(1, 1, 1, 8, 1, 4, 1)
+        self._ui = Kv01UI(1, 1, 1, 8, 1, 4, 1, 8, 1, 4, 1)
         super().__init__(
             "kv01",
             levels,
@@ -175,6 +209,10 @@ class Kv01(ARCBaseGame):
             v1.denominator,
             v2.numerator,
             v2.denominator,
+            self._t1.numerator,
+            self._t1.denominator,
+            self._t2.numerator,
+            self._t2.denominator,
             bad_check=self._bad_check,
             level_index=self.level_index,
             num_levels=len(levels),

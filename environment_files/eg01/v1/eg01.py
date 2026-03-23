@@ -16,16 +16,25 @@ PADDING_COLOR = 4
 GW = GH = 6
 CAM = 16
 BASE = [2, 6, 9, 11]
+GHOST = [5, 4, 3, 7]
 
 
 class Eg01UI(RenderableUserDisplay):
     def __init__(self, ham: int, max_d: int) -> None:
         self._ham = ham
         self._max_d = max_d
+        self._target: list[list[int]] = [[0] * GW for _ in range(GH)]
 
-    def update(self, ham: int, max_d: int) -> None:
+    def update(
+        self,
+        ham: int,
+        max_d: int,
+        target: list[list[int]] | None = None,
+    ) -> None:
         self._ham = ham
         self._max_d = max_d
+        if target is not None:
+            self._target = [row[:] for row in target]
 
     def render_interface(self, frame):
         import numpy as np
@@ -36,6 +45,16 @@ class Eg01UI(RenderableUserDisplay):
         ok = self._ham <= self._max_d
         frame[h - 2, 2] = 14 if ok else 8
         frame[h - 2, 4] = 10
+        ox, oy = 40, 6
+        for yy in range(GH):
+            for xx in range(GW):
+                st = self._target[yy][xx] % 4
+                c = GHOST[st]
+                px, py = ox + xx, oy + yy
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = c
+        for i in range(min(self._max_d, 12)):
+            frame[h - 2, 16 + i] = 11
         return frame
 
 
@@ -103,6 +122,9 @@ class Eg01(ARCBaseGame):
         self._paint()
         self._sync_ui()
 
+    def _sync_ui(self) -> None:
+        self._ui.update(self._hamming(), self._max_d, target=self._target)
+
     def _paint(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("cell")):
             self.current_level.remove_sprite(s)
@@ -119,9 +141,6 @@ class Eg01(ARCBaseGame):
                 if self._g[y][x] != self._target[y][x]:
                     d += 1
         return d
-
-    def _sync_ui(self) -> None:
-        self._ui.update(self._hamming(), self._max_d)
 
     def step(self) -> None:
         if self.action.id.value in (1, 2, 3, 4):

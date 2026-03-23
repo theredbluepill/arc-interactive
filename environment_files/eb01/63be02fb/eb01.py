@@ -10,11 +10,17 @@ from arcengine import (
 
 
 class Eb01UI(RenderableUserDisplay):
+    _CAM_W = 16
+    _CAM_H = 16
+
     def __init__(self, row: int) -> None:
         self._row = row
+        self._gw, self._gh = 10, 10
 
-    def update(self, row: int) -> None:
+    def update(self, row: int, *, grid_size: tuple[int, int] | None = None) -> None:
         self._row = row
+        if grid_size is not None:
+            self._gw, self._gh = grid_size
 
     def render_interface(self, frame):
         import numpy as np
@@ -22,6 +28,19 @@ class Eb01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        scale = min(w // self._CAM_W, h // self._CAM_H)
+        scale = max(scale, 1)
+        x_pad = (w - self._CAM_W * scale) // 2
+        y_pad = (h - self._CAM_H * scale) // 2
+        gy = self._row % max(self._gh, 1)
+        for gx in range(min(self._gw, self._CAM_W)):
+            x0 = gx * scale + x_pad
+            y0 = gy * scale + y_pad
+            for dy in range(scale):
+                for dx in range(scale):
+                    px, py = x0 + dx, y0 + dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 12
         # Bottom orange ticks: **east** escalator row; corner yellow marks eastward auto-slide (vs cy01 top / west).
         for i in range(min(self._row + 1, min(12, w - 2))):
             frame[h - 2, 1 + i] = 12
@@ -126,7 +145,8 @@ class Eb01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._row = int(level.get_data("escalator_row") or 5)
-        self._ui.update(self._row)
+        gw, gh = self.current_level.grid_size
+        self._ui.update(self._row, grid_size=(gw, gh))
 
     def _blocked(self, x: int, y: int) -> bool:
         gw, gh = self.current_level.grid_size

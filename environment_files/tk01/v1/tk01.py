@@ -31,12 +31,15 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._block_on_goal = False
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(self, *, level_index: int | None = None, state=None, block_on_goal: bool | None = None) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if block_on_goal is not None:
+            self._block_on_goal = block_on_goal
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +50,8 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        if self._block_on_goal:
+            _rp(f, h, w, 12, h - 2, 11)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -73,10 +78,14 @@ class Tk01(ARCBaseGame):
         super().__init__("tk01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4,5])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
-
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._blocks = self.current_level.get_sprites_by_tag("block")
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            block_on_goal=any(b.x == self._g.x and b.y == self._g.y for b in self._blocks),
+        )
+
     def step(self):
         if self.action.id == GameAction.ACTION5:
             best = None
@@ -97,7 +106,8 @@ class Tk01(ARCBaseGame):
                     h = self.current_level.get_sprite_at(nx,ny,ignore_collidable=True)
                     if not h or (not h.is_collidable) or h is best:
                         best.set_position(nx,ny)
-            self._ui.update(level_index=self.level_index, state=self._state)
+            bog = any(b.x == self._g.x and b.y == self._g.y for b in self._blocks)
+            self._ui.update(level_index=self.level_index, state=self._state, block_on_goal=bog)
             self.complete_action(); return
         dx=dy=0
         v=self.action.id.value
@@ -119,7 +129,8 @@ class Tk01(ARCBaseGame):
                         self._p.set_position(nx,ny)
             elif not h or not h.is_collidable:
                 self._p.set_position(nx,ny)
-        if any(b.x == self._g.x and b.y == self._g.y for b in self._blocks):
+        bog = any(b.x == self._g.x and b.y == self._g.y for b in self._blocks)
+        if bog:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(level_index=self.level_index, state=self._state, block_on_goal=bog)
         self.complete_action()

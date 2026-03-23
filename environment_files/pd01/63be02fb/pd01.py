@@ -38,6 +38,9 @@ def _r_bar(frame, h, w, win):
 
 
 class Pd01UI(RenderableUserDisplay):
+    _CAM_W = 16
+    _CAM_H = 16
+
     def __init__(self, ok: bool, level_index: int = 0, num_levels: int = 5) -> None:
         self._ok = ok
         self._level_index = level_index
@@ -45,6 +48,9 @@ class Pd01UI(RenderableUserDisplay):
         self._end: GameState | None = None
         self._click_pos: tuple[int, int] | None = None
         self._click_frames = 0
+        self._hint_frames = 0
+        self._hint_src: tuple[int, int] | None = None
+        self._hint_sink: tuple[int, int] | None = None
 
     def update(
         self,
@@ -66,6 +72,26 @@ class Pd01UI(RenderableUserDisplay):
         self._click_pos = (int(x), int(y))
         self._click_frames = 10
 
+    def pulse_tap_hints(self, src: tuple[int, int], sink: tuple[int, int]) -> None:
+        self._hint_src = src
+        self._hint_sink = sink
+        self._hint_frames = 18
+
+    def _cell_center(self, gx: int, gy: int, h: int, w: int) -> tuple[int, int]:
+        scale = min(w // self._CAM_W, h // self._CAM_H)
+        scale = max(scale, 1)
+        x_pad = (w - self._CAM_W * scale) // 2
+        y_pad = (h - self._CAM_H * scale) // 2
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
+
+    @staticmethod
+    def _mark_cross(frame, h: int, w: int, cx: int, cy: int, color: int) -> None:
+        for px, py in ((cx, cy), (cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)):
+            if 0 <= px < w and 0 <= py < h:
+                frame[py, px] = color
+
     def render_interface(self, frame):
         import numpy as np
 
@@ -73,6 +99,11 @@ class Pd01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        if self._hint_frames > 0 and self._hint_src and self._hint_sink:
+            for gx, gy in (self._hint_src, self._hint_sink):
+                cx, cy = self._cell_center(gx, gy, h, w)
+                self._mark_cross(frame, h, w, cx, cy, 11)
+            self._hint_frames -= 1
         frame[h - 2, 28] = 14 if self._ok else 8
         go = self._end == GameState.GAME_OVER
         win = self._end == GameState.WIN
@@ -185,6 +216,10 @@ class Pd01(ARCBaseGame):
         self._sink = self.current_level.get_sprites_by_tag("sink")[0]
         self._pipes: dict[tuple[int, int], str] = {}
         self._pipe_sprites: dict[tuple[int, int], Sprite] = {}
+        self._ui.pulse_tap_hints(
+            (self._source.x, self._source.y),
+            (self._sink.x, self._sink.y),
+        )
         self._check()
 
     def _wall_at(self, x: int, y: int) -> bool:

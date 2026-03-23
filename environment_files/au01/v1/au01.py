@@ -22,7 +22,10 @@ class U(RenderableUserDisplay):
                     break
                 dot = 14 if i < self._li else (11 if i == self._li else 3)
                 f[0, cx] = dot
-            for i in range(min(self.b, 8)): f[h-2,2+i]=11
+            # self.s = steps used, self.b = move cap — show remaining moves (discoverable budget).
+            rem = max(0, self.b - self.s)
+            for i in range(min(rem, 8)):
+                f[h - 2, 2 + i] = 11
         return f
 def spr():
     return {"p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),

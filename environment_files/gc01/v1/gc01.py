@@ -31,12 +31,25 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._t = 0
+        self._M = 4
 
-    def update(self, *, level_index: int | None = None, state=None) -> None:
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        state=None,
+        coral_t: int | None = None,
+        coral_m: int | None = None,
+    ) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+        if coral_t is not None:
+            self._t = coral_t
+        if coral_m is not None:
+            self._M = max(1, coral_m)
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +60,13 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        row_y = h - 2
+        if row_y >= 0 and self._M <= 12:
+            k = self._t % self._M
+            rem = self._M - k if k else self._M
+            for i in range(self._M):
+                c = 14 if i < rem else 3
+                _rp(f, h, w, 40 + i * 2, row_y, c)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -72,11 +92,15 @@ class Gc01(ARCBaseGame):
         super().__init__("gc01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
-        self._ui.update(level_index=self.level_index, state=self._state)
-
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._M = int(level.get_data("every") or 4)
         self._t = 0
+        self._ui.update(
+            coral_t=self._t,
+            coral_m=self._M,
+            level_index=self.level_index,
+            state=self._state,
+        )
     def _spread(self):
         add = []
         for sp in list(self.current_level.get_sprites_by_tag("coral")):
@@ -108,5 +132,10 @@ class Gc01(ARCBaseGame):
             self._spread()
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
-        self._ui.update(level_index=self.level_index, state=self._state)
+        self._ui.update(
+            level_index=self.level_index,
+            state=self._state,
+            coral_t=self._t,
+            coral_m=self._M,
+        )
         self.complete_action()

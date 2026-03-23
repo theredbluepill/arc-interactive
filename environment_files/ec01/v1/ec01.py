@@ -31,6 +31,10 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._reject_frames = 0
+
+    def flash_reject(self) -> None:
+        self._reject_frames = 3
 
     def update(self, *, level_index: int | None = None, state=None) -> None:
         if level_index is not None:
@@ -47,6 +51,9 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        if self._reject_frames > 0:
+            f[2, min(3, w - 1)] = 11
+            self._reject_frames -= 1
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -90,18 +97,22 @@ class Ec01(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         enx, eny = self._e.x + gdx, self._e.y + dy
         if not (0 <= enx < gw and 0 <= eny < gh):
+            self._ui.flash_reject()
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         eh = self.current_level.get_sprite_at(enx, eny, ignore_collidable=True)
         if eh and eh.is_collidable and "wall" in eh.tags:
+            self._ui.flash_reject()
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         nx, ny = self._p.x + dx, self._p.y + dy
         if not (0 <= nx < gw and 0 <= ny < gh):
+            self._ui.flash_reject()
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         h = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
         if h and h.is_collidable:
+            self._ui.flash_reject()
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         self._e.set_position(enx, eny)
