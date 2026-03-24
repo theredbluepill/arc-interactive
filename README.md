@@ -1,4 +1,6 @@
-# ARC-Interactive
+<p align="center">
+  <img src="assets/logo.png" alt="ARC-Interactive" width="480" height="243" />
+</p>
 
 A collection of community game environments for the ARC-AGI-3 benchmark.
 

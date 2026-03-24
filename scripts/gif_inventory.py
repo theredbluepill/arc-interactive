@@ -12,23 +12,43 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def parse_games_table(md: str) -> list[tuple[str, str]]:
-    """Split markdown table rows on ``|``; keep empty cells (empty Preview is ``''``)."""
-    rows: list[tuple[str, str]] = []
+# Column headers from GAMES.md registry table (human-edited source of truth).
+GAMES_MD_COLUMNS: tuple[str, ...] = (
+    "Game",
+    "Category",
+    "Grid",
+    "Levels",
+    "Description",
+    "Preview",
+    "Actions",
+)
+
+
+def parse_games_table_full(md: str) -> list[dict[str, str]]:
+    """Parse every data row of the GAMES.md games table into column-keyed dicts.
+
+    Keys match ``GAMES_MD_COLUMNS`` exactly. Skips the header and separator rows.
+    """
+    rows: list[dict[str, str]] = []
     for line in md.splitlines():
         line = line.strip()
         if not line.startswith("|") or line.startswith("|-"):
             continue
         parts = [p.strip() for p in line.split("|")]
-        # leading/trailing empty from outer pipes
         if len(parts) < 9 or parts[1] == "Game":
             continue
-        game_id = parts[1]
-        if not re.match(r"^[a-z]{2}\d{2}$", game_id):
+        stem = parts[1]
+        if not re.match(r"^[a-z]{2}\d{2}$", stem):
             continue
-        preview_cell = parts[6] if len(parts) > 6 else ""
-        rows.append((game_id, preview_cell))
+        row = dict(zip(GAMES_MD_COLUMNS, (parts[i] for i in range(1, 8)), strict=True))
+        rows.append(row)
     return rows
+
+
+def parse_games_table(md: str) -> list[tuple[str, str]]:
+    """Split markdown table rows on ``|``; keep empty cells (empty Preview is ``''``)."""
+    full = parse_games_table_full(md)
+    return [(r["Game"], r["Preview"]) for r in full]
 
 
 def _asset_refs(preview_cell: str) -> list[str]:
