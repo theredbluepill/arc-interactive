@@ -87,7 +87,11 @@ Point your agent at the same conventions humans use:
 
 See [Ways to contribute](#ways-to-contribute) for how these map to contribution types and symlink paths.
 
-**Minimal prompt you can paste:** *Implement a new ARC-AGI-3 game `{game_id}` at `environment_files/{game_id}/v1/`. Follow [AGENTS.md](AGENTS.md) and [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md): static levels only, `ARCBaseGame` + `metadata.json`, register a row in [GAMES.md](GAMES.md). Game design: [grid size, entities, win/lose, which actions 1–7 do].*
+**Minimal prompt you can paste** (replace `{game_id}` with your stem, e.g. `ez01`):
+
+```text
+Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md, CONTRIBUTING.md, and skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
+```
 
 **Done when:** `uv run python run_game.py --game {game_id} --version auto` runs, win advances levels, and [GAMES.md](GAMES.md) has a complete table row (optional: preview GIF under `assets/` like existing games).
 
