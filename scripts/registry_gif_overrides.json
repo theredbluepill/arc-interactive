@@ -466,6 +466,13 @@
   "st01": {
     "min_frames": 16
   },
+  "ng01": {
+    "target_levels": 5,
+    "gif_duration_ms": 155,
+    "max_gif_frames": 720,
+    "ng01_click_repeat": 2,
+    "ng01_level_hold_frames": 14
+  },
   "tb03": {
     "min_frames": 20
   },

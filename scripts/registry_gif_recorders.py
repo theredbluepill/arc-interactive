@@ -49,6 +49,7 @@ def _build_tables() -> None:
     from registry_mc01_gif import REGISTRY_RECORDERS as mc01_reg
     from registry_mm_fe_gif import REGISTRY_RECORDERS as mm_fe
     from registry_mo_zq_hm_gif import REGISTRY_RECORDERS as mo_zq_hm
+    from registry_ng01_gif import REGISTRY_RECORDERS as ng01_reg
     from registry_ph_bn_bi_gif import REGISTRY_RECORDERS as ph_bn_bi
     from registry_pk_ec_gif import REGISTRY_RECORDERS as pk_ec
     from registry_rk_jw_gif import REGISTRY_RECORDERS as rk_jw
@@ -61,6 +62,7 @@ def _build_tables() -> None:
     _extend(merged, dispatch, dl01, bucket="dl01")
     _extend(merged, dispatch, kn01_reg, bucket="kn01")
     _extend(merged, dispatch, mo_zq_hm, bucket=None)
+    _extend(merged, dispatch, ng01_reg, bucket=None)
     _extend(merged, dispatch, ex_gp_lo, bucket=None)
     _extend(merged, dispatch, fw01_reg, bucket="fw01")
     _extend(merged, dispatch, lw_rp_ml_sf, bucket=None)

@@ -1,4 +1,7 @@
-"""Nonogram lite: 8×8 playfield with visible row/column run clues on a 1-cell border. ACTION1–4 move cursor; ACTION6 cycles empty / filled / mark. Win when filled cells match the solution."""
+"""Nonogram lite: 8×8 playfield with visible row/column run clues on a 1-cell border. ACTION1–4 move cursor; ACTION6 cycles empty / filled / mark. Win when filled cells match the solution.
+
+Level 1 is a teaching layout: one full row gives a single row run clue matching all eight cells, and each column shows a single 1-run, so the nonogram convention (counts of consecutive filled cells) is inferable without prior puzzle exposure.
+"""
 
 from __future__ import annotations
 
@@ -110,11 +113,11 @@ levels = [
     mk(
         [
             "........",
-            "..##....",
-            "..##....",
             "........",
-            "....##..",
-            "....##..",
+            "........",
+            "########",
+            "........",
+            "........",
             "........",
             "........",
         ],
