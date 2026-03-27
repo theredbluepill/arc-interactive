@@ -24,7 +24,7 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Generate similar games report
         run: |
@@ -33,7 +33,7 @@ jobs:
             --top-k 12 \
             --min-score 0.25
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: similar-games-report
           path: |
