@@ -55,8 +55,8 @@ wheels = [
 
 [[package]]
 name = "arc-agi"
-version = "0.9.5"
-source = { git = "https://github.com/arcprize/arc-agi.git#edaef6211fc2181c31a2b9da9935dc51d99e6150" }
+version = "0.9.8"
+source = { git = "https://github.com/arcprize/arc-agi.git#c729dab36b3dd663b25d50d2695917904094716b" }
 dependencies = [
     { name = "arcengine" },
     { name = "flask" },
