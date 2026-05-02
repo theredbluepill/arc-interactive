@@ -9,7 +9,7 @@ dependencies = [
     "arcengine",
     "numpy>=2.4.3",
     "pygame>=2.5",
-    "kaggle-benchmarks>=0.2.0",
+    "kaggle-benchmarks>=0.5.0",
 ]
 
 [dependency-groups]

@@ -88,7 +88,7 @@ dev = [
 requires-dist = [
     { name = "arc-agi", git = "https://github.com/arcprize/arc-agi.git" },
     { name = "arcengine", git = "https://github.com/arcprize/ARCEngine.git" },
-    { name = "kaggle-benchmarks", specifier = ">=0.2.0" },
+    { name = "kaggle-benchmarks", specifier = ">=0.5.0" },
     { name = "numpy", specifier = ">=2.4.3" },
     { name = "pygame", specifier = ">=2.5" },
 ]
@@ -793,18 +793,22 @@ wheels = [
 
 [[package]]
 name = "hishel"
-version = "0.1.5"
+version = "1.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "anyio" },
-    { name = "anysqlite" },
-    { name = "httpx" },
     { name = "msgpack" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/64/a104ccac48f123f853254483617b16e0efc1649bd7e35bcdc5a5a5ef0ae2/hishel-0.1.5.tar.gz", hash = "sha256:9d40c682cd94fd6e1394fb05713ae20a75ed8aeba6f5272380444039ce6257f2", size = 75468, upload-time = "2025-10-18T13:32:41.854Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2d/7a/ef9231da56bc04000f7343831deb1946f5fc270213080fa212f61ddbfe0a/hishel-1.2.1.tar.gz", hash = "sha256:87212cd31a7a6904352ec5bd7119ed3b43d0ab1259d5995751a2a2b173d7c305", size = 814761, upload-time = "2026-04-27T16:16:42.35Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/83/4f8b77839e62114bb034375ee8e08cfb6af1164754b925b271d3f1ec06ee/hishel-0.1.5-py3-none-any.whl", hash = "sha256:0bfbe9a2b9342090eba82ba6de88258092e1c4c7b730cd4cb4b570e4b40e44a7", size = 92486, upload-time = "2025-10-18T13:32:40.333Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/de/5f1bebcf644f2f350c39d2630f391399d0c39ff39fbfff98113889898827/hishel-1.2.1-py3-none-any.whl", hash = "sha256:5e1c1e38f4c970eeef69bc8528e85fd5c02eab15a22f9845d30fc880da32b881", size = 73223, upload-time = "2026-04-27T16:16:40.585Z" },
+]
+
+[package.optional-dependencies]
+httpx = [
+    { name = "anyio" },
+    { name = "anysqlite" },
+    { name = "httpx" },
 ]
 
 [[package]]
@@ -1297,12 +1301,12 @@ wheels = [
 
 [[package]]
 name = "kaggle-benchmarks"
-version = "0.2.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docker" },
     { name = "google-genai" },
-    { name = "hishel" },
+    { name = "hishel", extra = ["httpx"] },
     { name = "joblib" },
     { name = "jupyter" },
     { name = "nest-asyncio" },
@@ -1315,9 +1319,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/91/d0/99d52528a901d817dcb535614b18f947e6d0b2ff530f20c4917b3622f391/kaggle_benchmarks-0.2.0.tar.gz", hash = "sha256:64a1efb5997345de0a99f3d2f7bda3d228b279d30f58ff2e55da06c8119caeee", size = 396675, upload-time = "2025-12-01T21:51:22.203Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/cc/91169139ca6aef6f7534c5a9dbc13bea70caddd7094bc7dd305a78bbb7ff/kaggle_benchmarks-0.5.0.tar.gz", hash = "sha256:6cef65a102b863e8cf969514098dc12238d1a77dc921369e4564cdf592bf18a7", size = 526600, upload-time = "2026-05-01T20:31:09.401Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/9b/0fc1fa338cc1247bd30303e4e2788898b90b9b7fc0e898a18a25374c80ba/kaggle_benchmarks-0.2.0-py3-none-any.whl", hash = "sha256:7fbb4a4354e3b27b4a11dc822277f7e44566d50a483ab4b2f1a8e7fa980d7e72", size = 88194, upload-time = "2025-12-01T21:51:20.809Z" },
+    { url = "https://files.pythonhosted.org/packages/72/e9/f2a6c5bcc7341b6ac38b578258ba3429c3de794e489a8f27ec01cb22236c/kaggle_benchmarks-0.5.0-py3-none-any.whl", hash = "sha256:97ea38ad3490b3025e38673314ea2798a2f0a494061bc9072146960811562457", size = 118469, upload-time = "2026-05-01T20:31:08.372Z" },
 ]
 
 [[package]]
