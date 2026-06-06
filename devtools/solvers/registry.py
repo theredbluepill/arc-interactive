@@ -102,7 +102,7 @@ LATTICE_TOGGLE_NOTE = (
     "witness or local linear algebra for Lights Out."
 )
 
-TORUS_LIGHTS_GF2_STEMS: frozenset[str] = frozenset({"lo02", "lo03"})
+TORUS_LIGHTS_GF2_STEMS: frozenset[str] = frozenset({"lo02", "lo03", "lo05"})
 
 
 def solver_kind_for_stem(stem: str) -> SolverKind:

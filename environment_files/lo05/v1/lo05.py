@@ -125,14 +125,20 @@ def mk(
     )
 
 
+# Every pattern lies in the column space of the clipped closed-knight toggle
+# matrix (rank 56/64 on 8x8): each is the image of an explicit click set, so
+# each level is provably clearable, with TRUE minimum solutions of exactly
+# 1..7 clicks (verified over the full 256-solution nullspace coset per level).
+# The previous hand-authored patterns for levels 1-4 and 6-7 were OUTSIDE the
+# column space — unwinnable, so the game could never advance past level 1.
 levels = [
-    mk([(3, 3)], [], (8, 8), 1),
-    mk([(2, 2), (4, 4), (3, 5)], [], (8, 8), 2),
-    mk([(1, 1), (6, 6), (3, 4)], [], (8, 8), 3),
-    mk([(2, 3), (5, 4), (4, 6)], [], (8, 8), 4),
-    mk([(0, 0), (7, 7), (3, 3), (4, 4)], [], (8, 8), 5),
-    mk([(1, 3), (6, 4), (4, 1), (4, 6)], [], (8, 8), 6),
-    mk([(2, 6), (5, 2), (3, 3), (4, 4), (6, 6)], [], (8, 8), 7),
+    mk([(0, 0), (1, 2), (2, 1)], [], (8, 8), 1),
+    mk([(1, 2), (1, 3), (2, 2), (3, 2), (4, 1)], [], (8, 8), 2),
+    mk([(0, 0), (1, 3), (2, 1), (2, 2), (3, 2), (4, 1)], [], (8, 8), 3),
+    mk([(0, 0), (0, 1), (0, 5), (2, 2), (2, 5), (3, 4), (4, 1)], [], (8, 8), 4),
+    mk([(0, 0), (0, 1), (1, 7), (2, 2), (3, 4), (3, 6), (4, 1)], [], (8, 8), 5),
+    mk([(0, 0), (0, 3), (1, 0), (1, 4), (1, 7), (3, 0), (3, 6), (4, 3)], [], (8, 8), 6),
+    mk([(0, 2), (1, 1), (1, 2), (1, 7), (3, 2), (3, 6), (4, 3)], [], (8, 8), 7),
 ]
 
 

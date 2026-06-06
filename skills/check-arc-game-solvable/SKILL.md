@@ -31,7 +31,7 @@ uv run python devtools/verify_level_solvability.py --stem <stem>
 
 When generic **engine BFS** is wrong or too large, the repo adds a dedicated strategy in `devtools/solvers/` and maps the stem in [`devtools/solvers/registry.py`](../../devtools/solvers/registry.py).
 
-**Torus Lights Out (`lo02`, `lo03`):** orthogonal vs king neighbors with torus wrap and wall-blocked toggles are checked with GF(2) linear algebra in [`devtools/solvers/torus_lights_gf2.py`](../../devtools/solvers/torus_lights_gf2.py). Initial `lights_on` layouts should be built by **forward simulation** (apply virtual clicks from all-off) so they lie in the reachable subspace.
+**Lights Out GF(2) (`lo02`, `lo03`, `lo05`):** orthogonal/king neighbors with torus wrap (lo02/lo03) and the **clipped** closed chess-knight neighborhood (lo05, `knight_clip` — no wrap) are checked with GF(2) linear algebra in [`devtools/solvers/torus_lights_gf2.py`](../../devtools/solvers/torus_lights_gf2.py). Initial `lights_on` layouts should be built by **forward simulation** (apply virtual clicks from all-off) so they lie in the reachable subspace — clipped kernels are rank-deficient (lo05's matrix is 56/64), so most hand-placed patterns are unreachable.
 
 **Lattice / paint toggles (`gp02`, …):** may remain `TOOLING_GAP` until a dedicated checker exists; use witness generation or small-state proofs rather than guessing layouts.
 
