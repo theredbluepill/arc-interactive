@@ -98,7 +98,17 @@ def _verify_one_level(
                 notes="missing or short levels[] in module",
                 extra={"seconds": time.perf_counter() - t0},
             )
-        mode = "orth" if stem == "lo02" else "king"
+        gf2_modes = {"lo02": "orth", "lo03": "king", "lo05": "knight_clip"}
+        if stem not in gf2_modes:
+            return LevelVerdict(
+                stem=stem,
+                level_index=level_index,
+                status=VerdictStatus.ERROR,
+                solver="torus_lights_gf2",
+                notes="stem in TORUS_LIGHTS_GF2_STEMS but missing a ToggleMode mapping",
+                extra={"seconds": time.perf_counter() - t0},
+            )
+        mode = gf2_modes[stem]
         lvl = levels_attr[level_index]
         ok = arc_level_is_solvable(lvl, mode=mode)
         return LevelVerdict(
@@ -106,7 +116,7 @@ def _verify_one_level(
             level_index=level_index,
             status=VerdictStatus.PROVED if ok else VerdictStatus.COUNTEREXAMPLE,
             solver="torus_lights_gf2",
-            notes="GF(2) torus Lights Out (orthogonal)" if mode == "orth" else "GF(2) torus Lights Out (king)",
+            notes=f"GF(2) Lights Out ({mode})",
             extra={"seconds": time.perf_counter() - t0},
         )
 

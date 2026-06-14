@@ -1,10 +1,13 @@
-"""GF(2) solvability for torus Lights Out (orthogonal or king), matching lo02/lo03 ``step()``."""
+"""GF(2) solvability for Lights Out toggles, matching lo02/lo03/lo05 ``step()``.
+
+Modes: ``orth``/``king`` wrap on the torus (lo02/lo03); ``knight_clip`` is the
+closed chess-knight neighborhood CLIPPED at the board edge (lo05 — no wrap)."""
 
 from __future__ import annotations
 
 from typing import Literal
 
-ToggleMode = Literal["orth", "king"]
+ToggleMode = Literal["orth", "king", "knight_clip"]
 
 
 def _cell_index(gw: int, gx: int, gy: int) -> int:
@@ -30,6 +33,26 @@ def _king_neighbors(gw: int, gh: int, gx: int, gy: int) -> list[tuple[int, int]]
     return out
 
 
+_KNIGHT = (
+    (2, 1),
+    (1, 2),
+    (-1, 2),
+    (-2, 1),
+    (-2, -1),
+    (-1, -2),
+    (1, -2),
+    (2, -1),
+)
+
+
+def _knight_neighbors_clipped(gw: int, gh: int, gx: int, gy: int) -> list[tuple[int, int]]:
+    return [
+        (gx + dx, gy + dy)
+        for dx, dy in _KNIGHT
+        if 0 <= gx + dx < gw and 0 <= gy + dy < gh
+    ]
+
+
 def click_affected_cells(
     gw: int,
     gh: int,
@@ -44,8 +67,10 @@ def click_affected_cells(
         return []
     if mode == "orth":
         raw = [(cx, cy)] + _orth_neighbors(gw, gh, cx, cy)
-    else:
+    elif mode == "king":
         raw = [(cx, cy)] + _king_neighbors(gw, gh, cx, cy)
+    else:
+        raw = [(cx, cy)] + _knight_neighbors_clipped(gw, gh, cx, cy)
     return [(tx, ty) for tx, ty in raw if (tx, ty) not in walls]
 
 
@@ -201,7 +226,7 @@ def level_payload_solvable(
     """``level_data`` has ``lights_on`` (list of pairs); walls from sprite list optional."""
     gw, gh = int(grid_size[0]), int(grid_size[1])
     raw_lit = level_data.get("lights_on") or []
-    lights = {tuple(int(t[0]), int(t[1])) for t in raw_lit}
+    lights = {(int(t[0]), int(t[1])) for t in raw_lit}
     walls: set[tuple[int, int]] = set()
     return is_solvable(lights, walls, gw, gh, mode=mode)
 
