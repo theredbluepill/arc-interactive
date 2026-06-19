@@ -44,6 +44,40 @@ class SolvabilityGoldenTests(unittest.TestCase):
         )
         self.assertTrue(bfs.ok, bfs.reason)
 
+    def test_bp01_action5_powers_tower_under_player(self) -> None:
+        env = self.arcade.make(full_game_id_canonical("bp01"), seed=0, render_mode=None)
+        assert env is not None
+        env.reset()
+        for _ in range(3):
+            env.step(GameAction.ACTION4, reasoning={})
+
+        game = env._game
+        self.assertEqual((game._player.x, game._player.y), (4, 1))
+        self.assertEqual(game._on, 0)
+        untagged = game.current_level.get_sprite_at(
+            game._player.x, game._player.y, ignore_collidable=True
+        )
+        tagged = game.current_level.get_sprite_at(
+            game._player.x,
+            game._player.y,
+            tag="tower",
+            ignore_collidable=True,
+        )
+        self.assertEqual(untagged.name, "player")
+        self.assertEqual(tagged.name, "tower")
+
+        env.step(GameAction.ACTION5, reasoning={})
+
+        self.assertEqual(game._on, 1)
+        powered = game.current_level.get_sprite_at(
+            game._player.x,
+            game._player.y,
+            tag="tower",
+            ignore_collidable=True,
+        )
+        assert powered is not None
+        self.assertIn("powered", powered.tags)
+
     def test_sk01_push_plan_level0(self) -> None:
         stem = "sk01"
         env = self.arcade.make(full_game_id_canonical(stem), seed=0, render_mode=None)

@@ -155,7 +155,10 @@ class Bp01(ARCBaseGame):
     def step(self) -> None:
         if self.action.id == GameAction.ACTION5:
             sp = self.current_level.get_sprite_at(
-                self._player.x, self._player.y, ignore_collidable=True
+                self._player.x,
+                self._player.y,
+                tag="tower",
+                ignore_collidable=True,
             )
             if sp and "tower" in sp.tags and "powered" not in sp.tags:
                 self.current_level.remove_sprite(sp)
