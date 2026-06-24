@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "arc-agi",
     "arcengine",
-    "numpy>=2.4.3",
+    "numpy>=2.4.6",
     "pygame>=2.5",
     "kaggle-benchmarks>=0.2.0",
 ]
