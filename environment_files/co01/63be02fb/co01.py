@@ -232,7 +232,7 @@ class Co01(ARCBaseGame):
         if not sp or not sp.is_collidable:
             self._player.set_position(nx, ny)
 
-        sp2 = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
+        sp2 = sp
         if sp2 and "recolor" in sp2.tags:
             if "c8" in sp2.tags:
                 self._active = 8
