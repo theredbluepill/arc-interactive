@@ -1,5 +1,5 @@
 {
-  "game_id": "co01-63be02fb",
+  "game_id": "co01-641624b5",
   "title": "Color Gate",
   "description": "Recolor pads set active hue; doors matching the active color open.",
   "default_fps": 20,
@@ -14,7 +14,7 @@
     "puzzle",
     "10-grid"
   ],
-  "local_dir": "environment_files/co01/63be02fb",
+  "local_dir": "environment_files/co01/641624b5",
   "date_created": "2026-03-20",
   "training_metadata": {
     "pcg_type": [],
@@ -28,5 +28,5 @@
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000
   },
-  "date_downloaded": "2026-03-20T09:53:23.279595+00:00"
+  "date_downloaded": "2026-10-01T11:59:53.687016+00:00"
 }
