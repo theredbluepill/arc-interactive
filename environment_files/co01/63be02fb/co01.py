@@ -18,6 +18,10 @@ class Co01UI(RenderableUserDisplay):
     def update(self, active: int) -> None:
         self._active = active
 
+    def reset(self, active: int) -> None:
+        self._active = active
+        self._door_flash = 0
+
     def flash_door_open(self, frames: int = 8) -> None:
         self._door_flash = frames
 
@@ -49,6 +53,7 @@ sprites = {
         name="player",
         visible=True,
         collidable=True,
+        layer=1,
         tags=["player"],
     ),
     "goal": Sprite(
@@ -100,62 +105,87 @@ def mk(sl, d: int):
     return Level(sprites=sl, grid_size=(10, 10), data={"difficulty": d})
 
 
+def walls(cells):
+    return [sprites["wall"].clone().set_position(x, y) for x, y in cells]
+
+
+def col(x: int, *gaps: int):
+    return [(x, y) for y in range(10) if y not in gaps]
+
+
+def row(y: int, x0: int, x1: int, *gaps: int):
+    return [(x, y) for x in range(x0, x1 + 1) if x not in gaps]
+
+
+# Every level is sealed by walls so the goal is only reachable through doors,
+# which in turn need the matching pad (devtools BFS: no door-free / pad-free win).
 levels = [
+    # Red pad opens the single red door.
     mk(
         [
             sprites["player"].clone().set_position(1, 5),
             sprites["pad_r"].clone().set_position(3, 5),
             sprites["door_r"].clone().set_position(5, 5),
             sprites["goal"].clone().set_position(8, 5),
-        ],
+        ]
+        + walls(col(5, 5)),
         1,
     ),
+    # Two chambers in series: red, then yellow (stepping red closes yellow).
     mk(
         [
-            sprites["player"].clone().set_position(1, 3),
-            sprites["pad_y"].clone().set_position(2, 3),
-            sprites["door_y"].clone().set_position(5, 3),
-            sprites["pad_r"].clone().set_position(2, 6),
-            sprites["door_r"].clone().set_position(5, 6),
-            sprites["goal"].clone().set_position(8, 4),
-        ],
+            sprites["player"].clone().set_position(1, 4),
+            sprites["pad_r"].clone().set_position(1, 7),
+            sprites["door_r"].clone().set_position(3, 4),
+            sprites["pad_y"].clone().set_position(4, 1),
+            sprites["door_y"].clone().set_position(6, 6),
+            sprites["goal"].clone().set_position(8, 2),
+        ]
+        + walls(col(3, 4) + col(6, 6)),
         2,
     ),
+    # The red pad sits beyond the (initially open) yellow door.
     mk(
         [
-            sprites["player"].clone().set_position(0, 5),
-            sprites["pad_r"].clone().set_position(1, 2),
-            sprites["door_r"].clone().set_position(4, 2),
-            sprites["pad_y"].clone().set_position(1, 8),
-            sprites["door_y"].clone().set_position(4, 8),
-            sprites["wall"].clone().set_position(4, 4),
-            sprites["wall"].clone().set_position(4, 5),
-            sprites["wall"].clone().set_position(4, 6),
-            sprites["goal"].clone().set_position(8, 5),
-        ],
+            sprites["player"].clone().set_position(1, 6),
+            sprites["door_y"].clone().set_position(4, 2),
+            sprites["pad_r"].clone().set_position(8, 1),
+            sprites["door_r"].clone().set_position(7, 5),
+            sprites["goal"].clone().set_position(7, 8),
+        ]
+        + walls(col(4, 2) + row(5, 5, 9, 7)),
         3,
     ),
-    mk(
-        [
-            sprites["player"].clone().set_position(2, 2),
-            sprites["pad_y"].clone().set_position(2, 4),
-            sprites["door_y"].clone().set_position(5, 4),
-            sprites["pad_r"].clone().set_position(6, 6),
-            sprites["door_r"].clone().set_position(6, 3),
-            sprites["goal"].clone().set_position(8, 8),
-        ],
-        4,
-    ),
+    # Horizontal snake: red, yellow, red.
     mk(
         [
             sprites["player"].clone().set_position(1, 1),
-            sprites["pad_r"].clone().set_position(3, 1),
-            sprites["door_r"].clone().set_position(5, 1),
-            sprites["pad_y"].clone().set_position(3, 8),
-            sprites["door_y"].clone().set_position(5, 8),
-            sprites["goal"].clone().set_position(8, 4),
+            sprites["pad_r"].clone().set_position(4, 1),
+            sprites["door_r"].clone().set_position(8, 3),
+            sprites["pad_y"].clone().set_position(5, 4),
+            sprites["door_y"].clone().set_position(1, 6),
+            sprites["pad_r"].clone().set_position(2, 9),
+            sprites["door_r"].clone().set_position(5, 8),
+            sprites["goal"].clone().set_position(8, 8),
         ]
-        + [sprites["wall"].clone().set_position(5, y) for y in range(2, 8)],
+        + walls(row(3, 0, 9, 8) + row(6, 0, 9, 1) + [(5, 7), (5, 9)]),
+        4,
+    ),
+    # Four doors, alternating hues, ending in a walled goal pocket.
+    mk(
+        [
+            sprites["player"].clone().set_position(1, 0),
+            sprites["pad_r"].clone().set_position(1, 2),
+            sprites["door_r"].clone().set_position(3, 8),
+            sprites["pad_y"].clone().set_position(4, 5),
+            sprites["door_y"].clone().set_position(6, 1),
+            sprites["pad_r"].clone().set_position(8, 0),
+            sprites["door_r"].clone().set_position(9, 4),
+            sprites["pad_y"].clone().set_position(7, 5),
+            sprites["door_y"].clone().set_position(7, 7),
+            sprites["goal"].clone().set_position(8, 9),
+        ]
+        + walls(col(3, 8) + col(6, 1) + row(4, 7, 9, 9) + row(7, 7, 9, 7)),
         5,
     ),
 ]
@@ -181,7 +211,8 @@ class Co01(ARCBaseGame):
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._doors = list(self.current_level.get_sprites_by_tag("door"))
         self._active = 11
-        self._sync_doors_and_flash()
+        self._sync_doors()
+        self._ui.reset(self._active)
 
     def _sync_doors(self) -> bool:
         any_opened = False
