@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+from collections import deque
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +16,7 @@ for p in (str(ROOT), str(SCRIPTS), str(DEVTOOLS)):
 
 from arc_agi import Arcade, OperationMode  # noqa: E402
 from arcengine import GameAction, GameState  # noqa: E402
+from env_resolve import load_stem_game_py  # noqa: E402
 from solvability_common import (  # noqa: E402
     canonical_version_for_stem,
     full_game_id_canonical,
@@ -43,6 +45,52 @@ class SolvabilityGoldenTests(unittest.TestCase):
             allowed_action_ids=None,
         )
         self.assertTrue(bfs.ok, bfs.reason)
+
+    def test_co01_recolor_pad_opens_matching_door(self) -> None:
+        env = self.arcade.make(full_game_id_canonical("co01"), seed=0, render_mode=None)
+        assert env is not None
+        env.reset()
+        game = env._game
+        door = game.current_level.get_sprites_by_tag("door")[0]
+        self.assertTrue(door.is_collidable)
+
+        for _ in range(2):
+            env.step(GameAction.ACTION4, reasoning={})
+        self.assertEqual((game._player.x, game._player.y), (3, 5))
+        self.assertEqual(game._active, 8)
+        self.assertFalse(door.is_collidable)
+        # Player renders above the pad it stands on.
+        self.assertGreater(game._player.layer, 0)
+
+        res = None
+        for _ in range(5):
+            res = env.step(GameAction.ACTION4, reasoning={})
+        assert res is not None
+        self.assertEqual(res.levels_completed, 1)
+
+    def test_co01_levels_have_no_door_bypass(self) -> None:
+        """Doors must gate the goal: walling every door off leaves it unreachable."""
+        mod = load_stem_game_py("co01", "_co01_bypass_check")
+        for idx, level in enumerate(mod.levels):
+            blocked = {(s.x, s.y) for s in level._sprites if "wall" in s.tags or "door" in s.tags}
+            player = level.get_sprites_by_tag("player")[0]
+            goal = level.get_sprites_by_tag("goal")[0]
+            gw, gh = level.grid_size
+            start = (player.x, player.y)
+            seen = {start}
+            q = deque([start])
+            while q:
+                x, y = q.popleft()
+                for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if (
+                        0 <= nx < gw
+                        and 0 <= ny < gh
+                        and (nx, ny) not in blocked
+                        and (nx, ny) not in seen
+                    ):
+                        seen.add((nx, ny))
+                        q.append((nx, ny))
+            self.assertNotIn((goal.x, goal.y), seen, f"level {idx + 1} door bypass")
 
     def test_bp01_action5_powers_tower_under_player(self) -> None:
         env = self.arcade.make(full_game_id_canonical("bp01"), seed=0, render_mode=None)
